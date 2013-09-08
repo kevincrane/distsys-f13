@@ -1,6 +1,6 @@
-package io;
+package distsys.io;
 
-import java.io.OutputStream;
+import java.io.InputStream;
 import java.io.Serializable;
 
 /**
@@ -10,5 +10,6 @@ import java.io.Serializable;
  * Time: 5:26 PM
  * To change this template use File | Settings | File Templates.
  */
-public abstract class TransactionalFileOutputStream extends OutputStream implements Serializable {
+
+public abstract class TransactionalFileInputStream extends InputStream implements Serializable {
 }
