@@ -30,10 +30,12 @@ public class GrepProcess implements MigratableProcess {
         }
 
         query = args[0];
-        inFile = new TransactionalFileInputStream(args[1]);
-        outFile = new TransactionalFileOutputStream(args[2], false);
+        //TODO: fix this
+//        inFile = new TransactionalFileInputStream(args[1]);
+//        outFile = new TransactionalFileOutputStream(args[2], false);
     }
 
+    @Override
     public void run() {
         PrintStream out = new PrintStream(outFile);
         DataInputStream in = new DataInputStream(inFile);
@@ -65,6 +67,7 @@ public class GrepProcess implements MigratableProcess {
         suspending = false;
     }
 
+    @Override
     public void suspend() {
         suspending = true;
         while (suspending);
