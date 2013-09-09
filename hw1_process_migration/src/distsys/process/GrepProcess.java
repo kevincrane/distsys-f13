@@ -2,7 +2,7 @@ package distsys.process;
 
 /**
  * Created with IntelliJ IDEA.
- * User: kevin
+ * User: kevin, prashanth
  * Date: 9/8/13
  */
 import distsys.io.TransactionalFileInputStream;
@@ -34,8 +34,7 @@ public class GrepProcess implements MigratableProcess {
         outFile = new TransactionalFileOutputStream(args[2], false);
     }
 
-    public void run()
-    {
+    public void run() {
         PrintStream out = new PrintStream(outFile);
         DataInputStream in = new DataInputStream(inFile);
 
@@ -66,8 +65,7 @@ public class GrepProcess implements MigratableProcess {
         suspending = false;
     }
 
-    public void suspend()
-    {
+    public void suspend() {
         suspending = true;
         while (suspending);
     }
