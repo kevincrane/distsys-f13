@@ -1,0 +1,10 @@
+./src/distsys/ProcessManager.java
+./src/distsys/server/ServerMessage.java
+./src/distsys/server/SlaveManager.java
+./src/distsys/server/MasterManager.java
+./src/distsys/process/CountProcess.java
+./src/distsys/process/MigratableProcess.java
+./src/distsys/process/GrepProcess.java
+./src/distsys/io/TransactionalStream.java
+./src/distsys/io/TransactionalFileInputStream.java
+./src/distsys/io/TransactionalFileOutputStream.java
