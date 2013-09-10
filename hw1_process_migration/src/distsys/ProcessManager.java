@@ -33,7 +33,7 @@ public class ProcessManager {
             try {
                 System.out.println("Running new slave node.");
                 SlaveManager slave = new SlaveManager(hostname, MASTER_PORT);
-                //TODO: stuff
+                slave.listen();
                 slave.close();
             } catch(IOException e) {
                 System.err.println("Could not connect to socket at " + hostname + ":" + MASTER_PORT+ ".\n" +
@@ -45,6 +45,10 @@ public class ProcessManager {
                 System.out.println("Running new master node.");
                 MasterManager master = new MasterManager(MASTER_PORT);
                 master.start();
+
+                // TODO: REMOVE THIS
+                String[] countArgs = {"25"};
+                master.addProcess("distsys.process.CountProcess", countArgs);
             } catch(IOException e) {
                 System.err.println("Master could not listen at port " + MASTER_PORT + ".\n" + e.getMessage());
             }

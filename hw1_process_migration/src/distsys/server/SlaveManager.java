@@ -5,8 +5,8 @@ import distsys.process.MigratableProcess;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.net.InetAddress;
 import java.net.Socket;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -31,11 +31,45 @@ public class SlaveManager {
         // Set up socket and port readers to master node
         sock = new Socket(hostname, port);
         sockOut = new ObjectOutputStream(sock.getOutputStream());
-
-//        sockIn = new ObjectInputStream(sock.getInputStream());
+        processList = new ArrayList<MigratableProcess>();
         System.out.println("Connected to socket at " + hostname + ":" + port + "!");
+    }
 
-        // TODO: Send message to Master to introduce yourself
+    /**
+     * Listen for messages from Master and act on them
+     */
+    public void listen() throws IOException {
+        sockIn = new ObjectInputStream(sock.getInputStream());
+
+        //TODO: only if message received is to add a new process
+        receiveProcess(sockIn);
+    }
+
+    /**
+     * Receive a serialized process from the socket;
+     * Deserialize and run it
+     * @param sockIn
+     */
+    private void receiveProcess(ObjectInputStream sockIn) {
+        try {
+            MigratableProcess newProcess = (MigratableProcess)sockIn.readObject();;
+            processList.add(newProcess);
+            Thread processThread = new Thread(newProcess);
+            processThread.start();
+
+
+            //TODO:
+//            ADD USER INPUT TO SELECT OPTIONS ON ProcessManager
+//            REMOVE TEST PROCESS (ProcessManager), PLUS SLEEPING SECTION (MasterManager)
+//            MAKE ps FEATURE
+
+
+        } catch(IOException e) {
+            System.err.println("Error: problem reading from socket ObjectInput stream (" + e.getMessage() + ").");
+        } catch(ClassNotFoundException e) {
+            System.err.println("Error: received the wrong object type from input stream (" + e.getMessage() + ").");
+            e.printStackTrace();
+        }
     }
 
     /**
@@ -44,7 +78,7 @@ public class SlaveManager {
     public void close() {
         try {
             sockOut.close();
-//            sockIn.close();
+            sockIn.close();
             sock.close();
         } catch(IOException e) {
             System.err.println("Error: problem closing slave socket ports.\n" + e.getMessage());

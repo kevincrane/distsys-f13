@@ -10,13 +10,17 @@ import java.io.Serializable;
 public class ServerMessage implements Serializable {
 
     public static enum MessageType {
-        HELLO,
         RUN,
+        PING,
         SUSPEND
     }
 
-    public ServerMessage() {
+    MessageType type;
+    Object payload;
 
+    public ServerMessage(MessageType type, Object payload) {
+        this.type = type;
+        this.payload = payload;
     }
 
 }
