@@ -100,18 +100,19 @@ public class MasterManager extends Thread {
                 e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
             }
         }
+
+        // Create new ServerMessage indicating for the receiving slave to run a new process
+        ServerMessage message = new ServerMessage(ServerMessage.MessageType.RUN, newProcess);
         Socket currentSocket = connections.get(nextSlave);
         try {
             ObjectOutputStream sockOut = new ObjectOutputStream(currentSocket.getOutputStream());
-            sockOut.writeObject(newProcess);
+            sockOut.writeObject(message);
             sockOut.close();
-            System.out.println("Sent process " + newProcess + " to slave " + nextSlave);
+            System.out.println("Sent msg " + message + " to slave " + nextSlave);
         } catch (IOException e) {
             System.err.println("Error: error serializing new process " + newProcess + "(" + e.getMessage() + ").");
         }
     }
-
-    //TODO: add user input section in order to actually customize processes we're sending
 
 
     /**

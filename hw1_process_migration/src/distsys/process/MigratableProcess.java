@@ -15,4 +15,10 @@ public interface MigratableProcess extends Runnable, Serializable {
      */
     void suspend();
 
+    /**
+     * Human-readable representation of process name
+     * @return
+     */
+    String toString();
+
 }

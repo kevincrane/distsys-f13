@@ -53,4 +53,9 @@ public class CountProcess implements MigratableProcess {
         while (suspending);
     }
 
+    @Override
+    public String toString() {
+        return "Process[CountProcess " + maxValue + "]";
+    }
+
 }

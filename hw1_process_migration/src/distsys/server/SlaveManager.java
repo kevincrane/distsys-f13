@@ -9,6 +9,8 @@ import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
 
+import static distsys.server.ServerMessage.MessageType.*;
+
 /**
  * Created with IntelliJ IDEA.
  * User: kevin, prashanth
@@ -39,10 +41,28 @@ public class SlaveManager {
      * Listen for messages from Master and act on them
      */
     public void listen() throws IOException {
-        sockIn = new ObjectInputStream(sock.getInputStream());
+        ServerMessage newMessage;
+        while(sock.isConnected()) {
+            // Listen for incoming ServerMessage
+            sockIn = new ObjectInputStream(sock.getInputStream());
 
-        //TODO: only if message received is to add a new process
-        receiveProcess(sockIn);
+            // Read ServerMessage, take appropriate action
+            try {
+                newMessage = (ServerMessage)sockIn.readObject();
+            } catch (ClassNotFoundException e) {
+                System.err.println("Error: Slave received an object that wasn't a ServerMessage (" +
+                        e.getMessage() + ")");
+                continue;
+            }
+            switch(newMessage.getType()) {
+                case RUN:
+                    receiveProcess((MigratableProcess)newMessage.getPayload());
+                    break;
+                default:
+                    System.err.println("Error: Unknown ServerMessage type " + newMessage.getType() + ".");
+                    break;
+            }
+        }
     }
 
     /**
@@ -50,26 +70,17 @@ public class SlaveManager {
      * Deserialize and run it
      * @param sockIn
      */
-    private void receiveProcess(ObjectInputStream sockIn) {
-        try {
-            MigratableProcess newProcess = (MigratableProcess)sockIn.readObject();;
-            processList.add(newProcess);
-            Thread processThread = new Thread(newProcess);
-            processThread.start();
+    private void receiveProcess(MigratableProcess newProcess) {
+        processList.add(newProcess);
+        Thread processThread = new Thread(newProcess);
+        processThread.start();
 
-
-            //TODO:
+        //TODO:
 //            ADD USER INPUT TO SELECT OPTIONS ON ProcessManager
 //            REMOVE TEST PROCESS (ProcessManager), PLUS SLEEPING SECTION (MasterManager)
 //            MAKE ps FEATURE
 
 
-        } catch(IOException e) {
-            System.err.println("Error: problem reading from socket ObjectInput stream (" + e.getMessage() + ").");
-        } catch(ClassNotFoundException e) {
-            System.err.println("Error: received the wrong object type from input stream (" + e.getMessage() + ").");
-            e.printStackTrace();
-        }
     }
 
     /**

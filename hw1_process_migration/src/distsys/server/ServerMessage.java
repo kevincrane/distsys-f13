@@ -15,12 +15,25 @@ public class ServerMessage implements Serializable {
         SUSPEND
     }
 
-    MessageType type;
-    Object payload;
+    private MessageType type;
+    private Object payload;
 
     public ServerMessage(MessageType type, Object payload) {
         this.type = type;
         this.payload = payload;
+    }
+
+    @Override
+    public String toString() {
+        return type.name() + "{" + payload + "}";
+    }
+
+    public MessageType getType() {
+        return type;
+    }
+
+    public Object getPayload() {
+        return payload;
     }
 
 }

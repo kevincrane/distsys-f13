@@ -19,6 +19,8 @@ public class GrepProcess implements MigratableProcess {
     private TransactionalFileInputStream inFile;
     private TransactionalFileOutputStream outFile;
     private String query;
+    private String inFileName;
+    private String outFileName;
 
     private volatile boolean suspending;
 
@@ -30,6 +32,9 @@ public class GrepProcess implements MigratableProcess {
         }
 
         query = args[0];
+        inFileName = args[1];
+        outFileName = args[2];
+
         //TODO: fix this
 //        inFile = new TransactionalFileInputStream(args[1]);
 //        outFile = new TransactionalFileOutputStream(args[2], false);
@@ -71,6 +76,11 @@ public class GrepProcess implements MigratableProcess {
     public void suspend() {
         suspending = true;
         while (suspending);
+    }
+
+    @Override
+    public String toString() {
+        return "Process[GrepProcess " + query + " " + inFileName + " " + outFileName + "]";
     }
 
 }
