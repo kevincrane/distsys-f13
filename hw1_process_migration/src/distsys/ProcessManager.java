@@ -44,8 +44,7 @@ public class ProcessManager {
             try {
                 System.out.println("Running new master node.");
                 MasterManager master = new MasterManager(MASTER_PORT);
-                //TODO: stuff
-                master.close();
+                master.start();
             } catch(IOException e) {
                 System.err.println("Master could not listen at port " + MASTER_PORT + ".\n" + e.getMessage());
             }

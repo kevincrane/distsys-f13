@@ -30,8 +30,9 @@ public class SlaveManager {
     public SlaveManager(String hostname, int port) throws IOException {
         // Set up socket and port readers to master node
         sock = new Socket(hostname, port);
-        sockIn = new ObjectInputStream(sock.getInputStream());
         sockOut = new ObjectOutputStream(sock.getOutputStream());
+
+//        sockIn = new ObjectInputStream(sock.getInputStream());
         System.out.println("Connected to socket at " + hostname + ":" + port + "!");
 
         // TODO: Send message to Master to introduce yourself
@@ -43,7 +44,7 @@ public class SlaveManager {
     public void close() {
         try {
             sockOut.close();
-            sockIn.close();
+//            sockIn.close();
             sock.close();
         } catch(IOException e) {
             System.err.println("Error: problem closing slave socket ports.\n" + e.getMessage());

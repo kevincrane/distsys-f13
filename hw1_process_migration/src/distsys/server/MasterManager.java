@@ -2,14 +2,19 @@ package distsys.server;
 
 import java.io.IOException;
 import java.net.ServerSocket;
+import java.net.Socket;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created with IntelliJ IDEA.
  * User: kevin, prashanth
  * Date: 9/9/13
  */
-public class MasterManager {
+public class MasterManager extends Thread {
     private ServerSocket sock;
+    private List<Socket> connections;
+    private boolean listening;
 
 
     /**
@@ -20,9 +25,24 @@ public class MasterManager {
     public MasterManager(int port) throws IOException {
         // Set up socket and port readers to master node
         sock = new ServerSocket(port);
+        connections = new ArrayList<Socket>();
         System.out.println("Master is listening for connections at port " + port + "!");
+        listening = true;
+    }
 
-        // TODO: Send message to Master to introduce yourself
+    /**
+     * Listen for new slave nodes to contact master
+     */
+    public void listen() {
+        while(listening) {
+            try {
+                Socket newConnection = sock.accept();
+                connections.add(newConnection);
+                System.out.println("Added new connection from " + newConnection.getInetAddress().getCanonicalHostName() + "!");
+            } catch (IOException e) {
+                System.err.println("Error: could not accept connection at local port " + sock.getLocalPort());
+            }
+        }
     }
 
     /**
@@ -35,5 +55,12 @@ public class MasterManager {
         } catch(IOException e) {
             System.err.println("Error: problem closing master socket ports.\n" + e.getMessage());
         }
+    }
+
+    @Override
+    public void run() {
+        listen();
+        close();
+        listening = false;
     }
 }
