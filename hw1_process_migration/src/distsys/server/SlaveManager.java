@@ -9,8 +9,6 @@ import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
 
-import static distsys.server.ServerMessage.MessageType.*;
-
 /**
  * Created with IntelliJ IDEA.
  * User: kevin, prashanth
@@ -58,6 +56,10 @@ public class SlaveManager {
                 case RUN:
                     receiveProcess((MigratableProcess)newMessage.getPayload());
                     break;
+                case QUIT:
+                    close();
+                    System.out.println("\nClosing down SlaveManager at Master's request!");
+                    break;
                 default:
                     System.err.println("Error: Unknown ServerMessage type " + newMessage.getType() + ".");
                     break;
@@ -68,7 +70,7 @@ public class SlaveManager {
     /**
      * Receive a serialized process from the socket;
      * Deserialize and run it
-     * @param sockIn
+     * @param newProcess
      */
     private void receiveProcess(MigratableProcess newProcess) {
         processList.add(newProcess);

@@ -40,12 +40,12 @@ public class MasterManager extends Thread {
      * Listen for new slave nodes to contact master
      */
     public void listen() {
-        while(listening) {
-            try {
-                Socket newConnection = sock.accept();
-                connections.add(newConnection);
-                System.out.println("Added new connection from " + newConnection.getInetAddress().getCanonicalHostName() + "!");
-            } catch (IOException e) {
+        try {
+            Socket newConnection = sock.accept();
+            connections.add(newConnection);
+            System.out.println("Added new connection from " + newConnection.getInetAddress().getCanonicalHostName() + "!");
+        } catch (IOException e) {
+            if(listening) {
                 System.err.println("Error: could not accept connection at local port " + sock.getLocalPort());
             }
         }
@@ -62,12 +62,9 @@ public class MasterManager extends Thread {
             Constructor pConstructor = pClass.getConstructor(String[].class);
             newProcess = (MigratableProcess)pConstructor.newInstance((Object)args);
         } catch(ClassNotFoundException e) {
-            // Casted class doesn't exist
             System.err.println("Error: could not open class " + processName + " (" + e.getMessage() + ").");
-            e.printStackTrace();
             return;
         } catch(NoSuchMethodException e) {
-            // Constructor doesn't work that way
             System.err.println("Error: no constructor exists for " + processName + " (" + e.getMessage() + ").");
             return;
         } catch(InstantiationException e) {
@@ -92,26 +89,24 @@ public class MasterManager extends Thread {
      * @param nextSlave
      */
     private void sendProcess(MigratableProcess newProcess, int nextSlave) {
-        //TODO: remove this
-        while(connections.isEmpty()) {
-            try {
-                sleep(1000);
-            } catch (InterruptedException e) {
-                e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-            }
-        }
-
         // Create new ServerMessage indicating for the receiving slave to run a new process
         ServerMessage message = new ServerMessage(ServerMessage.MessageType.RUN, newProcess);
         Socket currentSocket = connections.get(nextSlave);
         try {
             ObjectOutputStream sockOut = new ObjectOutputStream(currentSocket.getOutputStream());
             sockOut.writeObject(message);
-            sockOut.close();
+            sockOut.flush();
             System.out.println("Sent msg " + message + " to slave " + nextSlave);
         } catch (IOException e) {
-            System.err.println("Error: error serializing new process " + newProcess + "(" + e.getMessage() + ").");
+            System.err.println("Error: error serializing msg " + message + "(" + e.getMessage() + ").");
         }
+    }
+
+    /**
+     * Print the names of all active processes and where they live
+     */
+    public void listProcesses() {
+        System.out.println("MAKE ME PLEASE!!!");
     }
 
 
@@ -119,8 +114,20 @@ public class MasterManager extends Thread {
      * Close master socket and slaves attached to it
      */
     public void close() {
+        listening = false;
         try {
             sock.close();
+            for(Socket s : connections) {
+                ServerMessage message = new ServerMessage(ServerMessage.MessageType.QUIT, null);
+                try {
+                    ObjectOutputStream sockOut = new ObjectOutputStream(s.getOutputStream());
+                    sockOut.writeObject(message);
+                    sockOut.flush();
+                    System.out.println("Sent msg " + message + " to slave " + nextSlave);
+                } catch (IOException e) {
+                    System.err.println("Error: error serializing msg " + message + "(" + e.getMessage() + ").");
+                }
+            }
             //TODO: close all slaves attached also
         } catch(IOException e) {
             System.err.println("Error: problem closing master socket ports.\n" + e.getMessage());
@@ -129,8 +136,9 @@ public class MasterManager extends Thread {
 
     @Override
     public void run() {
-        listen();
-        close();
-        listening = false;
+        while(listening) {
+            listen();
+        }
     }
+
 }
