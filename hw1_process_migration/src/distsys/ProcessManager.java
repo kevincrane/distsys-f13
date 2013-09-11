@@ -17,12 +17,6 @@ public class ProcessManager {
 
     private static final int MASTER_PORT = 23456;
 
-    /* TODO:
-    public int start(Process process);
-    public int remove(Process process);
-    public int migrate(Process process);
-    */
-
 
     /**
      * Main method starts here
@@ -102,13 +96,6 @@ public class ProcessManager {
                     running = false;
                     System.out.println("\nByeee!!");
                     break;
-                case 4:
-                    //TODO: remove this
-                    manager.pingSlaves();
-                    break;
-                case 5:
-                    //TODO: remove this
-                    manager.migrateProcess("0-Process[CountProcess 500]", 0, 1);
                 default:
                     System.out.println("Invalid response, please enter one of the proper numeric choices.");
                     break;

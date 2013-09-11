@@ -20,8 +20,6 @@ public class MasterManager extends Thread {
     private static final int PING_TIMEOUT = 2500;
     private ServerSocket sock;
 
-    private Timer pingTimer;
-
     private Map<Integer, Socket> liveSockets;           // A map of each slave ID to its Socket
     private List<Integer> liveSlaveIds;                 // A list of which slave IDs are still alive
     private Map<Integer, List<String>> activeProcesses; // Maps slave ID to a list of the processes it has
@@ -44,8 +42,13 @@ public class MasterManager extends Thread {
         liveSlaveIds = new ArrayList<Integer>();
         activeProcesses = new HashMap<Integer, List<String>>();
 
-        // Initialize rebalance timer
-        //TODO: INCORPORATE PING INTO LOAD BALANCING
+        // Create Timer to perform load balancing of processes among slaves
+        new Timer().schedule(new TimerTask() {
+            public void run()  {
+                pingSlaves();
+                balanceProcessLoad();
+            }
+        }, 5000, 5000);
 
 
         System.out.println("Master is listening for liveSockets at port " + port + "!");
@@ -173,7 +176,51 @@ public class MasterManager extends Thread {
      * Migrate processes around in order to have equal number in each slave
      */
     public void balanceProcessLoad() {
+        int numSlaves = activeProcesses.keySet().size();
+        if(numSlaves == 0) {
+            // No slaves = nothing to balance
+            return;
+        }
 
+        // Count the number of processes and
+        int avgProcesses = 0;
+        for(Integer i : activeProcesses.keySet()) {
+            avgProcesses += activeProcesses.get(i).size();
+        }
+        avgProcesses = (avgProcesses + numSlaves - 1) / numSlaves;  // Performs ceiling division (avg # of processes per slave)
+
+        // Iterate through each slave client and migrate processes if they have more than the average #
+        int nextCandidate = 0;
+        for(Integer fromSlaveId : activeProcesses.keySet()) {
+            List<String> fromSlaveProcesses = activeProcesses.get(fromSlaveId);
+            while(fromSlaveProcesses.size() > avgProcesses) {
+                // Too many processes, migrate some over
+                int toSlaveId = liveSlaveIds.get(nextCandidate);
+                if(toSlaveId == fromSlaveId) {
+                    // Don't migrate to yourself silly
+                    nextCandidate = (nextCandidate + 1) % liveSlaveIds.size();
+                    continue;
+                }
+
+                List<String> toSlaveProcesses = activeProcesses.get(toSlaveId);
+                if(toSlaveProcesses.size() < avgProcesses) {
+                    // Found a malnourished slave client, migrate a process to him!
+                    String lastProcessName = fromSlaveProcesses.get(fromSlaveProcesses.size() - 1);
+                    migrateProcess(lastProcessName, fromSlaveId, toSlaveId);
+
+                    // Remove process from current slave's list and add to new slave's list
+                    fromSlaveProcesses.remove(fromSlaveProcesses.size() - 1);
+                    toSlaveProcesses.add(lastProcessName);
+                    activeProcesses.put(toSlaveId, toSlaveProcesses);
+                    System.out.println("LB: Migrating " + lastProcessName + " from slave " + fromSlaveId + " to " + toSlaveId);
+                }
+
+                // Start from the next slave next time
+                nextCandidate = (nextCandidate + 1) % liveSlaveIds.size();
+            }
+            // Refresh current slave's processes
+            activeProcesses.put(fromSlaveId, fromSlaveProcesses);
+        }
     }
 
 
@@ -238,7 +285,7 @@ public class MasterManager extends Thread {
                 System.err.println("Error: Master received an object that wasn't a ServerMessage (" + e.getMessage() + ")");
             }
         }
-        System.out.println(statusOut + " ]");
+//        System.out.println(statusOut + " ]");     // DEBUG
 
         // Remove all dead slaves from the lists of the living ones (RIP)
         removeDeadSlaves(deadSlaveIds);
