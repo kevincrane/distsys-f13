@@ -4,7 +4,6 @@ import distsys.server.MasterManager;
 import distsys.server.SlaveManager;
 
 import java.io.IOException;
-import java.net.InetAddress;
 import java.util.Arrays;
 import java.util.Scanner;
 
@@ -20,7 +19,7 @@ public class ProcessManager {
 
     /**
      * Main method starts here
-     * @param args
+     * @param args    String[]
      */
     public static void main(String[] args) {
         if(args.length == 2 && args[0].equals("-c")) {

@@ -17,13 +17,13 @@ public interface MigratableProcess extends Runnable, Serializable {
 
     /**
      * Human-readable representation of process name
-     * @return
+     * @return String
      */
     String toString();
 
     /**
      * Setters and getters for the machine-version of the process name
-     * @return
+     * @return String
      */
     String getProcessName();
     void setProcessName(String processName);

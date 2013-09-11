@@ -91,6 +91,6 @@ public class GrepProcess implements MigratableProcess {
 
     @Override
     public void setProcessName(String processName) {
-        this.processName = processName;
+        this.processName = processName.replace(" ", "_");
     }
 }

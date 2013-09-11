@@ -63,8 +63,8 @@ public class MasterManager extends Thread {
             Socket newConnection = sock.accept();
             liveSockets.put(nextSlave, newConnection);
             liveSlaveIds.add(nextSlave);
-            System.out.println("Added new connection from " + newConnection.getInetAddress().getCanonicalHostName() +
-                    " (pid " + nextSlave + ")!");
+            System.out.println("  Master: Added new connection from " +
+                    newConnection.getInetAddress().getCanonicalHostName() + " (pid " + nextSlave + ")!");
             nextSlave++;
             nextIdIndex = liveSlaveIds.size()-1;
         } catch (IOException e) {
@@ -141,7 +141,7 @@ public class MasterManager extends Thread {
      * @param fromSlaveId int
      * @param toSlaveId   int
      */
-    public void migrateProcess(String processName, int fromSlaveId, int toSlaveId) {
+    private void migrateProcess(String processName, int fromSlaveId, int toSlaveId) {
         // Create ServerMessage to sell slave to suspend a process
         Socket fromSock = liveSockets.get(fromSlaveId);
         ServerMessage suspendProcessMsg = new ServerMessage(ServerMessage.MessageType.SUSPEND, processName);
@@ -162,13 +162,17 @@ public class MasterManager extends Thread {
                 System.err.println("Error: slave " + fromSlaveId + " did not send back suspended process " + processName);
                 return;
             }
-
-            // Send this suspended and serialized process off to a new home
-            sendProcess((MigratableProcess)recSuspendProcessMsg.getPayload(), toSlaveId);
         } catch (IOException e) {
             System.err.println("Error: could not migrate process " + processName + " properly. (" + e.getMessage() + ").");
+            return;
         } catch (ClassNotFoundException e) {
             System.err.println("Error: Master received an object that wasn't a ServerMessage (" + e.getMessage() + ")");
+            return;
+        }
+
+        // Send this suspended and serialized process off to a new home
+        if(recSuspendProcessMsg.getPayload() != null) {
+            sendProcess((MigratableProcess)recSuspendProcessMsg.getPayload(), toSlaveId);
         }
     }
 
@@ -189,7 +193,7 @@ public class MasterManager extends Thread {
         }
         avgProcesses = (avgProcesses + numSlaves - 1) / numSlaves;  // Performs ceiling division (avg # of processes per slave)
 
-        // Iterate through each slave client and migrate processes if they have more than the average #
+        // Iterate through each slave client and migrate processes if they have more than the average # of processes
         int nextCandidate = 0;
         for(Integer fromSlaveId : activeProcesses.keySet()) {
             List<String> fromSlaveProcesses = activeProcesses.get(fromSlaveId);
@@ -212,7 +216,8 @@ public class MasterManager extends Thread {
                     fromSlaveProcesses.remove(fromSlaveProcesses.size() - 1);
                     toSlaveProcesses.add(lastProcessName);
                     activeProcesses.put(toSlaveId, toSlaveProcesses);
-                    System.out.println("LB: Migrating " + lastProcessName + " from slave " + fromSlaveId + " to " + toSlaveId);
+                    System.out.println("  Master LB: Migrating " + lastProcessName + " from slave " +
+                            fromSlaveId + " to " + toSlaveId);
                 }
 
                 // Start from the next slave next time

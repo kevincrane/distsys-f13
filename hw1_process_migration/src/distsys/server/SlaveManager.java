@@ -60,6 +60,8 @@ public class SlaveManager {
                         e.getMessage() + ")");
                 continue;
             }
+
+            // Perform correct action based on message type
             switch (newMessage.getType()) {
                 case RUN:
                     // Received a new MigratableProcess to run
@@ -77,10 +79,12 @@ public class SlaveManager {
                     suspendProcess((String)newMessage.getPayload());
                     break;
                 case QUIT:
+                    // Time to close up shop
                     close();
                     System.out.println("\nClosing down SlaveManager at Master's request!");
-                    break;
+                    return;
                 default:
+                    // Oops :(
                     System.err.println("Error: Unknown ServerMessage type " + newMessage.getType() + ".");
                     break;
             }
@@ -112,9 +116,10 @@ public class SlaveManager {
         MigratableProcess suspendProcess = processList.get(processName);
         if(suspendProcess == null) {
             System.err.println("Error: Process " + processName + " does not exist on this slave.");
-            return;
+            suspendProcess = null;
+        } else {
+            suspendProcess.suspend();
         }
-        suspendProcess.suspend();
 
         try {
             // Serialize suspended process and send back to Master
