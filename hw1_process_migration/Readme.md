@@ -15,13 +15,11 @@ This must be done from each terminal that is running the application.
 
 To run the host (master):
 ```
-cd src
-java -cp ../classes/ distsys.ProcessManager
+java -cp classes/ distsys.ProcessManager
 ```
 And the client from a different terminal:
 ```
-cd src
-java -cp ../classes/ distsys.ProcessManager -c [hostname (e.g. localhost)]
+java -cp classes/ distsys.ProcessManager -c [hostname (e.g. localhost)]
 ```
 
 To clean up the messy classes, call the following from the root directory:
