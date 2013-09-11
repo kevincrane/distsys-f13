@@ -161,6 +161,18 @@ public class SlaveManager {
      */
     public void close() {
         try {
+            // Try to let other processes finish up first
+            for(String s : threadList.keySet()) {
+                if(threadList.get(s).isAlive()) {
+                    try {
+                        threadList.get(s).join(2500);
+                    } catch (InterruptedException e) {
+                        // Do nothing
+                    }
+                }
+            }
+
+            // Close the ports down
             sockOut.close();
             sockIn.close();
             sock.close();
