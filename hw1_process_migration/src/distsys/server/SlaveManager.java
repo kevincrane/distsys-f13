@@ -30,7 +30,6 @@ public class SlaveManager {
     public SlaveManager(String hostname, int port) throws IOException {
         // Set up socket and port readers to master node
         sock = new Socket(hostname, port);
-        sockOut = new ObjectOutputStream(sock.getOutputStream());
         processList = new ArrayList<MigratableProcess>();
         System.out.println("Connected to socket at " + hostname + ":" + port + "!");
     }
@@ -56,6 +55,12 @@ public class SlaveManager {
                 case RUN:
                     receiveProcess((MigratableProcess)newMessage.getPayload());
                     break;
+                case PING:
+                    sockOut = new ObjectOutputStream(sock.getOutputStream());
+                    ServerMessage pingResponse = new ServerMessage(ServerMessage.MessageType.PING, newMessage.getPayload());
+                    sockOut.writeObject(pingResponse);
+                    sockOut.flush();
+                    break;
                 case QUIT:
                     close();
                     System.out.println("\nClosing down SlaveManager at Master's request!");
@@ -76,13 +81,6 @@ public class SlaveManager {
         processList.add(newProcess);
         Thread processThread = new Thread(newProcess);
         processThread.start();
-
-        //TODO:
-//            ADD USER INPUT TO SELECT OPTIONS ON ProcessManager
-//            REMOVE TEST PROCESS (ProcessManager), PLUS SLEEPING SECTION (MasterManager)
-//            MAKE ps FEATURE
-
-
     }
 
     /**

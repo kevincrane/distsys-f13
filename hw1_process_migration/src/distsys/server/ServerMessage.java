@@ -12,6 +12,7 @@ public class ServerMessage implements Serializable {
     public static enum MessageType {
         RUN,
         PING,
+        ALIVE,
         SUSPEND,
         QUIT
     }

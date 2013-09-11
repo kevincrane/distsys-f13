@@ -100,6 +100,10 @@ public class ProcessManager {
                     running = false;
                     System.out.println("\nByeee!!");
                     break;
+                case 4:
+                    //TODO: remove this
+                    manager.pingSlaves();
+                    break;
                 default:
                     System.out.println("Invalid response, please enter one of the proper numeric choices.");
                     break;
