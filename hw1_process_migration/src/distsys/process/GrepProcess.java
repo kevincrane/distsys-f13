@@ -16,6 +16,7 @@ import java.lang.Thread;
 import java.lang.InterruptedException;
 
 public class GrepProcess implements MigratableProcess {
+    private String processName;
     private TransactionalFileInputStream inFile;
     private TransactionalFileOutputStream outFile;
     private String query;
@@ -83,4 +84,13 @@ public class GrepProcess implements MigratableProcess {
         return "Process[GrepProcess " + query + " " + inFileName + " " + outFileName + "]";
     }
 
+    @Override
+    public String getProcessName() {
+        return processName;
+    }
+
+    @Override
+    public void setProcessName(String processName) {
+        this.processName = processName;
+    }
 }

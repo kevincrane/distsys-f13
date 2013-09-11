@@ -22,13 +22,14 @@ public class MasterManager extends Thread {
 
     private Timer pingTimer;
 
-    private Map<Integer, Socket> liveSockets;
-    private List<Integer> liveSlaveIds;
-    private List<String> processNames;
+    private Map<Integer, Socket> liveSockets;           // A map of each slave ID to its Socket
+    private List<Integer> liveSlaveIds;                 // A list of which slave IDs are still alive
+    private Map<Integer, List<String>> activeProcesses; // Maps slave ID to a list of the processes it has
 
-    private int nextSlave = 0;
-    private int nextToSend = 0;
-    private boolean listening;
+    private int totalProcesses = 0;         // Total number of processes created so far
+    private int nextSlave = 0;              // ID for the next slave to join
+    private int nextIdIndex = 0;             // Next index in liveSlaveIds; corresponds to a slave ID to send process to
+    private boolean listening;              // Still listening for new slaves?
 
 
     /**
@@ -41,11 +42,11 @@ public class MasterManager extends Thread {
         sock = new ServerSocket(port);
         liveSockets = new HashMap<Integer, Socket>();
         liveSlaveIds = new ArrayList<Integer>();
-        processNames = new ArrayList<String>();
+        activeProcesses = new HashMap<Integer, List<String>>();
 
         // Initialize rebalance timer
         //TODO: INCORPORATE PING INTO LOAD BALANCING
-        
+
 
         System.out.println("Master is listening for liveSockets at port " + port + "!");
         listening = true;
@@ -62,6 +63,7 @@ public class MasterManager extends Thread {
             System.out.println("Added new connection from " + newConnection.getInetAddress().getCanonicalHostName() +
                     " (pid " + nextSlave + ")!");
             nextSlave++;
+            nextIdIndex = liveSlaveIds.size()-1;
         } catch (IOException e) {
             if(listening) {
                 System.err.println("Error: could not accept connection at local port " + sock.getLocalPort());
@@ -71,34 +73,44 @@ public class MasterManager extends Thread {
 
     /**
      * Add a new process to be run by one of the available slaves
-     * @param processName String
+     * @param processClass String
      */
-    public void addProcess(String processName, String[] args) {
+    public void addProcess(String processClass, String[] args) {
         MigratableProcess newProcess;
         try {
-            Class<?> pClass = Class.forName(processName);
+            // Use Reflection to pull out the class from its canonical name; instantiate it as newProcess
+            Class<?> pClass = Class.forName(processClass);
             Constructor pConstructor = pClass.getConstructor(String[].class);
             newProcess = (MigratableProcess)pConstructor.newInstance((Object)args);
-        } catch(ClassNotFoundException e) {
-            System.err.println("Error: could not open class " + processName + " (" + e.getMessage() + ").");
+        } catch (ClassNotFoundException e) {
+            System.err.println("Error: could not open class " + processClass + " (" + e.getMessage() + ").");
             return;
-        } catch(NoSuchMethodException e) {
-            System.err.println("Error: no constructor exists for " + processName + " (" + e.getMessage() + ").");
+        } catch (NoSuchMethodException e) {
+            System.err.println("Error: no constructor exists for " + processClass + " (" + e.getMessage() + ").");
             return;
-        } catch(InstantiationException e) {
-            System.err.println("Error: MigratableProcess instantiated wrong for " + processName + " (" + e.getMessage() + ").");
+        } catch (InstantiationException e) {
+            System.err.println("Error: MigratableProcess instantiated wrong for " + processClass + " (" + e.getMessage() + ").");
             return;
-        } catch(IllegalAccessException e) {
-            System.err.println("Error: Illegal access for " + processName + " (" + e.getMessage() + ")?");
+        } catch (IllegalAccessException e) {
+            System.err.println("Error: Illegal access for " + processClass + " (" + e.getMessage() + ")?");
             return;
         } catch (InvocationTargetException e) {
-            System.err.println("Error: Invocation error for " + processName + " (" + e.getMessage() + ")?");
+            System.err.println("Error: Invocation error for " + processClass + " (" + e.getMessage() + ")?");
             return;
         }
-
         // Made it all the way through successfully through the maze of exceptions
-        sendProcess(newProcess, liveSlaveIds.get(nextToSend));
-        nextToSend = (nextToSend + 1) % liveSlaveIds.size();
+
+        // Create a new process name
+        String processName = totalProcesses + "-" + newProcess.toString();
+        newProcess.setProcessName(processName);
+
+        // Prepare the process to be serialized and sent away
+        sendProcess(newProcess, liveSlaveIds.get(nextIdIndex));
+
+        // Add process to map of 'slaves -> list<processes>'
+//        List<String> = activeProcesses.get(nextIdIndex);   TODO: add name to list of activeProcesses or just wait til rebalance?
+        nextIdIndex = (nextIdIndex + 1) % liveSlaveIds.size();
+        totalProcesses++;
     }
 
     /**
@@ -120,16 +132,35 @@ public class MasterManager extends Thread {
         }
     }
 
+
     /**
      * Print the names of all active processes and where they live
      */
     public void listProcesses() {
-        System.out.println("MAKE ME PLEASE!!!");
+        // Ping all slaves first to make sure list is up-to-date
+        pingSlaves();
+
+        // If no current processes, don't bother iterating
+        if(liveSlaveIds.size() == 0) {
+            System.out.println("\n-- No Active Processes --");
+            return;
+        }
+
+        // Iterate through all noted active clients and print its processes
+        System.out.println("\n-- Active Processes --");
+        for(Integer i : liveSlaveIds) {
+            System.out.println("Slave Client " + i);
+            for(String process : activeProcesses.get(i)) {
+                System.out.println("  " + process);
+            }
+        }
     }
 
     /**
      * Ping every slave to see which ones are alive still
+     * Note: there is generic casting from Object to Set towards the bottom; it's probably fine, it's straight from Mr. Slave
      */
+    @SuppressWarnings("unchecked")
     public void pingSlaves() {
         List<Integer> deadSlaveIds = new ArrayList<Integer>();
         String statusOut = "Ping: Processes alive [";
@@ -146,14 +177,14 @@ public class MasterManager extends Thread {
                 ObjectOutputStream sockOut = new ObjectOutputStream(s.getOutputStream());
                 sockOut.writeObject(sentMessage);
                 sockOut.flush();
-//                System.out.println("Pinged " + sentMessage + " to slave " + i);
 
                 // Wait for response, if valid, continue to next one
                 ObjectInputStream sockIn = new ObjectInputStream(s.getInputStream());
                 recMessage = (ServerMessage)sockIn.readObject();
-                if(recMessage.getType() == ServerMessage.MessageType.PING && recMessage.getPayload().equals(i)) {
-//                    System.out.println("Slave " + i + " responded!!");
+                if(recMessage.getType() == ServerMessage.MessageType.ALIVE) {
                     statusOut += " " + i;
+                    // Slave is alive, make note of its processes
+                    activeProcesses.put(i, (ArrayList<String>)recMessage.getPayload());
                 }
             } catch (IOException e) {
                 // Slave didn't respond, presumed dead
@@ -171,8 +202,7 @@ public class MasterManager extends Thread {
 
     /**
      * Removes any IDs and Sockets associated with dead slaves
-     * @param deadSlaveIds
-     * TODO: remove process association too?
+     * @param deadSlaveIds List<Integer>
      */
     private void removeDeadSlaves(List<Integer> deadSlaveIds) {
         for(Integer i : deadSlaveIds) {
@@ -181,6 +211,7 @@ public class MasterManager extends Thread {
                 liveSlaveIds.remove(idPosition);
             }
             liveSockets.remove(i);
+            activeProcesses.remove(i);
         }
     }
 
@@ -204,7 +235,6 @@ public class MasterManager extends Thread {
                     System.err.println("Error: error serializing msg " + message + "(" + e.getMessage() + ").");
                 }
             }
-            //TODO: close all slaves attached also
         } catch(IOException e) {
             System.err.println("Error: problem closing master socket ports.\n" + e.getMessage());
         }

@@ -40,6 +40,7 @@ public class ProcessManager {
             } catch(IOException e) {
                 System.err.println("Could not connect to socket at " + hostname + ":" + MASTER_PORT + " (" +
                         e.getMessage() + ").");
+                e.printStackTrace();
             }
         } else if(args.length == 0) {
             // Starting Master ProcessManager on server machine
@@ -81,6 +82,7 @@ public class ProcessManager {
             switch(command) {
                 case 1:
                     System.out.println("Please enter the fully-qualified classname and arguments of the process to run:");
+                    System.out.println("    e.g. 'distsys.process.CountProcess 25'");
                     input = lineIn.nextLine();
                     String[] tokens = input.split(" ");
                     String className = tokens[0];

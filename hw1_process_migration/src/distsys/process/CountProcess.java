@@ -7,6 +7,7 @@ package distsys.process;
  */
 
 public class CountProcess implements MigratableProcess {
+    private String processName;
     private int maxValue;
     private int currentValue;
     private volatile boolean suspending;
@@ -56,6 +57,16 @@ public class CountProcess implements MigratableProcess {
     @Override
     public String toString() {
         return "Process[CountProcess " + maxValue + "]";
+    }
+
+    @Override
+    public String getProcessName() {
+        return processName;
+    }
+
+    @Override
+    public void setProcessName(String processName) {
+        this.processName = processName;
     }
 
 }
