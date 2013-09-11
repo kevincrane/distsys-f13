@@ -17,14 +17,16 @@ public class SlaveManager {
     private Map<String, MigratableProcess> processList;
     private Map<String, Thread> threadList;
     private Socket sock;
+    private Timer liveTimer;
     private ObjectInputStream sockIn;
     private ObjectOutputStream sockOut;
 
 
     /**
      * Initialize new Socket connection with Master
-     * @param hostname    String
-     * @param port        int
+     *
+     * @param hostname String
+     * @param port     int
      * @throws IOException
      */
     public SlaveManager(String hostname, int port) throws IOException {
@@ -34,8 +36,9 @@ public class SlaveManager {
         threadList = new HashMap<String, Thread>();
 
         // Create Timer to check liveness of all processes currently running here
-        new Timer().schedule(new TimerTask() {
-            public void run()  {
+        liveTimer = new Timer();
+        liveTimer.schedule(new TimerTask() {
+            public void run() {
                 checkProcessesLiveness();
             }
         }, 500, 500);
@@ -48,13 +51,13 @@ public class SlaveManager {
      */
     public void listen() throws IOException {
         ServerMessage newMessage;
-        while(sock.isConnected()) {
+        while (sock.isConnected()) {
             // Listen for incoming ServerMessage
             sockIn = new ObjectInputStream(sock.getInputStream());
 
             // Read ServerMessage, take appropriate action
             try {
-                newMessage = (ServerMessage)sockIn.readObject();
+                newMessage = (ServerMessage) sockIn.readObject();
             } catch (ClassNotFoundException e) {
                 System.err.println("Error: Slave received an object that wasn't a ServerMessage (" +
                         e.getMessage() + ")");
@@ -65,7 +68,7 @@ public class SlaveManager {
             switch (newMessage.getType()) {
                 case RUN:
                     // Received a new MigratableProcess to run
-                    receiveProcess((MigratableProcess)newMessage.getPayload());
+                    receiveProcess((MigratableProcess) newMessage.getPayload());
                     break;
                 case PING:
                     // Master wants to check in on you; Create response to server with list of all process names
@@ -76,7 +79,7 @@ public class SlaveManager {
                     break;
                 case SUSPEND:
                     // Suspend the process and send it back to the Master
-                    suspendProcess((String)newMessage.getPayload());
+                    suspendProcess((String) newMessage.getPayload());
                     break;
                 case QUIT:
                     // Time to close up shop
@@ -95,7 +98,8 @@ public class SlaveManager {
     /**
      * Receive a serialized process from the socket;
      * Deserialize and run it
-     * @param newProcess    MigratableProcess
+     *
+     * @param newProcess MigratableProcess
      */
     private void receiveProcess(MigratableProcess newProcess) {
         // Add process to new list of processes
@@ -109,12 +113,13 @@ public class SlaveManager {
 
     /**
      * Suspend and serialize a process and send it back to the Master
-     * @param processName    String
+     *
+     * @param processName String
      */
     private void suspendProcess(String processName) {
         // Suspend process
         MigratableProcess suspendProcess = processList.get(processName);
-        if(suspendProcess == null) {
+        if (suspendProcess == null) {
             System.err.println("Error: Process " + processName + " does not exist on this slave.");
             suspendProcess = null;
         } else {
@@ -143,14 +148,14 @@ public class SlaveManager {
     private void checkProcessesLiveness() {
         // Find all threads that aren't alive
         List<String> completedProcesses = new ArrayList<String>();
-        for(String s : threadList.keySet()) {
-            if(!threadList.get(s).isAlive()) {
+        for (String s : threadList.keySet()) {
+            if (!threadList.get(s).isAlive()) {
                 completedProcesses.add(s);
             }
         }
 
         // Delete these processes from the two process/thread lists
-        for(String s : completedProcesses) {
+        for (String s : completedProcesses) {
             threadList.remove(s);
             processList.remove(s);
         }
@@ -162,8 +167,8 @@ public class SlaveManager {
     public void close() {
         try {
             // Try to let other processes finish up first
-            for(String s : threadList.keySet()) {
-                if(threadList.get(s).isAlive()) {
+            for (String s : threadList.keySet()) {
+                if (threadList.get(s).isAlive()) {
                     try {
                         threadList.get(s).join(2500);
                     } catch (InterruptedException e) {
@@ -173,18 +178,19 @@ public class SlaveManager {
             }
 
             // Close the ports down
+            liveTimer.cancel();
             sockOut.close();
             sockIn.close();
             sock.close();
-        } catch(IOException e) {
+        } catch (IOException e) {
             System.err.println("Error: problem closing slave socket ports.\n" + e.getMessage());
         }
     }
 
-// ##### HELPERS #####
+    // ##### HELPERS #####
     private ArrayList<String> processKeySetToList() {
         ArrayList<String> processNameList = new ArrayList<String>();
-        for(String processName : processList.keySet()) {
+        for (String processName : processList.keySet()) {
             processNameList.add(processName);
         }
         return processNameList;

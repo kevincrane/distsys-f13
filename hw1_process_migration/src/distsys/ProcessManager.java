@@ -19,10 +19,11 @@ public class ProcessManager {
 
     /**
      * Main method starts here
-     * @param args    String[]
+     *
+     * @param args String[]
      */
     public static void main(String[] args) {
-        if(args.length == 2 && args[0].equals("-c")) {
+        if (args.length == 2 && args[0].equals("-c")) {
             // Starting Slave ProcessManager on client machine
             String hostname = args[1];
             try {
@@ -30,12 +31,12 @@ public class ProcessManager {
                 SlaveManager slave = new SlaveManager(hostname, MASTER_PORT);
                 slave.listen();
                 slave.close();
-            } catch(IOException e) {
+            } catch (IOException e) {
                 System.err.println("Could not connect to socket at " + hostname + ":" + MASTER_PORT + " (" +
                         e.getMessage() + ").");
                 e.printStackTrace();
             }
-        } else if(args.length == 0) {
+        } else if (args.length == 0) {
             // Starting Master ProcessManager on server machine
             try {
                 System.out.println("Running new master node.");
@@ -44,7 +45,7 @@ public class ProcessManager {
 
                 // Receive user input for a while
                 runManager(master);
-            } catch(IOException e) {
+            } catch (IOException e) {
                 System.err.println("Master could not listen at port " + MASTER_PORT + ".\n" + e.getMessage());
             }
         } else {
@@ -59,20 +60,20 @@ public class ProcessManager {
         boolean running = true;
         Scanner lineIn = new Scanner(System.in);
         int command;
-        while(running) {
+        while (running) {
             System.out.println("\nEnter commands for the Master server:");
             System.out.println("1. Run new process | 2. Process Status | 3. Quit");
             String input = lineIn.nextLine();
 
             try {
                 command = Integer.parseInt(input);
-            } catch(NumberFormatException e) {
+            } catch (NumberFormatException e) {
                 System.out.println("Invalid response, please enter one of the proper numeric choices.");
                 continue;
             }
 
             // Send command to master
-            switch(command) {
+            switch (command) {
                 case 1:
                     System.out.println("Please enter the fully-qualified classname and arguments of the process to run:");
                     System.out.println("    e.g. 'distsys.process.CountProcess 25'");
@@ -80,7 +81,7 @@ public class ProcessManager {
                     String[] tokens = input.split(" ");
                     String className = tokens[0];
 
-                    if(tokens.length == 1) {
+                    if (tokens.length == 1) {
                         manager.addProcess(className, new String[0]);
                     } else {
                         String[] args = Arrays.copyOfRange(tokens, 1, tokens.length);
@@ -92,6 +93,11 @@ public class ProcessManager {
                     break;
                 case 3:
                     manager.close();
+//                    try {
+                    manager.interrupt();
+//                    } catch (InterruptedException e) {
+//                        // Nothing
+//                    }
                     running = false;
                     System.out.println("\nByeee!!");
                     break;

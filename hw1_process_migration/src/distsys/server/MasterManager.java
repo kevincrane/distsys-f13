@@ -19,6 +19,7 @@ import java.util.*;
 public class MasterManager extends Thread {
     private static final int PING_TIMEOUT = 2500;
     private ServerSocket sock;
+    private Timer pingTimer;
 
     private Map<Integer, Socket> liveSockets;           // A map of each slave ID to its Socket
     private List<Integer> liveSlaveIds;                 // A list of which slave IDs are still alive
@@ -32,6 +33,7 @@ public class MasterManager extends Thread {
 
     /**
      * Initialize new Socket connection with Master
+     *
      * @param port int
      * @throws java.io.IOException
      */
@@ -43,8 +45,9 @@ public class MasterManager extends Thread {
         activeProcesses = new HashMap<Integer, List<String>>();
 
         // Create Timer to perform load balancing of processes among slaves
-        new Timer().schedule(new TimerTask() {
-            public void run()  {
+        pingTimer = new Timer();
+        pingTimer.schedule(new TimerTask() {
+            public void run() {
                 pingSlaves();
                 balanceProcessLoad();
             }
@@ -66,9 +69,9 @@ public class MasterManager extends Thread {
             System.out.println("  Master: Added new connection from " +
                     newConnection.getInetAddress().getCanonicalHostName() + " (pid " + nextSlave + ")!");
             nextSlave++;
-            nextIdIndex = liveSlaveIds.size()-1;
+            nextIdIndex = liveSlaveIds.size() - 1;
         } catch (IOException e) {
-            if(listening) {
+            if (listening) {
                 System.err.println("Error: could not accept connection at local port " + sock.getLocalPort());
             }
         }
@@ -76,6 +79,7 @@ public class MasterManager extends Thread {
 
     /**
      * Add a new process to be run by one of the available slaves
+     *
      * @param processClass String
      */
     public void addProcess(String processClass, String[] args) {
@@ -84,7 +88,7 @@ public class MasterManager extends Thread {
             // Use Reflection to pull out the class from its canonical name; instantiate it as newProcess
             Class<?> pClass = Class.forName(processClass);
             Constructor pConstructor = pClass.getConstructor(String[].class);
-            newProcess = (MigratableProcess)pConstructor.newInstance((Object)args);
+            newProcess = (MigratableProcess) pConstructor.newInstance((Object) args);
         } catch (ClassNotFoundException e) {
             System.err.println("Error: could not open class " + processClass + " (" + e.getMessage() + ").");
             return;
@@ -117,8 +121,9 @@ public class MasterManager extends Thread {
 
     /**
      * Serialize newProcess and send it to the next slave machine
-     * @param newProcess    MigratableProcess
-     * @param slaveId       int
+     *
+     * @param newProcess MigratableProcess
+     * @param slaveId    int
      */
     private void sendProcess(MigratableProcess newProcess, int slaveId) {
         // Create new ServerMessage indicating for the receiving slave to run a new process
@@ -137,6 +142,7 @@ public class MasterManager extends Thread {
 
     /**
      * Move a MigratableProcess from one slave to another
+     *
      * @param processName String
      * @param fromSlaveId int
      * @param toSlaveId   int
@@ -156,8 +162,8 @@ public class MasterManager extends Thread {
 
             // Wait for a ServerMessage response, bail if it isn't valid
             ObjectInputStream fromSockIn = new ObjectInputStream(fromSock.getInputStream());
-            recSuspendProcessMsg = (ServerMessage)fromSockIn.readObject();
-            if(!(recSuspendProcessMsg.getType() == ServerMessage.MessageType.SUSPEND &&
+            recSuspendProcessMsg = (ServerMessage) fromSockIn.readObject();
+            if (!(recSuspendProcessMsg.getType() == ServerMessage.MessageType.SUSPEND &&
                     recSuspendProcessMsg.getPayload() != null)) {
                 System.err.println("Error: slave " + fromSlaveId + " did not send back suspended process " + processName);
                 return;
@@ -171,8 +177,8 @@ public class MasterManager extends Thread {
         }
 
         // Send this suspended and serialized process off to a new home
-        if(recSuspendProcessMsg.getPayload() != null) {
-            sendProcess((MigratableProcess)recSuspendProcessMsg.getPayload(), toSlaveId);
+        if (recSuspendProcessMsg.getPayload() != null) {
+            sendProcess((MigratableProcess) recSuspendProcessMsg.getPayload(), toSlaveId);
         }
     }
 
@@ -181,33 +187,33 @@ public class MasterManager extends Thread {
      */
     public void balanceProcessLoad() {
         int numSlaves = activeProcesses.keySet().size();
-        if(numSlaves == 0) {
+        if (numSlaves == 0) {
             // No slaves = nothing to balance
             return;
         }
 
         // Count the number of processes and
         int avgProcesses = 0;
-        for(Integer i : activeProcesses.keySet()) {
+        for (Integer i : activeProcesses.keySet()) {
             avgProcesses += activeProcesses.get(i).size();
         }
         avgProcesses = (avgProcesses + numSlaves - 1) / numSlaves;  // Performs ceiling division (avg # of processes per slave)
 
         // Iterate through each slave client and migrate processes if they have more than the average # of processes
         int nextCandidate = 0;
-        for(Integer fromSlaveId : activeProcesses.keySet()) {
+        for (Integer fromSlaveId : activeProcesses.keySet()) {
             List<String> fromSlaveProcesses = activeProcesses.get(fromSlaveId);
-            while(fromSlaveProcesses.size() > avgProcesses) {
+            while (fromSlaveProcesses.size() > avgProcesses) {
                 // Too many processes, migrate some over
                 int toSlaveId = liveSlaveIds.get(nextCandidate);
-                if(toSlaveId == fromSlaveId) {
+                if (toSlaveId == fromSlaveId) {
                     // Don't migrate to yourself silly
                     nextCandidate = (nextCandidate + 1) % liveSlaveIds.size();
                     continue;
                 }
 
                 List<String> toSlaveProcesses = activeProcesses.get(toSlaveId);
-                if(toSlaveProcesses.size() < avgProcesses) {
+                if (toSlaveProcesses.size() < avgProcesses) {
                     // Found a malnourished slave client, migrate a process to him!
                     String lastProcessName = fromSlaveProcesses.get(fromSlaveProcesses.size() - 1);
                     migrateProcess(lastProcessName, fromSlaveId, toSlaveId);
@@ -237,16 +243,16 @@ public class MasterManager extends Thread {
         pingSlaves();
 
         // If no current processes, don't bother iterating
-        if(liveSlaveIds.size() == 0) {
+        if (liveSlaveIds.size() == 0) {
             System.out.println("\n-- No Active Processes --");
             return;
         }
 
         // Iterate through all noted active clients and print its processes
         System.out.println("\n-- Active Processes --");
-        for(Integer i : liveSlaveIds) {
+        for (Integer i : liveSlaveIds) {
             System.out.println("Slave Client " + i);
-            for(String process : activeProcesses.get(i)) {
+            for (String process : activeProcesses.get(i)) {
                 System.out.println("  " + process);
             }
         }
@@ -262,7 +268,7 @@ public class MasterManager extends Thread {
         String statusOut = "Ping: Processes alive [";
 
         // Iterate through living slaves
-        for(Integer i : liveSlaveIds) {
+        for (Integer i : liveSlaveIds) {
             Socket s = liveSockets.get(i);
             ServerMessage sentMessage = new ServerMessage(ServerMessage.MessageType.PING, i);
             ServerMessage recMessage;
@@ -276,11 +282,11 @@ public class MasterManager extends Thread {
 
                 // Wait for response, if valid, continue to next one
                 ObjectInputStream sockIn = new ObjectInputStream(s.getInputStream());
-                recMessage = (ServerMessage)sockIn.readObject();
-                if(recMessage.getType() == ServerMessage.MessageType.ALIVE) {
+                recMessage = (ServerMessage) sockIn.readObject();
+                if (recMessage.getType() == ServerMessage.MessageType.ALIVE) {
                     statusOut += " " + i;
                     // Slave is alive, make note of its processes
-                    activeProcesses.put(i, (ArrayList<String>)recMessage.getPayload());
+                    activeProcesses.put(i, (ArrayList<String>) recMessage.getPayload());
                 }
             } catch (IOException e) {
                 // Slave didn't respond, presumed dead
@@ -298,12 +304,13 @@ public class MasterManager extends Thread {
 
     /**
      * Removes any IDs and Sockets associated with dead slaves
+     *
      * @param deadSlaveIds List<Integer>
      */
     private void removeDeadSlaves(List<Integer> deadSlaveIds) {
-        for(Integer i : deadSlaveIds) {
+        for (Integer i : deadSlaveIds) {
             int idPosition = liveSlaveIds.indexOf(i);
-            if(idPosition >= 0) {
+            if (idPosition >= 0) {
                 liveSlaveIds.remove(idPosition);
             }
             liveSockets.remove(i);
@@ -318,8 +325,9 @@ public class MasterManager extends Thread {
     public void close() {
         listening = false;
         try {
+            pingTimer.cancel();
             sock.close();
-            for(Integer i : liveSlaveIds) {
+            for (Integer i : liveSlaveIds) {
                 Socket s = liveSockets.get(i);
                 ServerMessage message = new ServerMessage(ServerMessage.MessageType.QUIT, null);
                 try {
@@ -331,14 +339,14 @@ public class MasterManager extends Thread {
                     System.err.println("Error: error serializing msg " + message + "(" + e.getMessage() + ").");
                 }
             }
-        } catch(IOException e) {
+        } catch (IOException e) {
             System.err.println("Error: problem closing master socket ports.\n" + e.getMessage());
         }
     }
 
     @Override
     public void run() {
-        while(listening) {
+        while (listening) {
             listen();
         }
     }
