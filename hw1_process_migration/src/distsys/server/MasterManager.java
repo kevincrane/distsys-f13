@@ -108,28 +108,72 @@ public class MasterManager extends Thread {
         sendProcess(newProcess, liveSlaveIds.get(nextIdIndex));
 
         // Add process to map of 'slaves -> list<processes>'
-//        List<String> = activeProcesses.get(nextIdIndex);   TODO: add name to list of activeProcesses or just wait til rebalance?
         nextIdIndex = (nextIdIndex + 1) % liveSlaveIds.size();
         totalProcesses++;
     }
 
     /**
      * Serialize newProcess and send it to the next slave machine
-     * @param newProcess MigratableProcess
-     * @param slaveId int
+     * @param newProcess    MigratableProcess
+     * @param slaveId       int
      */
     private void sendProcess(MigratableProcess newProcess, int slaveId) {
         // Create new ServerMessage indicating for the receiving slave to run a new process
-        ServerMessage message = new ServerMessage(ServerMessage.MessageType.RUN, newProcess);
+        ServerMessage newProcessMsg = new ServerMessage(ServerMessage.MessageType.RUN, newProcess);
         Socket currentSocket = liveSockets.get(slaveId);
         try {
             ObjectOutputStream sockOut = new ObjectOutputStream(currentSocket.getOutputStream());
-            sockOut.writeObject(message);
+            sockOut.writeObject(newProcessMsg);
             sockOut.flush();
-            System.out.println("Sent msg " + message + " to slave " + slaveId);
+            System.out.println("Sent msg " + newProcessMsg + " to slave " + slaveId);
         } catch (IOException e) {
-            System.err.println("Error: error serializing msg " + message + "(" + e.getMessage() + ").");
+            System.err.println("Error: error serializing msg " + newProcessMsg + "(" + e.getMessage() + ").");
         }
+    }
+
+
+    /**
+     * Move a MigratableProcess from one slave to another
+     * @param processName String
+     * @param fromSlaveId int
+     * @param toSlaveId   int
+     */
+    public void migrateProcess(String processName, int fromSlaveId, int toSlaveId) {
+        // Create ServerMessage to sell slave to suspend a process
+        Socket fromSock = liveSockets.get(fromSlaveId);
+        ServerMessage suspendProcessMsg = new ServerMessage(ServerMessage.MessageType.SUSPEND, processName);
+        ServerMessage recSuspendProcessMsg;
+
+        try {
+            // Send message to fromSlave socket telling it suspend the given process and send it back here
+            ObjectOutputStream fromSockOut = new ObjectOutputStream(fromSock.getOutputStream());
+            fromSockOut.writeObject(suspendProcessMsg);
+            fromSockOut.flush();
+            System.out.println("Sent msg " + suspendProcessMsg + " to slave " + fromSlaveId);
+
+            // Wait for a ServerMessage response, bail if it isn't valid
+            ObjectInputStream fromSockIn = new ObjectInputStream(fromSock.getInputStream());
+            recSuspendProcessMsg = (ServerMessage)fromSockIn.readObject();
+            if(!(recSuspendProcessMsg.getType() == ServerMessage.MessageType.SUSPEND &&
+                    recSuspendProcessMsg.getPayload() != null)) {
+                System.err.println("Error: slave " + fromSlaveId + " did not send back suspended process " + processName);
+                return;
+            }
+
+            // Send this suspended and serialized process off to a new home
+            sendProcess((MigratableProcess)recSuspendProcessMsg.getPayload(), toSlaveId);
+        } catch (IOException e) {
+            System.err.println("Error: could not migrate process " + processName + " properly. (" + e.getMessage() + ").");
+        } catch (ClassNotFoundException e) {
+            System.err.println("Error: Master received an object that wasn't a ServerMessage (" + e.getMessage() + ")");
+        }
+    }
+
+    /**
+     * Migrate processes around in order to have equal number in each slave
+     */
+    public void balanceProcessLoad() {
+
     }
 
 
@@ -191,7 +235,7 @@ public class MasterManager extends Thread {
                 System.out.println("Slave " + i + " did not respond in time, presumed lost.");
                 deadSlaveIds.add(i);
             } catch (ClassNotFoundException e) {
-                System.err.println("Error: Slave received an object that wasn't a ServerMessage (" + e.getMessage() + ")");
+                System.err.println("Error: Master received an object that wasn't a ServerMessage (" + e.getMessage() + ")");
             }
         }
         System.out.println(statusOut + " ]");

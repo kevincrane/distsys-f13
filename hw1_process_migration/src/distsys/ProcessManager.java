@@ -106,6 +106,9 @@ public class ProcessManager {
                     //TODO: remove this
                     manager.pingSlaves();
                     break;
+                case 5:
+                    //TODO: remove this
+                    manager.migrateProcess("0-Process[CountProcess 500]", 0, 1);
                 default:
                     System.out.println("Invalid response, please enter one of the proper numeric choices.");
                     break;
