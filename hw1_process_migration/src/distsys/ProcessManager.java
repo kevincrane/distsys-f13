@@ -96,8 +96,10 @@ public class ProcessManager {
                 case 3:
                     // Kill running process
                     System.out.println("Please enter the process name to kill:");
-                    String processName = lineIn.nextLine();
-                    manager.killProcess(processName);
+                    String processName = lineIn.nextLine().trim();
+                    if(processName.length() > 0) {
+                        manager.killProcess(processName);
+                    }
                     break;
                 case 4:
                     // Quit
