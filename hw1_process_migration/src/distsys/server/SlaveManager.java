@@ -81,6 +81,10 @@ public class SlaveManager {
                     // Suspend the process and send it back to the Master
                     suspendProcess((String) newMessage.getPayload());
                     break;
+                case KILL:
+                    // Suspend and kill the process outright
+                    killProcess((String) newMessage.getPayload());
+                    break;
                 case QUIT:
                     // Time to close up shop
                     close();
@@ -140,6 +144,25 @@ public class SlaveManager {
         // Remove process from list of active processes
         processList.remove(processName);
         threadList.remove(processName);
+    }
+
+    /**
+     * Suspend and delete a process, ending its execution on the whole system
+     * @param processName
+     */
+    private void killProcess(String processName) {
+        // Identify process to kill
+        MigratableProcess suspendProcess = processList.get(processName);
+        if (suspendProcess == null) {
+            System.err.println("Error: Process " + processName + " does not exist on this slave.");
+            return;
+        }
+
+        // End process' execution and remove from list of active processes
+        suspendProcess.suspend();
+        processList.remove(processName);
+        threadList.remove(processName);
+        System.out.println("Killed process " + suspendProcess.getProcessName());
     }
 
     /**

@@ -14,6 +14,7 @@ public class ServerMessage implements Serializable {
         PING,
         ALIVE,
         SUSPEND,
+        KILL,
         QUIT
     }
 

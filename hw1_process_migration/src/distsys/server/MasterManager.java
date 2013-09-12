@@ -133,7 +133,7 @@ public class MasterManager extends Thread {
             ObjectOutputStream sockOut = new ObjectOutputStream(currentSocket.getOutputStream());
             sockOut.writeObject(newProcessMsg);
             sockOut.flush();
-            System.out.println("Sent msg " + newProcessMsg + " to slave " + slaveId);
+//            System.out.println("Sent msg " + newProcessMsg + " to slave " + slaveId);
         } catch (IOException e) {
             System.err.println("Error: error serializing msg " + newProcessMsg + "(" + e.getMessage() + ").");
         }
@@ -318,6 +318,33 @@ public class MasterManager extends Thread {
         }
     }
 
+    /**
+     * Send a message to a client telling it to kill a particular process
+     * @param processName    Name of process to kill
+     */
+    public void killProcess(String processName) {
+        for(Integer i : activeProcesses.keySet()) {
+            if(activeProcesses.get(i).contains(processName)) {
+                // Found client that's running this process
+                Socket s = liveSockets.get(i);
+                ServerMessage killMessage = new ServerMessage(ServerMessage.MessageType.KILL, processName);
+                try {
+                    // Send message to slave to kill process
+                    ObjectOutputStream sockOut = new ObjectOutputStream(s.getOutputStream());
+                    sockOut.writeObject(killMessage);
+                    sockOut.flush();
+                    System.out.println("Sent message to slave " + i + " to kill " + processName + ".");
+                    return;
+                } catch (IOException e) {
+                    System.err.println("Error: error serializing msg " + killMessage + "(" + e.getMessage() + ").");
+                }
+            }
+        }
+
+        // Couldn't find that process in the list available
+        System.out.println("Couldn't find process " + processName + " running.");
+    }
+
 
     /**
      * Close master socket and slaves attached to it
@@ -350,5 +377,4 @@ public class MasterManager extends Thread {
             listen();
         }
     }
-
 }

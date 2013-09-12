@@ -62,7 +62,7 @@ public class ProcessManager {
         int command;
         while (running) {
             System.out.println("\nEnter commands for the Master server:");
-            System.out.println("1. Run new process | 2. Process Status | 3. Quit");
+            System.out.println("1. Run new process | 2. Process List | 3. Kill Process | 4. Quit");
             String input = lineIn.nextLine();
 
             try {
@@ -75,6 +75,7 @@ public class ProcessManager {
             // Send command to master
             switch (command) {
                 case 1:
+                    // Add new process
                     System.out.println("Please enter the fully-qualified classname and arguments of the process to run:");
                     System.out.println("    e.g. 'distsys.process.CountProcess 25'");
                     input = lineIn.nextLine();
@@ -89,15 +90,18 @@ public class ProcessManager {
                     }
                     break;
                 case 2:
+                    // List all running processes
                     manager.listProcesses();
                     break;
                 case 3:
+                    // Kill running process
+                    System.out.println("Please enter the process name to kill:");
+                    String processName = lineIn.nextLine();
+                    manager.killProcess(processName);
+                    break;
+                case 4:
+                    // Quit
                     manager.close();
-//                    try {
-                    manager.interrupt();
-//                    } catch (InterruptedException e) {
-//                        // Nothing
-//                    }
                     running = false;
                     System.out.println("\nByeee!!");
                     break;
