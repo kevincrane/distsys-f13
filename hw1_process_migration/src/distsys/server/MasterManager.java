@@ -111,12 +111,17 @@ public class MasterManager extends Thread {
         String processName = totalProcesses + "-" + newProcess.toString();
         newProcess.setProcessName(processName);
 
-        // Prepare the process to be serialized and sent away
-        sendProcess(newProcess, liveSlaveIds.get(nextIdIndex));
+        if (liveSlaveIds.size() > nextIdIndex) {
+            // Prepare the process to be serialized and sent away
+            sendProcess(newProcess, liveSlaveIds.get(nextIdIndex));
 
-        // Add process to map of 'slaves -> list<processes>'
-        nextIdIndex = (nextIdIndex + 1) % liveSlaveIds.size();
-        totalProcesses++;
+            // Add process to map of 'slaves -> list<processes>'
+            nextIdIndex = (nextIdIndex + 1) % liveSlaveIds.size();
+            totalProcesses++;
+        } else {
+            System.err.println("Error: No slaves exist to run process on. Please instantiate atleast one slave" +
+                "pointing to current master host");
+        }
     }
 
     /**
