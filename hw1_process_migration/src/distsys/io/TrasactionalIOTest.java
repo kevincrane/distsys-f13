@@ -17,9 +17,10 @@ public class TrasactionalIOTest {
         byte[] bytes;
         TransactionalFileInputStream tin = null;
         TransactionalFileOutputStream tio = null;
+        File file = new File("/Users/Prashanth/Documents/workspace/distsys-f13/transactionalio_test.txt");
 
         try {
-            tin = new TransactionalFileInputStream(new File("/Users/Prashanth/Documents/workspace/distsys-f13/yolo.txt"));
+            tin = new TransactionalFileInputStream(file);
             do {
                 b = (byte) tin.read();
                 bytes = new byte[1];
@@ -28,7 +29,7 @@ public class TrasactionalIOTest {
                 System.out.print(s);
             } while (b != -1);
 
-            tio = new TransactionalFileOutputStream(new File("/Users/Prashanth/Documents/workspace/distsys-f13/yolo.txt"));
+            tio = new TransactionalFileOutputStream(file);
             s = "Yolo is the motto. hyfr!";
             bytes = s.getBytes();
             for (byte b1 : bytes) {
