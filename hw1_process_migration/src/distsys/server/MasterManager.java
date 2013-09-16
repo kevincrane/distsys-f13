@@ -120,7 +120,7 @@ public class MasterManager extends Thread {
             totalProcesses++;
         } else {
             System.err.println("Error: No slaves exist to run process on. Please instantiate atleast one slave" +
-                    "pointing to current master host");
+                "pointing to current master host");
         }
     }
 
