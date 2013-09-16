@@ -42,39 +42,48 @@ public class FileCountProcess implements MigratableProcess {
     @Override
     public void run() {
         while (!suspending) {
-            try {
-                TransactionalFileInputStream in = new TransactionalFileInputStream(file);
-                TransactionalFileOutputStream out = new TransactionalFileOutputStream(file);
+//            try {
+//                TransactionalFileInputStream in = new TransactionalFileInputStream(file);
+//                TransactionalFileOutputStream out = new TransactionalFileOutputStream(file);
 
-                int i;
-                for (i = 1; i <= maxValue; i++) {
-                    out.write(i);
-                    System.out.println("Writing number: " + i);
-                    // Make count take longer so that we don't require extremely large numbers for interesting results
-                    try {
-                        Thread.sleep(100);
-                    } catch (InterruptedException e) {
-                        // ignore it
-                    }
-                }
-                i = in.read();
-                while (i > 0) {
+                for (int i = 0; i<=500; i++) {
                     System.out.println(i);
-                    i = in.read();
-                    // Make count take longer so that we don't require extremely large numbers for interesting results
                     try {
                         Thread.sleep(100);
                     } catch (InterruptedException e) {
                         // ignore it
                     }
                 }
-                break;
-            } catch (FileNotFoundException e) {
-                System.out.println("<fileName> has to be a valid existing file. Please check your path.");
-                // this shouldn't happen
-            } catch (IOException e) {
-                System.out.println("An IO error happened while reading or writing file");
-            }
+
+//                int i;
+//                for (i = 1; i <= maxValue; i++) {
+//                    out.write(i);
+//                    System.out.println("Writing number: " + i);
+//                    // Make count take longer so that we don't require extremely large numbers for interesting results
+//                    try {
+//                        Thread.sleep(100);
+//                    } catch (InterruptedException e) {
+//                        // ignore it
+//                    }
+//                }
+//                i = in.read();
+//                while (i > 0) {
+//                    System.out.println(i);
+//                    i = in.read();
+//                    // Make count take longer so that we don't require extremely large numbers for interesting results
+//                    try {
+//                        Thread.sleep(100);
+//                    } catch (InterruptedException e) {
+//                        // ignore it
+//                    }
+//                }
+//                break;
+//            } catch (FileNotFoundException e) {
+//                System.out.println("<fileName> has to be a valid existing file. Please check your path.");
+//                // this shouldn't happen
+//            } catch (IOException e) {
+//                System.out.println("An IO error happened while reading or writing file");
+//            }
         }
 
         suspending = false;

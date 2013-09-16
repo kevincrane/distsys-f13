@@ -10,6 +10,7 @@ import java.io.*;
 public class TransactionalFileOutputStream extends OutputStream implements Serializable {
     private File file;
     private int currentOffset;
+    private transient RandomAccessFile out = null;
 
     public TransactionalFileOutputStream(File file) throws FileNotFoundException {
         this.file = file;
@@ -19,7 +20,6 @@ public class TransactionalFileOutputStream extends OutputStream implements Seria
     // Writes a single byte to output stream
     @Override
     public void write(int i) throws IOException {
-        RandomAccessFile out = null;
         try {
             out = makeOutputStream();
             out.write(i);
@@ -34,7 +34,6 @@ public class TransactionalFileOutputStream extends OutputStream implements Seria
     // Writes bytes.length bytes from the specified byte array to this output stream.
     @Override
     public void write(byte[] bytes) throws java.io.IOException {
-        RandomAccessFile out = null;
         try {
             out = makeOutputStream();
             out.write(bytes);
@@ -49,7 +48,6 @@ public class TransactionalFileOutputStream extends OutputStream implements Seria
     // Writes len bytes from the specified byte array starting at offset off to this output stream.
     @Override
     public void write(byte[] bytes, int offset, int length) throws java.io.IOException {
-        RandomAccessFile out = null;
         try {
             out = makeOutputStream();
             out.write(bytes, offset, length);

@@ -11,6 +11,7 @@ import java.io.*;
 public class TransactionalFileInputStream extends InputStream implements Serializable {
     private File file;
     private int currentOffset;
+    private transient FileInputStream in = null;
 
     public TransactionalFileInputStream(File file) {
         this.file = file;
@@ -20,7 +21,6 @@ public class TransactionalFileInputStream extends InputStream implements Seriali
     // Reads the next byte of data from the input stream.
     @Override
     public int read() throws java.io.IOException {
-        RandomAccessFile in = null;
         try {
             in = makeInputStream();
             int i = in.read();
@@ -36,7 +36,6 @@ public class TransactionalFileInputStream extends InputStream implements Seriali
     // Reads some number of bytes from the input stream and stores them into the buffer array bytes.
     @Override
     public int read(byte[] bytes) throws java.io.IOException {
-        RandomAccessFile in = null;
         try {
             in = makeInputStream();
             int bytesRead = in.read(bytes);
@@ -54,7 +53,6 @@ public class TransactionalFileInputStream extends InputStream implements Seriali
     // Reads up to len bytes of data from the input stream into an array of bytes.
     @Override
     public int read(byte[] bytes, int offset, int length) throws java.io.IOException {
-        RandomAccessFile in = null;
         try {
             in = makeInputStream();
             int bytesRead = in.read(bytes, offset, length);
@@ -69,10 +67,9 @@ public class TransactionalFileInputStream extends InputStream implements Seriali
         }
     }
 
-    protected RandomAccessFile makeInputStream() throws IOException {
-        RandomAccessFile in = new RandomAccessFile(file, "r");
-        FileInputStream sin = new FileInputStream(file);
-        in.seek(currentOffset);
+    protected FileInputStream makeInputStream() throws IOException {
+        FileInputStream in = new FileInputStream(file);
+        in.skip(currentOffset);
         return in;
     }
 
