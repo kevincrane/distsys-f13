@@ -256,7 +256,8 @@ public class MasterManager extends Thread {
         // Iterate through all noted active clients and print its processes
         System.out.println("\n-- Active Processes --");
         for (Integer i : liveSlaveIds) {
-            System.out.println("Slave Client " + i);
+            System.out.println("\nSlave Client " + i);
+            System.out.println("-----------------");
             for (String process : activeProcesses.get(i)) {
                 System.out.println("  " + process);
             }

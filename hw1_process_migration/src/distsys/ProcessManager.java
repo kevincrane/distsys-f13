@@ -79,6 +79,7 @@ public class ProcessManager {
                     System.out.println("Please enter the fully-qualified classname and arguments of the process to run:");
                     System.out.println("    e.g. 'distsys.process.CountProcess 25'");
                     input = lineIn.nextLine();
+                    System.out.println();
                     String[] tokens = input.split(" ");
                     String className = tokens[0];
 
@@ -105,7 +106,7 @@ public class ProcessManager {
                     // Quit
                     manager.close();
                     running = false;
-                    System.out.println("\nByeee!!");
+                    System.out.println("\nGoodBye!!");
                     break;
                 default:
                     System.out.println("Invalid response, please enter one of the proper numeric choices.");

@@ -10,7 +10,7 @@ import java.io.IOException;
  * Time: 3:58 AM
  * To change this template use File | Settings | File Templates.
  */
-public class TrasactionalIOTest {
+public class TransactionalIOTest {
     public static void main(String args[]) throws IOException {
         byte b;
         String s;
