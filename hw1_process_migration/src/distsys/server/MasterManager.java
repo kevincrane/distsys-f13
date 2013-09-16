@@ -120,7 +120,7 @@ public class MasterManager extends Thread {
             totalProcesses++;
         } else {
             System.err.println("Error: No slaves exist to run process on. Please instantiate atleast one slave" +
-                "pointing to current master host");
+                    "pointing to current master host");
         }
     }
 
@@ -218,6 +218,10 @@ public class MasterManager extends Thread {
                 }
 
                 List<String> toSlaveProcesses = activeProcesses.get(toSlaveId);
+                if (toSlaveProcesses == null) {
+                    // Couldn't find a client with that id
+                    continue;
+                }
                 if (toSlaveProcesses.size() < avgProcesses) {
                     // Found a malnourished slave client, migrate a process to him!
                     String lastProcessName = fromSlaveProcesses.get(fromSlaveProcesses.size() - 1);
@@ -326,11 +330,12 @@ public class MasterManager extends Thread {
 
     /**
      * Send a message to a client telling it to kill a particular process
-     * @param processName    Name of process to kill
+     *
+     * @param processName Name of process to kill
      */
     public void killProcess(String processName) {
-        for(Integer i : activeProcesses.keySet()) {
-            if(activeProcesses.get(i).contains(processName)) {
+        for (Integer i : activeProcesses.keySet()) {
+            if (activeProcesses.get(i).contains(processName)) {
                 // Found client that's running this process
                 Socket s = liveSockets.get(i);
                 ServerMessage killMessage = new ServerMessage(ServerMessage.MessageType.KILL, processName);
