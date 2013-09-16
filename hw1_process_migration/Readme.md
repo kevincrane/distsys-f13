@@ -27,11 +27,11 @@ To clean up the messy classes, call the following from the root directory:
 make clean
 ```
 
-when entering process name to launch a new process, use fully qualified name:
+Use the fully qualified name, when entering the process name to launch a new process:
+distsys.process.CountProcess 500
 distsys.process.FileCountProcess 500 count_test.txt
 
-To kill a process, use the full name obtained from the process list.
+To kill a process, use the full name obtained from the process list command.
+Always launch master first, then the slaves so that the slaves can connect to the master. The master will automatically load balance processes over the slaves.
 
-Always launch master first, then the slaves so that they can connect to the master.
-The master will automatically load balance processes over the slaves.
 

@@ -231,7 +231,7 @@ public class MasterManager extends Thread {
                     fromSlaveProcesses.remove(fromSlaveProcesses.size() - 1);
                     toSlaveProcesses.add(lastProcessName);
                     activeProcesses.put(toSlaveId, toSlaveProcesses);
-                    System.out.println("  Master LB: Migrating " + lastProcessName + " from slave " +
+                    System.out.println("  Master LoadBalance: Migrating " + lastProcessName + " from slave " +
                             fromSlaveId + " to " + toSlaveId);
                 }
 
