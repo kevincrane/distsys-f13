@@ -17,7 +17,7 @@ public class TrasactionalIOTest {
         byte[] bytes;
         TransactionalFileInputStream tin = null;
         TransactionalFileOutputStream tio = null;
-        File file = new File("/Users/Prashanth/Documents/workspace/distsys-f13/transactionalio_test.txt");
+        File file = new File("transactionalio_test.txt");
 
         try {
             tin = new TransactionalFileInputStream(file);
