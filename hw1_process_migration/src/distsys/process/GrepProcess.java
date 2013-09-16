@@ -47,7 +47,6 @@ public class GrepProcess implements MigratableProcess {
                 String line = in.readLine();
 
                 if (line == null) break;
-
                 if (line.contains(query)) {
                     out.println(line);
                 }
@@ -64,7 +63,6 @@ public class GrepProcess implements MigratableProcess {
         } catch (IOException e) {
             System.out.println ("GrepProcess: Error: " + e);
         }
-
 
         suspending = false;
     }

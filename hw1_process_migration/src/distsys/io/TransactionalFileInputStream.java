@@ -9,7 +9,6 @@ import java.io.*;
  */
 
 public class TransactionalFileInputStream extends InputStream implements Serializable {
-    private boolean isMigrating = false;
     private File file;
     private int currentOffset;
 

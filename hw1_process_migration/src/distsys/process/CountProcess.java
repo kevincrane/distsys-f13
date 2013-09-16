@@ -36,7 +36,6 @@ public class CountProcess implements MigratableProcess {
                 System.out.println("Done!");
                 break;
             }
-
             // Make count take longer so that we don't require extremely large numbers for interesting results
             try {
                 Thread.sleep(100);

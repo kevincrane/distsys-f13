@@ -71,7 +71,7 @@ public class FileCountProcess implements MigratableProcess {
                 break;
             } catch (FileNotFoundException e) {
                 System.out.println("<fileName> has to be a valid existing file. Please check your path.");
-                // this should'nt happen
+                // this shouldn't happen
             } catch (IOException e) {
                 System.out.println("An IO error happened while reading or writing file");
             }

@@ -8,7 +8,6 @@ import java.io.*;
  * Date: 9/6/13
  */
 public class TransactionalFileOutputStream extends OutputStream implements Serializable {
-    private boolean isMigrating = false;
     private File file;
     private int currentOffset;
 

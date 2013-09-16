@@ -30,7 +30,7 @@ public class TransactionalIOTest {
             } while (b != -1);
 
             tio = new TransactionalFileOutputStream(file);
-            s = "Yolo is the motto. hyfr!";
+            s = "Yolo is the motto. #hyfr #drake";
             bytes = s.getBytes();
             for (byte b1 : bytes) {
                 tio.write(b1);
