@@ -8,10 +8,7 @@ package distsys.process;
 import distsys.io.TransactionalFileInputStream;
 import distsys.io.TransactionalFileOutputStream;
 
-import java.io.PrintStream;
-import java.io.EOFException;
-import java.io.DataInputStream;
-import java.io.IOException;
+import java.io.*;
 import java.lang.Thread;
 import java.lang.InterruptedException;
 
@@ -36,9 +33,8 @@ public class GrepProcess implements MigratableProcess {
         inFileName = args[1];
         outFileName = args[2];
 
-        //TODO: fix this
-//        inFile = new TransactionalFileInputStream(args[1]);
-//        outFile = new TransactionalFileOutputStream(args[2], false);
+        inFile = new TransactionalFileInputStream(new File(args[1]));
+        outFile = new TransactionalFileOutputStream(new File(args[2]));
     }
 
     @Override

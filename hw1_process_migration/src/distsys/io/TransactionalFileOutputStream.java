@@ -17,6 +17,7 @@ public class TransactionalFileOutputStream extends OutputStream implements Seria
         this.currentOffset = 0;
     }
 
+    // Writes a single byte to output stream
     @Override
     public void write(int i) throws IOException {
         RandomAccessFile out = null;
