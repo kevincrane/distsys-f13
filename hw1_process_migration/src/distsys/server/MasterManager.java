@@ -119,7 +119,7 @@ public class MasterManager extends Thread {
             nextIdIndex = (nextIdIndex + 1) % liveSlaveIds.size();
             totalProcesses++;
         } else {
-            System.err.println("Error: No slaves exist to run process on. Please instantiate atleast one slave" +
+            System.err.println("Error: No slaves exist to run process on. Please instantiate atleast one slave " +
                 "pointing to current master host");
         }
     }
@@ -326,6 +326,7 @@ public class MasterManager extends Thread {
             liveSockets.remove(i);
             activeProcesses.remove(i);
         }
+        nextIdIndex = 0;
     }
 
     /**
