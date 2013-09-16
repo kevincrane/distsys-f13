@@ -33,4 +33,5 @@ distsys.process.FileCountProcess 500 count_test.txt
 To kill a process, use the full name obtained from the process list.
 
 Always launch master first, then the slaves so that they can connect to the master.
+The master will automatically load balance processes over the slaves.
 
