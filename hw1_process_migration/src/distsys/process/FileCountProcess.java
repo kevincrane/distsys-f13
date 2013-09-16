@@ -19,6 +19,8 @@ public class FileCountProcess implements MigratableProcess {
     private File file;
     private int maxValue;
     private volatile boolean suspending;
+    private TransactionalFileInputStream in = null;
+    private TransactionalFileOutputStream out = null;
 
     public FileCountProcess(String args[]) throws Exception {
         if (args.length != 2) {
@@ -37,53 +39,57 @@ public class FileCountProcess implements MigratableProcess {
             System.out.println("<maxValue> must be an integer.");
             throw new Exception("Invalid number");
         }
+
+        try {
+            in = new TransactionalFileInputStream(file);
+            out = new TransactionalFileOutputStream(file);
+        } catch (FileNotFoundException e) {
+            System.out.println("<fileName> has to be a valid existing file. Please check your path.");
+            // this shouldn't happen
+        }
     }
 
     @Override
     public void run() {
+        int mode = 0;
+        int i = 1;
         while (!suspending) {
-//            try {
-//                TransactionalFileInputStream in = new TransactionalFileInputStream(file);
-//                TransactionalFileOutputStream out = new TransactionalFileOutputStream(file);
+            try {
+                // use mode to first write to file and then read from it
+                switch (mode) {
+                    case 0:
+                        //write
+                        out.write(i);
+                        System.out.println("Wrote number: " + i);
+                        // Make count take longer so that we don't require extremely large numbers for interesting results
+                        i++;
+                        if (i > maxValue) {
+                            mode = 1;
+                        }
 
-                for (int i = 0; i<=500; i++) {
-                    System.out.println(i);
-                    try {
-                        Thread.sleep(100);
-                    } catch (InterruptedException e) {
-                        // ignore it
-                    }
+                        break;
+                    case 1:
+                        //read
+                        i = in.read();
+                        if (i > 0) {
+                            System.out.println(i);
+                        }
+                        break;
+                }
+                // Make count take longer so that we don't require extremely large numbers for interesting results
+                try {
+                    Thread.sleep(100);
+                } catch (InterruptedException e) {
+                    // ignore it
                 }
 
-//                int i;
-//                for (i = 1; i <= maxValue; i++) {
-//                    out.write(i);
-//                    System.out.println("Writing number: " + i);
-//                    // Make count take longer so that we don't require extremely large numbers for interesting results
-//                    try {
-//                        Thread.sleep(100);
-//                    } catch (InterruptedException e) {
-//                        // ignore it
-//                    }
-//                }
-//                i = in.read();
-//                while (i > 0) {
-//                    System.out.println(i);
-//                    i = in.read();
-//                    // Make count take longer so that we don't require extremely large numbers for interesting results
-//                    try {
-//                        Thread.sleep(100);
-//                    } catch (InterruptedException e) {
-//                        // ignore it
-//                    }
-//                }
-//                break;
-//            } catch (FileNotFoundException e) {
-//                System.out.println("<fileName> has to be a valid existing file. Please check your path.");
-//                // this shouldn't happen
-//            } catch (IOException e) {
-//                System.out.println("An IO error happened while reading or writing file");
-//            }
+                if (i < 0) {
+                    System.out.println("DONE!");
+                    break;
+                }
+            } catch (IOException e) {
+                System.out.println("An IO error happened while reading or writing file");
+            }
         }
 
         suspending = false;
