@@ -175,6 +175,7 @@ public class MasterManager extends Thread {
             }
         } catch (IOException e) {
             System.err.println("Error: could not migrate process " + processName + " properly. (" + e.getMessage() + ").");
+            e.printStackTrace();
             return;
         } catch (ClassNotFoundException e) {
             System.err.println("Error: Master received an object that wasn't a ServerMessage (" + e.getMessage() + ")");
