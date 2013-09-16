@@ -306,7 +306,6 @@ public class MasterManager extends Thread {
                 System.err.println("Error: Master received an object that wasn't a ServerMessage (" + e.getMessage() + ")");
             }
         }
-//        System.out.println(statusOut + " ]");     // DEBUG
 
         // Remove all dead slaves from the lists of the living ones (RIP)
         removeDeadSlaves(deadSlaveIds);
