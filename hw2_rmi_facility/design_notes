@@ -1,0 +1,14 @@
+Design Document
+
+3 main parts
+- Registry
+    - Mainly based around HashMap<String, Remote Object>
+    - Name of object is binded to a reference to the actual object itself
+    - list()
+        - Returns a string array that is a list of the possible process names (keys of hashmap)
+    - bind/rebind(String, Remote whatever)
+        - Add a new entry to the hashmap
+- Server
+    -
+- Client
+    - 
