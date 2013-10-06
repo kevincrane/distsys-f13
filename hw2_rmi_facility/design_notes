@@ -1,5 +1,8 @@
 Design Document
 
+- Useful link describing functions of each part:
+    - http://infolab.stanford.edu/CHAIMS/Doc/Details/Protocols/rmi/rmi_description.html
+
 3 main parts
 - Registry
     - Mainly based around HashMap<String, Remote Object>
@@ -8,7 +11,39 @@ Design Document
         - Returns a string array that is a list of the possible process names (keys of hashmap)
     - bind/rebind(String, Remote whatever)
         - Add a new entry to the hashmap
+    - unbind(String) (??? probably not needed)
+        - Remove entry from hashmap
+
 - Server
-    -
+    - Decide which classes are being exported for Remote use
+    - Export class as a skeleton
+    - Skeleton
+        - Listen for incoming messages
+        - When an RmiMessage comes in:
+            - Identify which method is being called from the name given in the message
+            - Call that method, using the arguments passed in via the message
+            - Create a new RmiMessage, passing the return value of the method as payload
+                - If exception, pass that back instead
+
 - Client
-    - 
+    - Has stubs, each of which corresponds to a skeleton (which corresponds to a remote object)
+    - Data
+        - Identifier to remote object that is used
+        - Method name that indicates what is being called
+        - Array of parameters that should be serialized and passed in a message
+    - The latter two data pieces are sent to the skeleton whenever method is called
+    - After sending the message, it should wait until it receives a response
+    - The Object contained in that response is the return value of the method that was called
+
+
+Obvious Classes:
+- RmiRegistry
+    - list()
+    - bind/rebind(String, Remote whatever)
+- RmiMessage
+- RemoteObjectReference
+- RemoteObject (called 440Remote in Kesden's PDF)
+- Auto-generated for each remote object (so interface?)
+    - RmiStub
+    - RmiSkeleton
+- What else?
