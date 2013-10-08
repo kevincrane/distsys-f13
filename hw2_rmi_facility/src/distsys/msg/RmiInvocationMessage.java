@@ -12,11 +12,12 @@ public class RmiInvocationMessage extends RmiMessage {
 
     /**
      * RMI Message, sending the name of the remote method to be called and its arguments
-     * @param methodName    The name of the method to be called
-     * @param methodArgs    The remote method's arguments
+     *
+     * @param methodName The name of the method to be called
+     * @param methodArgs The remote method's arguments
      */
     public RmiInvocationMessage(String methodName, Object[] methodArgs) {
-        super(MessageType.METHOD, new Object[] {methodName, methodArgs});
+        super(MessageType.METHOD, new Object[]{methodName, methodArgs});
         this.methodName = methodName;
         this.methodArgs = methodArgs;
     }
@@ -28,7 +29,7 @@ public class RmiInvocationMessage extends RmiMessage {
 
     public void setMethodName(String methodName) {
         this.methodName = methodName;
-        ((Object[])payload)[0] = methodName;    //TODO: typecheck this
+        ((Object[]) payload)[0] = methodName;    //TODO: typecheck this
     }
 
     public Object[] getMethodArgs() {
@@ -37,7 +38,7 @@ public class RmiInvocationMessage extends RmiMessage {
 
     public void setMethodArgs(Object[] methodArgs) {
         this.methodArgs = methodArgs;
-        ((Object[])payload)[1] = methodArgs;    //TODO: typecheck this
+        ((Object[]) payload)[1] = methodArgs;    //TODO: typecheck this
     }
 
 }

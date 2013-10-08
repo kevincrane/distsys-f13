@@ -11,7 +11,8 @@ public class RmiExceptionMessage extends RmiMessage {
 
     /**
      * RMI Message, sending a thrown exception back to the calling program
-     * @param e    The exception that was thrown
+     *
+     * @param e The exception that was thrown
      */
     public RmiExceptionMessage(Exception e) {
         super(MessageType.EXCEPTION, e);

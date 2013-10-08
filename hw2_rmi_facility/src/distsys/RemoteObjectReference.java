@@ -16,10 +16,11 @@ public class RemoteObjectReference {
 
     /**
      * Reference to a remote object held in an RMI registry
-     * @param ipAddress    IP address of registry
-     * @param port         Port of registry
-     * @param refName      Name of the object reference in the registry
-     * @param className    Class of the object that is referenced
+     *
+     * @param ipAddress IP address of registry
+     * @param port      Port of registry
+     * @param refName   Name of the object reference in the registry
+     * @param className Class of the object that is referenced
      */
     public RemoteObjectReference(InetAddress ipAddress, int port, String refName, String className) {
         this.ipAddress = ipAddress;
