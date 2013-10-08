@@ -19,10 +19,10 @@ Design Document
     - Export class as a skeleton
     - Skeleton
         - Listen for incoming messages
-        - When an RmiMessage comes in:
+        - When an distsys.msg.RmiMessage comes in:
             - Identify which method is being called from the name given in the message
             - Call that method, using the arguments passed in via the message
-            - Create a new RmiMessage, passing the return value of the method as payload
+            - Create a new distsys.msg.RmiMessage, passing the return value of the method as payload
                 - If exception, pass that back instead
 
 - Client
@@ -40,10 +40,21 @@ Obvious Classes:
 - RmiRegistry
     - list()
     - bind/rebind(String, Remote whatever)
-- RmiMessage
+- distsys.msg.RmiMessage
 - RemoteObjectReference
 - RemoteObject (called 440Remote in Kesden's PDF)
 - Auto-generated for each remote object (so interface?)
     - RmiStub
     - RmiSkeleton
 - What else?
+
+
+
+
+
+- DRAW UP FLOWCHART OF INTERACTIONS
+
+
+
+
+
