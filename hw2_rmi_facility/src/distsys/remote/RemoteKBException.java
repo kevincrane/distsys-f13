@@ -7,12 +7,12 @@ import java.io.IOException;
  * User: kevin, prashanth
  * Date: 10/8/13
  */
-public class RemoteCmuException extends IOException {
+public class RemoteKBException extends IOException {
 
     /**
      * Default constructor
      */
-    public RemoteCmuException() {
+    public RemoteKBException() {
         super();
     }
 
@@ -21,7 +21,7 @@ public class RemoteCmuException extends IOException {
      *
      * @param s Error message
      */
-    public RemoteCmuException(String s) {
+    public RemoteKBException(String s) {
         super(s);
     }
 

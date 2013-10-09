@@ -14,7 +14,8 @@ public abstract class RmiMessage implements Serializable {
     public static enum MessageType {
         METHOD,
         RETURN,
-        EXCEPTION
+        EXCEPTION,
+        OK
     }
 
     protected RemoteObjectReference reference;

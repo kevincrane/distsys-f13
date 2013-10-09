@@ -1,6 +1,6 @@
 package distsys.registry;
 
-import distsys.remote.RemoteCmuException;
+import distsys.remote.RemoteKBException;
 
 import java.net.InetAddress;
 import java.util.Collections;
@@ -28,12 +28,13 @@ public class RmiRegistry {
      *
      * @param keyName   The unique key that the object can be referred as
      * @param remoteRef A remote object reference
-     * @throws RemoteCmuException
+     * @throws distsys.remote.RemoteKBException
+     *
      */
-    public void bind(String keyName, RemoteObjectReference remoteRef) throws RemoteCmuException {
+    public void bind(String keyName, RemoteObjectReference remoteRef) throws RemoteKBException {
         if (registry.containsKey(keyName)) {
             // Throw exception if the key exists already
-            throw new RemoteCmuException("Key '" + keyName + "' already exists in the registry.");
+            throw new RemoteKBException("Key '" + keyName + "' already exists in the registry.");
         }
         registry.put(keyName, remoteRef);
     }

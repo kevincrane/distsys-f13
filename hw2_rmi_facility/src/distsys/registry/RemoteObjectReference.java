@@ -1,5 +1,7 @@
 package distsys.registry;
 
+import distsys.client.RemoteKBStub;
+
 /**
  * Created with IntelliJ IDEA.
  * User: kevin, prashanth
@@ -49,7 +51,25 @@ public class RemoteObjectReference {
      * @return new stub object
      */
     public Object localise() {
-        //TODO: add method to create local stub of the remote object
-        return "test test test!";
+        RemoteKBStub localObject;
+        try {
+            // Create new class from the name of the stub class
+            Class stubClass = Class.forName(className + "_stub");
+
+            // Generate a new local object from this class and tie it to this RemoteObjectReference
+            localObject = (RemoteKBStub) stubClass.newInstance();
+            localObject.setRemoteReference(this);
+        } catch (ClassNotFoundException e) {
+            System.err.println("ROR Error: class not found (" + e.getMessage() + ").");
+            return null;
+        } catch (InstantiationException e) {
+            System.err.println("ROR Error: class could not be instantiated (" + e.getMessage() + ").");
+            return null;
+        } catch (IllegalAccessException e) {
+            System.err.println("ROR Error: class could not be accessed (" + e.getMessage() + ").");
+            return null;
+        }
+
+        return localObject;
     }
 }
