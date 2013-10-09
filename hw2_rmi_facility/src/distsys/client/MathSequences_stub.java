@@ -1,5 +1,6 @@
 package distsys.client;
 
+import distsys.remote.RemoteKBException;
 import distsys.server.MathSequences;
 
 /**
@@ -7,15 +8,30 @@ import distsys.server.MathSequences;
  * User: kevin, prashanth
  * Date: 10/9/13
  */
-public class MathSequences_stub implements MathSequences {
+public class MathSequences_stub extends RemoteKBStub implements MathSequences {
+
+    //TODO: how auto-generate stubs?
+
 
     @Override
-    public Long fibonacci(Integer n) {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
+    public Long fibonacci(Integer n) throws RemoteKBException {
+        Object returnValue;
+        returnValue = invokeMethod("fibonacci", new Object[]{n});
+
+        if (!(returnValue instanceof Long)) {
+            throw new RemoteKBException("Invalid method return type.");
+        }
+        return (Long) returnValue;
     }
 
     @Override
-    public Integer nthPrime(Integer n) {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
+    public Integer nthPrime(Integer n) throws RemoteKBException {
+        Object returnValue;
+        returnValue = invokeMethod("nthPrime", new Object[]{n});
+
+        if (!(returnValue instanceof Integer)) {
+            throw new RemoteKBException("Invalid method return type.");
+        }
+        return (Integer) returnValue;
     }
 }

@@ -33,6 +33,17 @@ public class CommHandler {
         sock = new Socket(this.hostname, this.port);
     }
 
+    /**
+     * Class for simplifying the handling of RMI messages between hosts
+     *
+     * @param sock Socket you're connected to
+     */
+    public CommHandler(Socket sock) {
+        this.sock = sock;
+        this.hostname = sock.getInetAddress().getCanonicalHostName();
+        this.port = sock.getPort();
+    }
+
 
     /**
      * Send an RMI message to the connected host

@@ -46,7 +46,7 @@ public class MathSequencesImpl implements MathSequences {
      */
     @Override
     public Integer nthPrime(Integer n) {
-        if (n < 0 || n >= 1000000) {
+        if (n < 0) {
             return -1;
         }
 
@@ -58,18 +58,20 @@ public class MathSequencesImpl implements MathSequences {
         int ptr = 1;
         sieve[0] = false;
         sieve[1] = false;
-        while (count <= n) {
+        while (count < n) {
             ptr++;
             if (sieve[ptr]) {
                 // Found a prime!
                 for (int i = ptr * 2; i < sieve.length; i += ptr) {
                     // Negate every multiple of that prime
-                    sieve[ptr] = false;
+                    sieve[i] = false;
                 }
                 count++;
+                System.out.println(count + " - " + ptr);
             }
         }
 
+        System.out.println(n + "th prime is " + ptr);
         return ptr;
     }
 }
