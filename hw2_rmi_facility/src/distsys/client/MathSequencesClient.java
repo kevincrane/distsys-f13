@@ -29,7 +29,7 @@ public class MathSequencesClient {
             Integer prime = mathSequences.nthPrime(1000000);
             System.out.println("The 1,000,000th prime number is " + prime);
         } catch (RemoteKBException e) {
-            System.err.println("Something blew up remotely: " + e.getStackTrace());
+            System.err.println("Something blew up remotely: " + e.getMessage());
         }
     }
 }

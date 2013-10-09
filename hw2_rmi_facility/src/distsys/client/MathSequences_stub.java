@@ -1,6 +1,7 @@
 package distsys.client;
 
 import distsys.remote.RemoteKBException;
+import distsys.remote.RemoteKBStub;
 import distsys.server.MathSequences;
 
 /**

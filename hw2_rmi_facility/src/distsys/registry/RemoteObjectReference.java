@@ -1,6 +1,6 @@
 package distsys.registry;
 
-import distsys.client.RemoteKBStub;
+import distsys.remote.RemoteKBStub;
 
 /**
  * Created with IntelliJ IDEA.

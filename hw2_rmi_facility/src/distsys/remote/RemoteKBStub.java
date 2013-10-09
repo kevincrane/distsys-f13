@@ -1,8 +1,7 @@
-package distsys.client;
+package distsys.remote;
 
 import distsys.msg.*;
 import distsys.registry.RemoteObjectReference;
-import distsys.remote.RemoteKBException;
 
 import java.io.IOException;
 

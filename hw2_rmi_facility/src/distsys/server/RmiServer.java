@@ -108,7 +108,7 @@ public class RmiServer {
 
         // Run loop and listen for incoming connections
         while (true) {
-            //TODO: create new threads on accepts
+            //TODO: create new threads on accepts, break sometime?
             Socket newConnection = server.accept();
             System.out.println("Got a new connection from " + newConnection.getInetAddress().getCanonicalHostName() + "!");
             handleConnection(newConnection);

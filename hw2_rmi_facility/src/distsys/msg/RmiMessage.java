@@ -15,7 +15,8 @@ public abstract class RmiMessage implements Serializable {
         METHOD,
         RETURN,
         EXCEPTION,
-        OK
+        REG_LOOKUP,
+        REG_LIST
     }
 
     protected RemoteObjectReference reference;
