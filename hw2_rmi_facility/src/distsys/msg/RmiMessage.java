@@ -1,6 +1,6 @@
 package distsys.msg;
 
-import distsys.RemoteObjectReference;
+import distsys.registry.RemoteObjectReference;
 
 import java.io.Serializable;
 

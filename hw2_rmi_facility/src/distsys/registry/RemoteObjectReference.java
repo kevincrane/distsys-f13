@@ -1,6 +1,4 @@
-package distsys;
-
-import java.net.InetAddress;
+package distsys.registry;
 
 /**
  * Created with IntelliJ IDEA.
@@ -9,7 +7,7 @@ import java.net.InetAddress;
  */
 public class RemoteObjectReference {
 
-    private InetAddress ipAddress;      // IP address & port of registry
+    private String hostname;      // IP address & port of registry
     private int port;
     private String refName;             // Name of the object reference in the registry
     private String className;           // Class of the object that is referenced
@@ -17,20 +15,20 @@ public class RemoteObjectReference {
     /**
      * Reference to a remote object held in an RMI registry
      *
-     * @param ipAddress IP address of registry
+     * @param hostname  IP address of registry
      * @param port      Port of registry
      * @param refName   Name of the object reference in the registry
      * @param className Class of the object that is referenced
      */
-    public RemoteObjectReference(InetAddress ipAddress, int port, String refName, String className) {
-        this.ipAddress = ipAddress;
+    public RemoteObjectReference(String hostname, int port, String refName, String className) {
+        this.hostname = hostname;
         this.port = port;
         this.refName = refName;
         this.className = className;
     }
 
-    public InetAddress getIpAddress() {
-        return ipAddress;
+    public String getHostname() {
+        return hostname;
     }
 
     public int getPort() {
@@ -45,5 +43,13 @@ public class RemoteObjectReference {
         return className;
     }
 
-    //TODO: add method to create local stub of the remote object
+    /**
+     * Creates a new stub object of the type contained within RemoteObjectReference
+     *
+     * @return new stub object
+     */
+    public Object localise() {
+        //TODO: add method to create local stub of the remote object
+        return "test test test!";
+    }
 }
