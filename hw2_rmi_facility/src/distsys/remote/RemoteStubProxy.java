@@ -43,11 +43,14 @@ public class RemoteStubProxy implements InvocationHandler {
      */
     @Override
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+        // Using RemoteKBStub, make remote call to server to invoke the method
         Object returnValue;
         returnValue = newStub.invokeMethod(method.getName(), args);
 
-        if (!returnValue.getClass().equals(method.getReturnType())) {
-            throw new RemoteKBException("Invalid method return type.");
+        // Verify the return types match
+        if (returnValue != null && !returnValue.getClass().equals(method.getReturnType())) {
+            throw new RemoteKBException("Invalid method return type. Found '" + returnValue.getClass() +
+                    "' and expected '" + method.getReturnType() + "'.");
         }
 
         return returnValue;

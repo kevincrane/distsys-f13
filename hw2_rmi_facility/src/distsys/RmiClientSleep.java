@@ -1,7 +1,7 @@
 package distsys;
 
 import distsys.msg.*;
-import distsys.objects.MathSequences;
+import distsys.objects.SleepTimer;
 import distsys.registry.RemoteObjectReference;
 import distsys.registry.RmiRegistry;
 import distsys.remote.RemoteKBException;
@@ -12,41 +12,13 @@ import java.io.IOException;
 /**
  * Created with IntelliJ IDEA.
  * User: kevin, prashanth
- * Date: 10/9/13
+ * Date: 10/10/13
  */
-public class RmiClientMaths {
+public class RmiClientSleep {
     // Test class for running remote math ops on a different machine
     private final static int REGISTRY_PORT = RmiRegistry.REG_PORT;
     private static String REGISTRY_HOSTNAME;
     private static CommHandler registryComm;
-
-
-    /**
-     * Test method to demonstrate remotely calling list() on the registry
-     */
-    private static void printRegistryKeys() throws IOException {
-        // Send RMI message directly to registry
-        registryComm = new CommHandler(REGISTRY_HOSTNAME, REGISTRY_PORT);
-        registryComm.sendMessage(new RmiRegListMessage());
-        RmiMessage inMsg = registryComm.receiveMessage();
-
-        if (inMsg instanceof RmiReturnMessage) {
-            String[] keys = (String[]) ((RmiReturnMessage) inMsg).getReturnValue();
-            if (keys.length <= 0) {
-                // No keys returned in registry
-                System.out.println("No registry keys.");
-            } else {
-                // At least one key found, print them all out
-                System.out.print(keys[0]);
-                for (int i = 1; i < keys.length; i++) {
-                    System.out.print(", " + keys[i]);
-                }
-                System.out.println();
-            }
-        } else {
-            System.out.println("Error: invalid RMI message type returned.");
-        }
-    }
 
 
     /**
@@ -79,27 +51,30 @@ public class RmiClientMaths {
 
 
     // Main Method
-    public static void main(String[] args) throws ClassNotFoundException, IllegalAccessException, InstantiationException {
-        if (args.length != 1) {
-            System.out.println("Usage: java distsys.RmiClientMaths server_hostname");
+    public static void main(String[] args) {
+        int sleepTime = 5;
+        if (args.length < 1) {
+            System.err.println("Usage: java distsys.RmiClientSleep server_hostname");
             return;
         }
+        // Set hostname from command line argument
         REGISTRY_HOSTNAME = args[0];
 
-        // First demonstration - list all keys on registry
-        System.out.print("1. The following key names are currently registered:\n  ");
-        try {
-            printRegistryKeys();
-        } catch (IOException e) {
-            System.err.println("Client error: could not communicate with registry (" + e.getMessage() + ").");
-            return;
+        // Get sleep time if available
+        if (args.length >= 2) {
+            try {
+                sleepTime = Integer.parseInt(args[1]);
+            } catch (NumberFormatException e) {
+                System.err.println("Usage: java distsys.RmiClientSleep server_hostname");
+                return;
+            }
         }
 
-        // Second demo - lookup remote object reference
+        // Lookup SleepTimer reference from registry
         RemoteObjectReference ref;
-        System.out.println("2. Requesting remote object reference 'maths' from registry..");
+        System.out.println("Requesting remote object reference 'sleep' from registry..");
         try {
-            ref = lookupReference("maths");
+            ref = lookupReference("sleep");
         } catch (IOException e) {
             System.err.println("Client error: could not communicate with registry (" + e.getMessage() + ").");
             return;
@@ -108,17 +83,21 @@ public class RmiClientMaths {
         // Localise remote reference into a new stub, perform remote operations with it
         if (ref != null) {
             // Dynamically generate new stub class
-            MathSequences mathSequences = (MathSequences) RemoteStubProxy.newInstance(ref);
+            SleepTimer sleepTimer = (SleepTimer) RemoteStubProxy.newInstance(ref);
 
             try {
-                // Make two different remote proxy calls
-                Long fib = mathSequences.fibonacci(100);
-                System.out.println("\nThe 100th Fibonacci number is " + fib);
-                Integer prime = mathSequences.nthPrime(2000000);
-                System.out.println("The 2,000,000th prime number is " + prime);
+                System.out.println("Waiting for " + sleepTime + " seconds..");
+                long startTime = System.currentTimeMillis();
+
+                // Make remote RMI call through proxy method
+                sleepTimer.waitSeconds(sleepTime);
+
+                long endTime = System.currentTimeMillis();
+                System.out.println("That was exactly " + (endTime - startTime) / 1000.0 + " seconds.");
             } catch (RemoteKBException e) {
                 System.err.println("Something blew up remotely: " + e.getMessage());
             }
         }
     }
+
 }

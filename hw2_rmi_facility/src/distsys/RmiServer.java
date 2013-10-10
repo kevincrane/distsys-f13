@@ -3,6 +3,8 @@ package distsys;
 import distsys.msg.*;
 import distsys.objects.MathSequences;
 import distsys.objects.MathSequencesImpl;
+import distsys.objects.SleepTimer;
+import distsys.objects.SleepTimerImpl;
 import distsys.registry.RmiRegistry;
 import distsys.remote.RemoteKBException;
 
@@ -80,6 +82,8 @@ public class RmiServer {
                 Method meth = localObj.getClass().getMethod(invoke.getMethodName(), argTypes);
 
                 // Invoke the method!
+                System.out.println("Invoking method '" + invoke.getMethodName() + "' on object '" +
+                        invoke.getRefName() + "'.");
                 returnValue = meth.invoke(localObj, methodArgs);
             }
         } catch (NoSuchMethodException e) {
@@ -108,14 +112,16 @@ public class RmiServer {
         registry = new RmiRegistry(RMI_HOSTNAME, RMI_PORT);
         registry.start();
 
-        // Create remote object
+        // Create two remote objects
         MathSequences maths = new MathSequencesImpl();
         registry.rebind("maths", maths);
+
+        SleepTimer sleep = new SleepTimerImpl();
+        registry.rebind("sleep", sleep);
 
         // Run loop and listen for incoming connections
         while (true) {
             final Socket newConnection = server.accept();
-            System.out.println("Received a new request from " + newConnection.getInetAddress().getCanonicalHostName() + "!");
 
             // Handle this request in a new thread
             new Thread(new Runnable() {
