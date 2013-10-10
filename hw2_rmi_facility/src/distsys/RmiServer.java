@@ -1,8 +1,10 @@
-package distsys.server;
+package distsys;
 
 import distsys.msg.*;
 import distsys.registry.RmiRegistry;
 import distsys.remote.RemoteKBException;
+import distsys.objects.MathSequences;
+import distsys.objects.MathSequencesImpl;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;

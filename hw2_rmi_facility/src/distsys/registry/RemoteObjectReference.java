@@ -2,12 +2,14 @@ package distsys.registry;
 
 import distsys.remote.RemoteKBStub;
 
+import java.io.Serializable;
+
 /**
  * Created with IntelliJ IDEA.
  * User: kevin, prashanth
  * Date: 10/7/13
  */
-public class RemoteObjectReference {
+public class RemoteObjectReference implements Serializable {
 
     private String hostname;      // IP address & port of registry
     private int port;

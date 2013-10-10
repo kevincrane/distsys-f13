@@ -122,6 +122,7 @@ public class RmiRegistry extends Thread {
         RmiMessage outMsg;
         if (inMsg instanceof RmiRegLookupMessage) {
             // Perform a lookup operation
+            System.out.println("Registry performing lookup action for key '" + ((RmiRegLookupMessage) inMsg).getRefKey() + "'.");
             try {
                 RemoteObjectReference ref = lookup(((RmiRegLookupMessage) inMsg).getRefKey());
                 outMsg = new RmiReturnMessage(ref);
@@ -130,6 +131,7 @@ public class RmiRegistry extends Thread {
             }
         } else if (inMsg instanceof RmiRegListMessage) {
             // Perform a list() operation
+            System.out.println("Registry performing list() action.");
             String[] refKeys = listKeys();
             outMsg = new RmiReturnMessage(refKeys);
         } else {

@@ -1,4 +1,4 @@
-package distsys.server;
+package distsys.objects;
 
 import java.util.Arrays;
 
@@ -67,7 +67,7 @@ public class MathSequencesImpl implements MathSequences {
                     sieve[i] = false;
                 }
                 count++;
-                System.out.println(count + " - " + ptr);
+//                System.out.println(count + " - " + ptr);
             }
         }
 

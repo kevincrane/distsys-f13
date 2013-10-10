@@ -1,4 +1,4 @@
-package distsys.server;
+package distsys.objects;
 
 import distsys.remote.RemoteKB;
 import distsys.remote.RemoteKBException;

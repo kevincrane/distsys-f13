@@ -1,15 +1,14 @@
-package distsys.client;
+package distsys.objects;
 
 import distsys.remote.RemoteKBException;
 import distsys.remote.RemoteKBStub;
-import distsys.server.MathSequences;
 
 /**
  * Created with IntelliJ IDEA.
  * User: kevin, prashanth
  * Date: 10/9/13
  */
-public class MathSequences_stub extends RemoteKBStub implements MathSequences {
+public class MathSequencesImpl_stub extends RemoteKBStub implements MathSequences {
 
     //TODO: how auto-generate stubs?
 
