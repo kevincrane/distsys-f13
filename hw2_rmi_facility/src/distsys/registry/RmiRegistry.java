@@ -127,7 +127,7 @@ public class RmiRegistry extends Thread {
                 RemoteObjectReference ref = lookup(((RmiRegLookupMessage) inMsg).getRefKey());
                 outMsg = new RmiReturnMessage(ref);
             } catch (IllegalArgumentException e) {
-                outMsg = new RmiExceptionMessage(e);
+                outMsg = new RmiExceptionMessage(new RemoteKBException("Could not find key.", e));
             }
         } else if (inMsg instanceof RmiRegListMessage) {
             // Perform a list() operation
@@ -135,7 +135,8 @@ public class RmiRegistry extends Thread {
             String[] refKeys = listKeys();
             outMsg = new RmiReturnMessage(refKeys);
         } else {
-            outMsg = new RmiExceptionMessage(new IllegalArgumentException("Unknown regRefs action type."));
+            // None of the above?
+            outMsg = new RmiExceptionMessage(new RemoteKBException("Unknown regRefs action type."));
         }
 
         return outMsg;

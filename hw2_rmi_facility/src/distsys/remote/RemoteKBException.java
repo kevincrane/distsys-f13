@@ -10,6 +10,8 @@ package distsys.remote;
  */
 public class RemoteKBException extends Exception {
 
+    private Throwable cause = null;
+
     /**
      * Custom error message
      *
@@ -27,7 +29,21 @@ public class RemoteKBException extends Exception {
      */
     public RemoteKBException(String s, Throwable cause) {
         super(s);
-        Throwable cause1 = cause;
+        this.cause = cause;
+    }
+
+    /**
+     * Returns a custom message if there is a nested exception that caused it
+     *
+     * @return New exception message string
+     */
+    @Override
+    public String getMessage() {
+        if (cause == null) {
+            return super.getMessage();
+        } else {
+            return super.getMessage() + "; nested exception is: \n\t" + cause.toString();
+        }
     }
 
 }

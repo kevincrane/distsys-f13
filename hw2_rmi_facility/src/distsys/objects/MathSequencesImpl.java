@@ -50,7 +50,7 @@ public class MathSequencesImpl implements MathSequences {
             return -1;
         }
 
-        boolean[] sieve = new boolean[n * 100];     // Just take a stupidly large buffer
+        boolean[] sieve = new boolean[n * 100];     // Just make a stupidly large buffer
         Arrays.fill(sieve, Boolean.TRUE);
         int count = 0;
 

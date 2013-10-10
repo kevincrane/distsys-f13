@@ -7,7 +7,7 @@ package distsys.msg;
  */
 public class RmiRegLookupMessage extends RmiMessage {
 
-    private String refKey;
+    private final String refKey;
 
     /**
      * RMI Registry Lookup Message, requesting the remote object reference of a desired key
@@ -22,11 +22,6 @@ public class RmiRegLookupMessage extends RmiMessage {
 
     public String getRefKey() {
         return refKey;
-    }
-
-    public void setRefKey(String refKey) {
-        this.refKey = refKey;
-        payload = refKey;
     }
 
 }

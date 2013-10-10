@@ -1,7 +1,5 @@
 package distsys.msg;
 
-import distsys.registry.RemoteObjectReference;
-
 import java.io.Serializable;
 
 /**
@@ -19,9 +17,8 @@ public abstract class RmiMessage implements Serializable {
         REG_LIST
     }
 
-    protected RemoteObjectReference reference;
     private final MessageType type;
-    Object payload;
+    private final Object payload;
 
     RmiMessage(MessageType type, Object payload) {
         this.type = type;
@@ -33,11 +30,4 @@ public abstract class RmiMessage implements Serializable {
         return type.name() + "{" + payload + "}";
     }
 
-    public MessageType getType() {
-        return type;
-    }
-
-    public Object getPayload() {
-        return payload;
-    }
 }

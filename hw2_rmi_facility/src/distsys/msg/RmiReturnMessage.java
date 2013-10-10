@@ -7,7 +7,7 @@ package distsys.msg;
  */
 public class RmiReturnMessage extends RmiMessage {
 
-    private Object returnValue;
+    private final Object returnValue;
 
     /**
      * RMI Message, sending the return value of the remote method that was called
@@ -22,11 +22,6 @@ public class RmiReturnMessage extends RmiMessage {
 
     public Object getReturnValue() {
         return returnValue;
-    }
-
-    public void setReturnValue(Object returnValue) {
-        this.returnValue = returnValue;
-        payload = returnValue;
     }
 
 }

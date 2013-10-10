@@ -7,7 +7,7 @@ package distsys.msg;
  */
 public class RmiExceptionMessage extends RmiMessage {
 
-    private Exception exception;
+    private final Exception exception;
 
     /**
      * RMI Message, sending a thrown exception back to the calling program
@@ -19,14 +19,7 @@ public class RmiExceptionMessage extends RmiMessage {
         this.exception = e;
     }
 
-
     public Exception getException() {
         return exception;
     }
-
-    public void setException(Exception e) {
-        this.exception = e;
-        payload = e;
-    }
-
 }

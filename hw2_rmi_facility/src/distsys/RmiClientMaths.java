@@ -18,7 +18,6 @@ public class RmiClientMaths {
     // Test class for running remote math ops on a different machine
     private final static int REGISTRY_PORT = RmiRegistry.REG_PORT;
     private static String REGISTRY_HOSTNAME;
-    private static CommHandler registryComm;
 
 
     /**
@@ -26,7 +25,7 @@ public class RmiClientMaths {
      */
     private static void printRegistryKeys() throws IOException {
         // Send RMI message directly to registry
-        registryComm = new CommHandler(REGISTRY_HOSTNAME, REGISTRY_PORT);
+        CommHandler registryComm = new CommHandler(REGISTRY_HOSTNAME, REGISTRY_PORT);
         registryComm.sendMessage(new RmiRegListMessage());
         RmiMessage inMsg = registryComm.receiveMessage();
 
@@ -55,7 +54,7 @@ public class RmiClientMaths {
     private static RemoteObjectReference lookupReference(String refName) throws IOException {
         // Send registry message looking up key refName
         RemoteObjectReference ref;
-        registryComm = new CommHandler(REGISTRY_HOSTNAME, REGISTRY_PORT);
+        CommHandler registryComm = new CommHandler(REGISTRY_HOSTNAME, REGISTRY_PORT);
         registryComm.sendMessage(new RmiRegLookupMessage(refName));
 
         // Receive a message back and act on it

@@ -57,37 +57,39 @@ public class RmiServer {
     /**
      * Invoke the method described within an RMI invocation message
      *
-     * @param invoke RMI invocation message
+     * @param invokeMsg RMI invocation message
      */
-    private static Object invokeMethod(RmiInvocationMessage invoke) throws Exception {
+    private static Object invokeMethod(RmiInvocationMessage invokeMsg) {
         // Grab reference to the desired object from the local table
-        Object localObj = registry.localLookup(invoke.getRefName());
-        Object[] methodArgs = invoke.getMethodArgs();
+        Object localObj = registry.localLookup(invokeMsg.getRefName());
+        Object[] methodArgs = invokeMsg.getMethodArgs();
         Object returnValue = null;
 
         try {
             // Try to define the actual method we're invoking
             if (methodArgs == null) {
                 // No arguments to call
-                Method meth = localObj.getClass().getMethod(invoke.getMethodName());
+                Method method = localObj.getClass().getMethod(invokeMsg.getMethodName());
 
                 // Invoke the method!
-                returnValue = meth.invoke(localObj);
+                returnValue = method.invoke(localObj);
+
             } else {
                 // Arguments were passed with the method name
                 Class<?>[] argTypes = new Class[methodArgs.length];
                 for (int i = 0; i < methodArgs.length; i++) {
                     argTypes[i] = methodArgs[i].getClass();
                 }
-                Method meth = localObj.getClass().getMethod(invoke.getMethodName(), argTypes);
+                Method method = localObj.getClass().getMethod(invokeMsg.getMethodName(), argTypes);
 
                 // Invoke the method!
-                System.out.println("Invoking method '" + invoke.getMethodName() + "' on object '" +
-                        invoke.getRefName() + "'.");
-                returnValue = meth.invoke(localObj, methodArgs);
+                System.out.println("Invoking method '" + invokeMsg.getMethodName() + "' on object '" +
+                        invokeMsg.getRefName() + "'.");
+                returnValue = method.invoke(localObj, methodArgs);
             }
+
         } catch (NoSuchMethodException e) {
-            System.err.println("Boo, no such method '" + invoke.getMethodName() + "'!");
+            System.err.println("Boo, no such method '" + invokeMsg.getMethodName() + "'!");
             e.printStackTrace();
         } catch (InvocationTargetException e) {
             System.err.println("Boo, invocation error!");
@@ -115,7 +117,6 @@ public class RmiServer {
         // Create two remote objects
         MathSequences maths = new MathSequencesImpl();
         registry.rebind("maths", maths);
-
         SleepTimer sleep = new SleepTimerImpl();
         registry.rebind("sleep", sleep);
 
@@ -133,7 +134,6 @@ public class RmiServer {
                     }
                 }
             }).start();
-
         }
     }
 
