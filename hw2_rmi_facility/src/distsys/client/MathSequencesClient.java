@@ -20,6 +20,8 @@ public class MathSequencesClient {
         //TODO: connect to a registry
         //TODO: check to see which objects are registered
         //TODO: lookup math object
+
+
         RemoteObjectReference ref = new RemoteObjectReference(serverHostname, serverPort, "maths", "distsys.client.MathSequences");
         MathSequences_stub mathSequences = (MathSequences_stub) ref.localise();
 

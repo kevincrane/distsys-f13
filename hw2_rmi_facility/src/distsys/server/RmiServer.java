@@ -1,17 +1,15 @@
 package distsys.server;
 
 import distsys.msg.*;
-import distsys.remote.RemoteKB;
+import distsys.registry.RmiRegistry;
 import distsys.remote.RemoteKBException;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * Created with IntelliJ IDEA.
@@ -19,11 +17,17 @@ import java.util.Map;
  * Date: 10/9/13
  */
 public class RmiServer {
-    final public static int RMI_PORT = 11223;
+    public static String RMI_HOSTNAME;
+    final public static int RMI_PORT = 7641;
+    public static RmiRegistry registry;
 
-    public static Map<String, RemoteKB> remoteObjects = Collections.synchronizedMap(new HashMap<String, RemoteKB>());
 
-
+    /**
+     * Performs a desired action based on RMI message received
+     *
+     * @param sock Socket to remote client
+     * @throws IOException
+     */
     public static void handleConnection(Socket sock) throws IOException {
         // Create CommHandler
         CommHandler comm = new CommHandler(sock);
@@ -54,26 +58,25 @@ public class RmiServer {
      */
     private static Object invokeMethod(RmiInvocationMessage invoke) throws Exception {
         // Grab reference to the desired object from the local table
-        Object localObj = remoteObjects.get(invoke.getRefName());
+        Object localObj = registry.localLookup(invoke.getRefName());
         Object[] methodArgs = invoke.getMethodArgs();
-        Method meth;
         Object returnValue = null;
 
         try {
             // Try to define the actual method we're invoking
             if (methodArgs == null) {
                 // No arguments to call
-                meth = localObj.getClass().getMethod(invoke.getMethodName());
+                Method meth = localObj.getClass().getMethod(invoke.getMethodName());
+
                 // Invoke the method!
                 returnValue = meth.invoke(localObj);
-
             } else {
                 // Arguments were passed with the method name
-                Class<?>[] classTypes = new Class[methodArgs.length];
+                Class<?>[] argTypes = new Class[methodArgs.length];
                 for (int i = 0; i < methodArgs.length; i++) {
-                    classTypes[i] = methodArgs[i].getClass();
+                    argTypes[i] = methodArgs[i].getClass();
                 }
-                meth = localObj.getClass().getMethod(invoke.getMethodName(), classTypes);
+                Method meth = localObj.getClass().getMethod(invoke.getMethodName(), argTypes);
 
                 // Invoke the method!
                 returnValue = meth.invoke(localObj, methodArgs);
@@ -98,20 +101,33 @@ public class RmiServer {
     public static void main(String[] args) throws IOException {
         // Initialize server socket
         ServerSocket server = new ServerSocket(RMI_PORT);
+        RMI_HOSTNAME = InetAddress.getLocalHost().getCanonicalHostName();
 
-        //TODO: add registry stuff
+        // Instantiate and run the RMI Registry for this server
+        registry = new RmiRegistry(RMI_HOSTNAME, RMI_PORT);
+        registry.start();
 
         // Create remote object
         MathSequences maths = new MathSequencesImpl();
-        remoteObjects.put("maths", maths);
-        //TODO add maths to real registry
+        registry.rebind("maths", maths);
 
         // Run loop and listen for incoming connections
         while (true) {
             //TODO: create new threads on accepts, break sometime?
-            Socket newConnection = server.accept();
-            System.out.println("Got a new connection from " + newConnection.getInetAddress().getCanonicalHostName() + "!");
-            handleConnection(newConnection);
+            final Socket newConnection = server.accept();
+            System.out.println("Received a new request from " + newConnection.getInetAddress().getCanonicalHostName() + "!");
+
+            // Handle this request in a new thread
+            new Thread(new Runnable() {
+                public void run() {
+                    try {
+                        handleConnection(newConnection);
+                    } catch (IOException e) {
+                        System.err.println("Error: Did not handle request from incoming msg properly (" + e.getMessage() + ").");
+                    }
+                }
+            }).start();
+
         }
     }
 
