@@ -1,10 +1,10 @@
 package distsys;
 
 import distsys.msg.*;
-import distsys.registry.RmiRegistry;
-import distsys.remote.RemoteKBException;
 import distsys.objects.MathSequences;
 import distsys.objects.MathSequencesImpl;
+import distsys.registry.RmiRegistry;
+import distsys.remote.RemoteKBException;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
@@ -19,9 +19,8 @@ import java.net.Socket;
  * Date: 10/9/13
  */
 public class RmiServer {
-    public static String RMI_HOSTNAME;
-    final public static int RMI_PORT = 7641;
-    public static RmiRegistry registry;
+    private final static int RMI_PORT = 7641;
+    private static RmiRegistry registry;
 
 
     /**
@@ -30,7 +29,7 @@ public class RmiServer {
      * @param sock Socket to remote client
      * @throws IOException
      */
-    public static void handleConnection(Socket sock) throws IOException {
+    private static void handleConnection(Socket sock) throws IOException {
         // Create CommHandler
         CommHandler comm = new CommHandler(sock);
         RmiMessage inMsg = comm.receiveMessage();
@@ -103,7 +102,7 @@ public class RmiServer {
     public static void main(String[] args) throws IOException {
         // Initialize server socket
         ServerSocket server = new ServerSocket(RMI_PORT);
-        RMI_HOSTNAME = InetAddress.getLocalHost().getCanonicalHostName();
+        String RMI_HOSTNAME = InetAddress.getLocalHost().getCanonicalHostName();
 
         // Instantiate and run the RMI Registry for this server
         registry = new RmiRegistry(RMI_HOSTNAME, RMI_PORT);
@@ -115,7 +114,6 @@ public class RmiServer {
 
         // Run loop and listen for incoming connections
         while (true) {
-            //TODO: create new threads on accepts, break sometime?
             final Socket newConnection = server.accept();
             System.out.println("Received a new request from " + newConnection.getInetAddress().getCanonicalHostName() + "!");
 

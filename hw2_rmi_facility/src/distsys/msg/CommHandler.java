@@ -12,12 +12,9 @@ import java.net.Socket;
  */
 public class CommHandler {
 
-    private String hostname;
-    private int port;
-
+    private final String hostname;
+    private final int port;
     private Socket sock;
-    private ObjectInputStream sockIn;
-    private ObjectOutputStream sockOut;
 
     /**
      * Class for simplifying the handling of RMI messages between hosts
@@ -53,7 +50,7 @@ public class CommHandler {
      */
     public void sendMessage(RmiMessage message) throws IOException {
         // Write the message object to socket's output stream, flushing it to the connected host
-        sockOut = new ObjectOutputStream(sock.getOutputStream());
+        ObjectOutputStream sockOut = new ObjectOutputStream(sock.getOutputStream());
         sockOut.writeObject(message);
         sockOut.flush();
     }
@@ -66,7 +63,7 @@ public class CommHandler {
      */
     public RmiMessage receiveMessage() throws IOException {
         // Listens to the connected inputstream on the socket, returning the RMI message received
-        sockIn = new ObjectInputStream(sock.getInputStream());
+        ObjectInputStream sockIn = new ObjectInputStream(sock.getInputStream());
         try {
             return (RmiMessage) sockIn.readObject();
         } catch (ClassNotFoundException e) {

@@ -1,7 +1,5 @@
 package distsys.registry;
 
-import distsys.remote.RemoteKBStub;
-
 import java.io.Serializable;
 
 /**
@@ -11,10 +9,10 @@ import java.io.Serializable;
  */
 public class RemoteObjectReference implements Serializable {
 
-    private String hostname;      // IP address & port of registry
-    private int port;
-    private String refName;             // Name of the object reference in the registry
-    private String className;           // Class of the object that is referenced
+    private final String hostname;      // IP address & port of registry
+    private final int port;
+    private final String refName;             // Name of the object reference in the registry
+    private final String className;           // Class of the object that is referenced
 
     /**
      * Reference to a remote object held in an RMI registry
@@ -53,25 +51,17 @@ public class RemoteObjectReference implements Serializable {
      * @return new stub object
      */
     public Object localise() {
-        RemoteKBStub localObject;
         try {
             // Create new class from the name of the stub class
-            Class stubClass = Class.forName(className + "_stub");
+            return Class.forName(className).newInstance();
 
-            // Generate a new local object from this class and tie it to this RemoteObjectReference
-            localObject = (RemoteKBStub) stubClass.newInstance();
-            localObject.setRemoteReference(this);
         } catch (ClassNotFoundException e) {
             System.err.println("ROR Error: class not found (" + e.getMessage() + ").");
-            return null;
         } catch (InstantiationException e) {
             System.err.println("ROR Error: class could not be instantiated (" + e.getMessage() + ").");
-            return null;
         } catch (IllegalAccessException e) {
             System.err.println("ROR Error: class could not be accessed (" + e.getMessage() + ").");
-            return null;
         }
-
-        return localObject;
+        return null;
     }
 }

@@ -20,10 +20,10 @@ public abstract class RmiMessage implements Serializable {
     }
 
     protected RemoteObjectReference reference;
-    protected MessageType type;
-    protected Object payload;
+    private final MessageType type;
+    Object payload;
 
-    public RmiMessage(MessageType type, Object payload) {
+    RmiMessage(MessageType type, Object payload) {
         this.type = type;
         this.payload = payload;
     }

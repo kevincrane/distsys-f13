@@ -10,7 +10,7 @@ import distsys.remote.RemoteKBStub;
  */
 public class MathSequencesImpl_stub extends RemoteKBStub implements MathSequences {
 
-    //TODO: how auto-generate stubs?
+    // No longer needed, I can now dynamically generate stub classes myself
 
 
     @Override

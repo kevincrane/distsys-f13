@@ -1,10 +1,11 @@
 package distsys;
 
 import distsys.msg.*;
+import distsys.objects.MathSequences;
 import distsys.registry.RemoteObjectReference;
 import distsys.registry.RmiRegistry;
 import distsys.remote.RemoteKBException;
-import distsys.objects.MathSequencesImpl_stub;
+import distsys.remote.RemoteStubProxy;
 
 import java.io.IOException;
 
@@ -15,9 +16,9 @@ import java.io.IOException;
  */
 public class RmiClientMaths {
     // Test class for running remote math ops on a different machine
-    final static int REGISTRY_PORT = RmiRegistry.REG_PORT;
-    static String REGISTRY_HOSTNAME;
-    static CommHandler registryComm;
+    private final static int REGISTRY_PORT = RmiRegistry.REG_PORT;
+    private static String REGISTRY_HOSTNAME;
+    private static CommHandler registryComm;
 
 
     /**
@@ -75,7 +76,7 @@ public class RmiClientMaths {
 
 
     // Main Method
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) throws ClassNotFoundException, IllegalAccessException, InstantiationException {
         if (args.length != 1) {
             System.out.println("Usage: java distsys.RmiClientMaths server_hostname");
             return;
@@ -84,15 +85,28 @@ public class RmiClientMaths {
 
         // First demonstration - list all keys on registry
         System.out.print("1. The following key names are currently registered:\n  ");
-        printRegistryKeys();
+        try {
+            printRegistryKeys();
+        } catch (IOException e) {
+            System.err.println("Client error: could not communicate with registry (" + e.getMessage() + ").");
+            return;
+        }
 
         // Second demo - lookup remote object reference
+        RemoteObjectReference ref;
         System.out.println("2. Requesting remote object reference 'maths' from registry..");
-        RemoteObjectReference ref = getRemoteReference("maths");
+        try {
+            ref = getRemoteReference("maths");
+        } catch (IOException e) {
+            System.err.println("Client error: could not communicate with registry (" + e.getMessage() + ").");
+            return;
+        }
 
         // Localise remote reference into a new stub, perform remote operations with it
         if (ref != null) {
-            MathSequencesImpl_stub mathSequences = (MathSequencesImpl_stub) ref.localise();
+            // Dynamically generate new stub class
+            MathSequences mathSequences = (MathSequences) RemoteStubProxy.newInstance(ref);
+
             try {
                 Long fib = mathSequences.fibonacci(100);
                 System.out.println("The 100th Fibonacci number is " + fib);

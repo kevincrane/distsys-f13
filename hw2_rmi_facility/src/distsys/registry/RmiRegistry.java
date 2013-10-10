@@ -18,11 +18,11 @@ import java.util.Map;
  */
 public class RmiRegistry extends Thread {
 
-    private String rmiHostname;
-    private int rmiPort;
+    private final String rmiHostname;
+    private final int rmiPort;
 
-    private Map<String, RemoteObjectReference> regRefs;
-    public Map<String, RemoteKB> regObjs;
+    private final Map<String, RemoteObjectReference> regRefs;
+    private final Map<String, RemoteKB> regObjs;
     private ServerSocket regServer;
     public final static int REG_PORT = 7341;
 
@@ -88,7 +88,7 @@ public class RmiRegistry extends Thread {
      * @return Corresponding RemoteObjectReference
      * @throws IllegalArgumentException
      */
-    public RemoteObjectReference lookup(String refKey) throws IllegalArgumentException {
+    RemoteObjectReference lookup(String refKey) throws IllegalArgumentException {
         if (regRefs.containsKey(refKey)) {
             return regRefs.get(refKey);
         } else {
@@ -101,7 +101,7 @@ public class RmiRegistry extends Thread {
      *
      * @return Array of key strings
      */
-    public String[] listKeys() {
+    String[] listKeys() {
         String[] keys = new String[regRefs.size()];
         int i = 0;
         for (String key : regRefs.keySet()) {

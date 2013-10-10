@@ -10,15 +10,6 @@ package distsys.remote;
  */
 public class RemoteKBException extends Exception {
 
-    public Throwable cause;
-
-    /**
-     * Default constructor
-     */
-    public RemoteKBException() {
-        super();
-    }
-
     /**
      * Custom error message
      *
@@ -36,7 +27,7 @@ public class RemoteKBException extends Exception {
      */
     public RemoteKBException(String s, Throwable cause) {
         super(s);
-        this.cause = cause;
+        Throwable cause1 = cause;
     }
 
 }
