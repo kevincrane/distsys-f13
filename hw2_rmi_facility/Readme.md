@@ -6,10 +6,6 @@
 * Kevin Crane
 * Prashanth Balasubramaniam
 
-TODO: REMAKE THIS FOR HOMEWORK 2
-
-
-
 
 To compile from root directory (the one with *Makefile*):
 ```
@@ -20,11 +16,12 @@ This must be done from each terminal that is running the application.
 
 To run the host (master):
 ```
-java -cp classes/ distsys.ProcessManager
+java -cp out/ distsys.RmiServer
 ```
 And the client from a different terminal:
 ```
-java -cp classes/ distsys.ProcessManager -c [hostname (e.g. localhost)]
+java -cp out/ distsys.RmiClientMaths server_hostname
+java -cp out/ distsys.RmiClientSleep server_hostname [sleep_time]
 ```
 
 To clean up the messy classes, call the following from the root directory:

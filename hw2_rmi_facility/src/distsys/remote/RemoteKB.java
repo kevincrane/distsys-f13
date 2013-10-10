@@ -6,5 +6,5 @@ package distsys.remote;
  * Date: 10/8/13
  */
 public interface RemoteKB {
-    //TODO: should be empty?
+    // should be empty?
 }

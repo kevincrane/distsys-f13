@@ -24,7 +24,6 @@ public class RmiServer {
     private final static int RMI_PORT = 7641;
     private static RmiRegistry registry;
 
-
     /**
      * Performs a desired action based on RMI message received
      *
@@ -43,7 +42,7 @@ public class RmiServer {
             try {
                 Object returned = invokeMethod(invoke);
                 outMsg = new RmiReturnMessage(returned);
-            } catch (Exception e) {
+            } catch (RemoteKBException e) {
                 outMsg = new RmiExceptionMessage(e);
             }
         } else {
@@ -59,11 +58,11 @@ public class RmiServer {
      *
      * @param invokeMsg RMI invocation message
      */
-    private static Object invokeMethod(RmiInvocationMessage invokeMsg) {
+    private static Object invokeMethod(RmiInvocationMessage invokeMsg) throws RemoteKBException {
         // Grab reference to the desired object from the local table
         Object localObj = registry.localLookup(invokeMsg.getRefName());
         Object[] methodArgs = invokeMsg.getMethodArgs();
-        Object returnValue = null;
+        Object returnValue;
 
         try {
             // Try to define the actual method we're invoking
@@ -89,14 +88,11 @@ public class RmiServer {
             }
 
         } catch (NoSuchMethodException e) {
-            System.err.println("Boo, no such method '" + invokeMsg.getMethodName() + "'!");
-            e.printStackTrace();
+            throw new RemoteKBException("Boo, no such method", e);
         } catch (InvocationTargetException e) {
-            System.err.println("Boo, invocation error!");
-            e.printStackTrace();
+            throw new RemoteKBException("Boo, invocation error!", e);
         } catch (IllegalAccessException e) {
-            System.err.println("Boo, illegal access error!");
-            e.printStackTrace();
+            throw new RemoteKBException("Boo, illegal access error!", e);
         }
 
         // Return the value made from the invoked method

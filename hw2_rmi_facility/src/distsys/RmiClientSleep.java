@@ -53,7 +53,7 @@ public class RmiClientSleep {
     public static void main(String[] args) {
         int sleepTime = 5;
         if (args.length < 1) {
-            System.err.println("Usage: java distsys.RmiClientSleep server_hostname");
+            System.err.println("Usage: java distsys.RmiClientSleep server_hostname [sleep_time]");
             return;
         }
         // Set hostname from command line argument
@@ -64,7 +64,7 @@ public class RmiClientSleep {
             try {
                 sleepTime = Integer.parseInt(args[1]);
             } catch (NumberFormatException e) {
-                System.err.println("Usage: java distsys.RmiClientSleep server_hostname");
+                System.err.println("Usage: java distsys.RmiClientSleep server_hostname [sleep_time]");
                 return;
             }
         }
