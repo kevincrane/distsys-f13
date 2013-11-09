@@ -29,4 +29,8 @@ public class BlockInfo {
         return (pos >= offset && pos < offset + fileLen);
     }
 
+    public long getOffset() {
+        return offset;
+    }
+
 }

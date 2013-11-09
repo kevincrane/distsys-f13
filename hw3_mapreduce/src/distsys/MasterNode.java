@@ -51,6 +51,7 @@ public class MasterNode extends Thread {
         // Handle the message received
         switch (msgIn.getType()) {
             case BLOCKMAP:
+                // SlaveNode sent a BlockMap to update
                 namenode.updateBlockMap(((BlockMapMessage) msgIn).getHostnum(), ((BlockMapMessage) msgIn).getBlocks());
                 comm.sendMessage(new AckMessage());
 
@@ -66,7 +67,13 @@ public class MasterNode extends Thread {
 //                i++;
                 break;
             case BLOCK_ADDR:
+                // Retrieve the DataNode address of a Block ID and send it back
                 namenode.retrieveBlockAddress(comm, ((BlockAddrMessage) msgIn).getBlockId());
+                break;
+            case BLOCK_POS:
+                // Determine which block contains a given position in a file and return the remainder of that block
+                BlockPosMessage blockPosMessage = (BlockPosMessage) msgIn;
+                namenode.getBlockWithPosition(comm, blockPosMessage.getFileName(), blockPosMessage.getBlockStart());
                 break;
             default:
                 System.out.println("MasterNode: unhandled message type " + msgIn.getType());

@@ -327,4 +327,37 @@ public class NameNode {
         }
     }
 
+    /**
+     * Return a Block ID that contains a given position to seek to
+     *
+     * @param fileName Name of file being read
+     * @param position Position to seek in file
+     * @return Block ID that contains this position
+     */
+    public void getBlockWithPosition(CommHandler dataNodeHandle, String fileName, long position) {
+        List<Integer> fileBlocks = namespace.get(fileName);
+
+        if (fileBlocks != null) {
+            for (int blockId : fileBlocks) {
+                BlockInfo blockInfo = blockData.get(blockId);
+                if (blockInfo.containsPosition(position)) {
+                    try {
+                        System.out.println("Found " + fileName + " position " + position + " in block " + blockId);
+                        dataNodeHandle.sendMessage(new BlockPosMessage(fileName, blockId, blockInfo.getOffset()));
+                        return;
+                    } catch (IOException e) {
+                        System.err.println("Error: error sending block address to DataNode.");
+                    }
+                }
+            }
+        }
+
+        System.err.println("Error: NameNode couldn't find file " + fileName + " to seek to.");
+        try {
+            dataNodeHandle.sendMessage(new BlockPosMessage(fileName, -1, 0));
+        } catch (IOException e) {
+            System.err.println("Error: error sending block address to DataNode.");
+        }
+    }
+
 }

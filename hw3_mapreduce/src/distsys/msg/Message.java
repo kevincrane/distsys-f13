@@ -15,6 +15,7 @@ public abstract class Message implements Serializable {
         BLOCK_REQ,
         BLOCK_ADDR,
         BLOCK_CONTENT,
+        BLOCK_POS,
         KILL
     }
 

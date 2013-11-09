@@ -24,8 +24,6 @@ public class SlaveNode extends Thread {
         String HOSTNAME = InetAddress.getLocalHost().getHostName();
         System.out.println("Starting SlaveNode at " + HOSTNAME + ":" + port);
         slaveServer = new ServerSocket(port);
-
-//        masterHandle = new CommHandler(slaveServer.accept());
         running = true;
 
         // Ping Master to say hi and give initial BlockMap
@@ -107,7 +105,8 @@ public class SlaveNode extends Thread {
                         try {
                             handleConnection(new CommHandler(sock));
                         } catch (IOException e) {
-                            System.err.println("Error: Did not handle request from incoming msg properly (" + e.getMessage() + ").");
+                            System.err.println("Error: Did not handle request from incoming msg properly (" +
+                                    e.getMessage() + ").");
                         }
                     }
                 }).start();
