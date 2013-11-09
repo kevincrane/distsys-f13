@@ -112,8 +112,9 @@ public class SlaveNode extends Thread {
                     }
                 }).start();
             } catch (IOException e) {
-                System.err.println("Error: oops, an error in the SlaveNode thread! (" + e.getMessage() + ").");
-                break;
+                if (running) {
+                    System.err.println("Error: oops, an error in the SlaveNode thread! (" + e.getMessage() + ").");
+                }
             }
         }
     }

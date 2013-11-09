@@ -81,7 +81,11 @@ public class MasterNode extends Thread {
      * @return File contents
      */
     public String readFile(String fileName) {
-        return namenode.readFile(fileName);
+        String fileContents = namenode.readFile(fileName);
+        if (fileContents == null) {
+            System.err.println("NameNode could not read file " + fileName + " from KDFS. :(");
+        }
+        return fileContents;
     }
 
     /**
@@ -136,7 +140,9 @@ public class MasterNode extends Thread {
                     }
                 }).start();
             } catch (IOException e) {
-                System.err.println("Error: oops, an error in the MasterNode thread! (" + e.getMessage() + ").");
+                if (running) {
+                    System.err.println("Error: oops, an error in the MasterNode thread! (" + e.getMessage() + ").");
+                }
             }
         }
     }

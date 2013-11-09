@@ -66,8 +66,6 @@ public class NameNode {
                 if (returnedMsg instanceof BlockMapMessage) {
                     blockMap.put(i, ((BlockMapMessage) returnedMsg).getBlocks());
                 }
-
-                System.out.println("Pinged port " + slave[1] + "(" + blockMap.size() + ")");
             } catch (IOException ignored) {
             }
         }
@@ -282,6 +280,7 @@ public class NameNode {
         StringBuilder fileContents = new StringBuilder();
         for (int blockID : blockIDs) {
             // Check each DataNode to see if they have this block
+            String contentsToAdd = null;
             for (int slaveID : blockMap.keySet()) {
                 if (blockMap.get(slaveID).contains(blockID)) {
                     // Found a DataNode with this block, try to get it
@@ -296,14 +295,20 @@ public class NameNode {
                             continue;
                         }
 
-                        // Append contents and move on to next Block ID
-                        fileContents.append(contentMsg.getBlockContents());
+                        // Read contents of this block
+                        contentsToAdd = contentMsg.getBlockContents();
                         break;
                     } catch (IOException e) {
                         System.err.println("Error: could not connect to DataNode " + slaveID + " (" + e.getMessage() + ").");
                     }
                 }
             }
+            // Append contents if they've been found and move on to next Block ID
+            if (contentsToAdd == null) {
+                System.err.println("Error: could not read find block " + blockID + " in KDFS.");
+                return null;
+            }
+            fileContents.append(contentsToAdd);
         }
 
         return fileContents.toString();
