@@ -24,17 +24,18 @@ public class DataNode {
         this.slaveNum = slaveNu;
 
         // Automatically ping Master/NameNode every 2 seconds with current blockmap
-        Timer pingTimer = new Timer();
-        pingTimer.schedule(new TimerTask() {
-            public void run() {
-                try {
-                    CommHandler timedHandle = new CommHandler(Config.MASTER_NODE, Config.DATA_PORT);
-                    timedHandle.sendMessage(new BlockMapMessage(slaveNum, generateBlockMap()));
-                } catch (IOException e) {
-                    System.err.println("Error: could not send BlockMap to master node (" + e.getMessage() + ").");
-                }
-            }
-        }, 5000, 5000);
+        //TODO: is this needed? or covered in NameNode?
+//        Timer pingTimer = new Timer();
+//        pingTimer.schedule(new TimerTask() {
+//            public void run() {
+//                try {
+//                    CommHandler timedHandle = new CommHandler(Config.MASTER_NODE, Config.DATA_PORT);
+//                    timedHandle.sendMessage(new BlockMapMessage(slaveNum, generateBlockMap()));
+//                } catch (IOException e) {
+//                    System.err.println("Error: could not send BlockMap to master node (" + e.getMessage() + ").");
+//                }
+//            }
+//        }, 5000, 5000);
     }
 
     /**
@@ -46,15 +47,17 @@ public class DataNode {
         File[] blockFiles = blockFolder.listFiles();
         Set<Integer> idSet = new HashSet<Integer>();
 
-        for (File f : blockFiles) {
-            if (f.isFile()) {
-                // Check if file is a KDFS block file
-                String fileName = f.getName();
-                if (fileName.startsWith(BLOCK_PREFIX)) {
-                    // Starts with correct prefix, add the ID number to the blockmap
-                    int blockId = Integer.valueOf(fileName.substring(BLOCK_PREFIX.length()));
-                    blockMap.put(blockId, f.getName());
-                    idSet.add(blockId);
+        if (blockFiles != null) {
+            for (File f : blockFiles) {
+                if (f.isFile()) {
+                    // Check if file is a KDFS block file
+                    String fileName = f.getName();
+                    if (fileName.startsWith(BLOCK_PREFIX)) {
+                        // Starts with correct prefix, add the ID number to the blockmap
+                        int blockId = Integer.valueOf(fileName.substring(BLOCK_PREFIX.length()));
+                        blockMap.put(blockId, f.getName());
+                        idSet.add(blockId);
+                    }
                 }
             }
         }
@@ -76,8 +79,7 @@ public class DataNode {
             try {
                 //TODO: add offset here
                 File blockFile = new File(Config.BLOCK_FOLDER + "/" + blockMap.get(blockID));
-                String blockContents = new Scanner(blockFile).useDelimiter("\\Z").next();
-                return blockContents;
+                return new Scanner(blockFile).useDelimiter("\\Z").next();
             } catch (FileNotFoundException e) {
                 System.err.println("Error: could not open DataNode file " + blockMap.get(blockID) + " (" +
                         e.getMessage() + ").");

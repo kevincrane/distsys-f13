@@ -6,6 +6,8 @@ import distsys.msg.*;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.Timer;
+import java.util.TimerTask;
 
 /**
  * Created with IntelliJ IDEA.
@@ -17,6 +19,7 @@ public class MasterNode extends Thread {
     // List of all actively connected Slave nodes' CommHandlers
     private ServerSocket masterServer;
     private boolean running;
+    private Timer pingTimer;
 
     // Namenode of KDFS
     private NameNode namenode;
@@ -26,10 +29,15 @@ public class MasterNode extends Thread {
         namenode = new NameNode();
 
         running = true;
+
+        pingTimer = new Timer();
+        pingTimer.schedule(new TimerTask() {
+            public void run() {
+                namenode.pingSlaves();
+            }
+        }, 5000, 5000);
     }
 
-
-    int i = 1;
 
     /**
      * Handle an incoming socket connection for MasterNode
@@ -130,6 +138,24 @@ public class MasterNode extends Thread {
             } catch (IOException e) {
                 System.err.println("Error: oops, an error in the MasterNode thread! (" + e.getMessage() + ").");
             }
+        }
+    }
+
+
+    /**
+     * Close master socket and slaves attached to it
+     */
+    public void close() {
+        running = false;
+        try {
+            pingTimer.cancel();
+            masterServer.close();
+            for (int i : namenode.blockMap.keySet()) {
+                CommHandler killHandle = new CommHandler(Config.SLAVE_NODES[i][0], Config.SLAVE_NODES[i][1]);
+                killHandle.sendMessage(new KillMessage());
+            }
+        } catch (IOException e) {
+            System.err.println("Error: problem closing master socket ports.\n" + e.getMessage());
         }
     }
 

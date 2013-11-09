@@ -85,7 +85,7 @@ public class MapReduceManager {
                     break;
                 case 3:
                     // Quit
-                    //TODO kill masterNode somehow
+                    masterNode.close();
                     running = false;
                     System.out.println("\nGoodBye!!");
                     break;

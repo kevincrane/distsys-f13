@@ -14,7 +14,7 @@ import java.util.*;
 public class NameNode {
 
     // Map of datanode host IDs to block IDs they carry
-    private Map<Integer, Set<Integer>> blockMap;
+    public Map<Integer, Set<Integer>> blockMap;
 
     // Map of file names to block IDs
     private Map<String, List<Integer>> namespace;
@@ -43,7 +43,7 @@ public class NameNode {
     /**
      * Initialization of NameNode; load Namespace from log file and ask every known slave for its BlockMap
      */
-    private void pingSlaves() {
+    public void pingSlaves() {
         blockMap = new HashMap<Integer, Set<Integer>>();
 
         // Connect to all known slaves and ask for their BlockMap
@@ -66,6 +66,8 @@ public class NameNode {
                 if (returnedMsg instanceof BlockMapMessage) {
                     blockMap.put(i, ((BlockMapMessage) returnedMsg).getBlocks());
                 }
+
+                System.out.println("Pinged port " + slave[1] + "(" + blockMap.size() + ")");
             } catch (IOException ignored) {
             }
         }

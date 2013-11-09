@@ -78,6 +78,8 @@ public class SlaveNode extends Thread {
             case KILL:
                 // Stop running the SlaveNode
                 running = false;
+                slaveServer.close();
+                System.out.println("\nEnding now, byee!");
                 break;
             case ACK:
                 // Acknowledgement from something
