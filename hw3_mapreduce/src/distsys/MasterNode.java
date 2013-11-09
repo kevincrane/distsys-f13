@@ -64,7 +64,32 @@ public class MasterNode extends Thread {
                 System.out.println("MasterNode: unhandled message type " + msgIn.getType());
                 break;
         }
+    }
 
+    /**
+     * Read file from KDFS
+     *
+     * @param fileName Name of file to read from KDFS
+     * @return File contents
+     */
+    public String readFile(String fileName) {
+        return namenode.readFile(fileName);
+    }
+
+    /**
+     * Store a new file in KDFS
+     *
+     * @param fileName Name of file to store
+     */
+    public void putFile(String fileName) {
+        namenode.putFile(fileName);
+    }
+
+    /**
+     * User method: list files in namespace
+     */
+    public void listFiles() {
+        namenode.listFiles();
     }
 
 
@@ -72,24 +97,25 @@ public class MasterNode extends Thread {
      * MasterNode thread loop
      */
     public void run() {
-        try {
-            Thread.sleep(1000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-        }
-        namenode.putFile("testFile.txt");
-
-        try {
-            Thread.sleep(1000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-        }
-        System.out.println("\ntestFile.txt contains:\n" + namenode.readFile("testFile.txt"));
+//        try {
+//            Thread.sleep(1000);
+//        } catch (InterruptedException e) {
+//            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+//        }
+//        namenode.putFile("testFile1");
+//
+//        try {
+//            Thread.sleep(1000);
+//        } catch (InterruptedException e) {
+//            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+//        }
+//        System.out.println("\ntestFile.txt contains:\n" + namenode.readFile("testFile.txt"));
+//        namenode.listFiles();
 
         while (running) {
             try {
                 final Socket sock = masterServer.accept();
-                System.err.println("Received connection from port " + sock.getPort());
+//                System.err.println("Received connection from port " + sock.getPort());
 
                 // Handle this request in a new thread
                 new Thread(new Runnable() {

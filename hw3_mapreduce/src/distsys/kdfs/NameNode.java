@@ -307,5 +307,17 @@ public class NameNode {
         return fileContents.toString();
     }
 
+    /**
+     * Print out a list of all files in the namespace
+     */
+    public void listFiles() {
+        List<String> sortedFileNames = new ArrayList<String>(namespace.keySet());
+        Collections.sort(sortedFileNames);
+
+        System.out.println("KDFS namespace contains:");
+        for (String filename : sortedFileNames) {
+            System.out.println(filename + " : " + namespace.get(filename).size() + " blocks");
+        }
+    }
 
 }
