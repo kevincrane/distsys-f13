@@ -13,11 +13,10 @@ import java.util.*;
  */
 public class DataNode {
 
-    // BlockMap maps: blockID -> filename
-    private Map<Integer, String> blockMap;
-
     private final String BLOCK_PREFIX = "blk_";
     private final int slaveNum;
+    // BlockMap maps: blockID -> filename
+    private Map<Integer, String> blockMap;
 //    private CommHandler masterHandle;
 
     public DataNode(int slaveNu) {
@@ -38,7 +37,6 @@ public class DataNode {
         }, 5000, 5000);
     }
 
-
     /**
      * Read data folder where blocks are stored and generate a new BlockMap
      * BlockMap maps: blockID -> filename
@@ -48,11 +46,11 @@ public class DataNode {
         File[] blockFiles = blockFolder.listFiles();
         Set<Integer> idSet = new HashSet<Integer>();
 
-        for(File f : blockFiles) {
-            if(f.isFile()) {
+        for (File f : blockFiles) {
+            if (f.isFile()) {
                 // Check if file is a KDFS block file
                 String fileName = f.getName();
-                if(fileName.startsWith(BLOCK_PREFIX)) {
+                if (fileName.startsWith(BLOCK_PREFIX)) {
                     // Starts with correct prefix, add the ID number to the blockmap
                     int blockId = Integer.valueOf(fileName.substring(BLOCK_PREFIX.length()));
                     blockMap.put(blockId, f.getName());
@@ -64,15 +62,15 @@ public class DataNode {
         return idSet;
     }
 
-
     /**
      * Reads a block of data from somewhere in KDFS by blockID, starting from an offset
-     * @param blockID    ID of block to read from KDFS
-//     * @param offset     Start reading from a byte offset     //TODO: come back to add offset stuff
-     * @return
+     *
+     * @param blockID ID of block to read from KDFS
+     * @param offset  Start reading from a byte offset     //TODO: come back to add offset stuff
+     * @return The contents of the block asked to read
      */
     public String readBlock(int blockID, long offset) {
-        if(blockMap.containsKey(blockID)) {
+        if (blockMap.containsKey(blockID)) {
             System.out.println("Block " + blockID + " found locally.");
             // Block is stored locally, just read it and return the contents as a String
             try {
@@ -90,21 +88,21 @@ public class DataNode {
                 //TODO make new CommHandler
                 CommHandler masterHandle = new CommHandler(Config.MASTER_NODE, Config.DATA_PORT);
                 masterHandle.sendMessage(new BlockAddrMessage(blockID));
-                BlockAddrMessage msgIn = (BlockAddrMessage)masterHandle.receiveMessage();
+                BlockAddrMessage msgIn = (BlockAddrMessage) masterHandle.receiveMessage();
 
                 // Send message to correct DataNode asking for block contents
-                if(msgIn.getSlaveNum() >= 0) {
+                if (msgIn.getSlaveNum() >= 0) {
                     int slaveNum = msgIn.getSlaveNum();
                     CommHandler dataNodeHandle = new CommHandler(Config.SLAVE_NODES[slaveNum][0], Config.SLAVE_NODES[slaveNum][1]);
                     dataNodeHandle.sendMessage(new BlockReqMessage(blockID, offset));
 
                     // Receive message, return block contents
                     Message blockContents = dataNodeHandle.receiveMessage();
-                    return ((BlockContentMessage)blockContents).getBlockContents();
+                    return ((BlockContentMessage) blockContents).getBlockContents();
                 } else {
                     System.err.println("Error: could not find block ID " + blockID + " in NameNode.");
                 }
-            } catch(IOException e) {
+            } catch (IOException e) {
                 System.err.println("Error: failed sending block request to master (" + e.getMessage() + ").");
             }
         }
@@ -113,11 +111,12 @@ public class DataNode {
 
     /**
      * Write a new block file to the local file system
-     * @param blockID     ID of block to write
-     * @param contents    Block contents
+     *
+     * @param blockID  ID of block to write
+     * @param contents Block contents
      */
     public void writeBlock(int blockID, String contents) {
-        if(blockMap.containsKey(blockID)) {
+        if (blockMap.containsKey(blockID)) {
             System.err.println("Error: DataNode " + slaveNum + " already contains block ID " + blockID + ".");
             return;
         }

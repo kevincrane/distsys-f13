@@ -21,11 +21,12 @@ public class BlockInfo {
 
     /**
      * Returns true if pos is a position contained within this block
-     * @param pos    Position offset in the file
-     * @return       Whether or not pos is in the file
+     *
+     * @param pos Position offset in the file
+     * @return Whether or not pos is in the file
      */
     public boolean containsPosition(long pos) {
-        return (pos >= offset && pos < offset+fileLen);
+        return (pos >= offset && pos < offset + fileLen);
     }
 
 }

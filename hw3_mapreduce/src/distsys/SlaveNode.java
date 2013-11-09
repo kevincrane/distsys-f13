@@ -36,7 +36,7 @@ public class SlaveNode extends Thread {
     private void init() throws IOException {
         // Wait for MasterNode to say hi
         CommHandler initHandle = new CommHandler(slaveServer.accept());
-        BlockMapMessage initMsg = (BlockMapMessage)initHandle.receiveMessage();
+        BlockMapMessage initMsg = (BlockMapMessage) initHandle.receiveMessage();
 
 
         // Initialize data node
@@ -52,7 +52,8 @@ public class SlaveNode extends Thread {
 
     /**
      * Handle an incoming socket connection for SlaveNode
-     * @param comm    CommHandler that is sending a message to this Slave
+     *
+     * @param comm CommHandler that is sending a message to this Slave
      */
     private void handleConnection(CommHandler comm) throws IOException {
         // Receive the message that is being sent
@@ -62,18 +63,18 @@ public class SlaveNode extends Thread {
         switch (msgIn.getType()) {
             case BLOCKMAP:
                 // BlockMap requested, send back to MasterNode
-                slaveNum = ((BlockMapMessage)msgIn).getHostnum();
+                slaveNum = ((BlockMapMessage) msgIn).getHostnum();
                 comm.sendMessage(new BlockMapMessage(slaveNum, dataNode.generateBlockMap()));
                 break;
             case BLOCK_REQ:
                 // A block was requested, read it and send its contents back
-                BlockReqMessage blockReq = (BlockReqMessage)msgIn;
+                BlockReqMessage blockReq = (BlockReqMessage) msgIn;
                 String contents = dataNode.readBlock(blockReq.getBlockId(), blockReq.getOffset());
                 comm.sendMessage(new BlockContentMessage(blockReq.getBlockId(), contents));
                 break;
             case BLOCK_CONTENT:
                 // Someone wants you to write a new block to the file system
-                BlockContentMessage blockContent = (BlockContentMessage)msgIn;
+                BlockContentMessage blockContent = (BlockContentMessage) msgIn;
                 dataNode.writeBlock(blockContent.getBlockID(), blockContent.getBlockContents());
                 //TODO: send acknowledgement back?
                 break;
@@ -93,9 +94,11 @@ public class SlaveNode extends Thread {
     }
 
 
-    /** SlaveNode thread loop */
+    /**
+     * SlaveNode thread loop
+     */
     public void run() {
-        while(running) {
+        while (running) {
             try {
                 final Socket sock = slaveServer.accept();
 
@@ -117,11 +120,13 @@ public class SlaveNode extends Thread {
     }
 
 
-    /** Main Method */
+    /**
+     * Main Method
+     */
     public static void main(String[] args) throws IOException {
         int PORT = Config.DATA_PORT;
         // Initialize connection with Master
-        if(args.length == 1) {
+        if (args.length == 1) {
             PORT = Integer.parseInt(args[0]);
         }
 

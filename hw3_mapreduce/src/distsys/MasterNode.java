@@ -30,9 +30,11 @@ public class MasterNode extends Thread {
 
 
     int i = 1;
+
     /**
      * Handle an incoming socket connection for MasterNode
-     * @param comm    CommHandler that is sending a message to the Master
+     *
+     * @param comm CommHandler that is sending a message to the Master
      */
     private void handleConnection(CommHandler comm) throws IOException {
         // Receive the message that is being sent
@@ -47,7 +49,7 @@ public class MasterNode extends Thread {
                 //TODO remove
                 CommHandler tempHandle = new CommHandler(Config.SLAVE_NODES[0][0], Config.SLAVE_NODES[0][1]);
                 System.out.println("Sending request to " + tempHandle.getHostname() + ":" + tempHandle.getPort());
-                tempHandle.sendMessage(new BlockContentMessage(12+i, "HIHIHI I'M THE BEST!!"));
+                tempHandle.sendMessage(new BlockContentMessage(12 + i, "HIHIHI I'M THE BEST!!"));
 
 //                System.out.print("REQUESTED " + i + ": ");
 //                tempHandle.sendMessage(new BlockReqMessage(i));
@@ -68,13 +70,14 @@ public class MasterNode extends Thread {
     }
 
 
-    /** MasterNode thread loop */
+    /**
+     * MasterNode thread loop
+     */
     public void run() {
-        while(running) {
+        while (running) {
             try {
                 final Socket sock = masterServer.accept();
                 System.err.println("Received connection from port " + sock.getPort());
-//                handleConnection(new CommHandler(sock));
 
                 // Handle this request in a new thread
                 new Thread(new Runnable() {

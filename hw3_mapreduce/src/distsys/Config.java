@@ -8,7 +8,7 @@ package distsys;
 public class Config {
 
     // Master and slave node locations
-    public static final String  MASTER_NODE = "localhost";
+    public static final String MASTER_NODE = "localhost";
     public static final String[][] SLAVE_NODES = {
             {"localhost", "12345"},
             {"localhost", "12346"},
@@ -16,15 +16,15 @@ public class Config {
     };
 
     // Port used for transferring data between nodes
-    public static final int     DATA_PORT = 14087;
+    public static final int DATA_PORT = 14087;
 
     // KDFS block size (in bytes)
-    public static final int     BLOCK_SIZE = 1 * 1024 * 1024;
+    public static final int BLOCK_SIZE = 1 * 1024 * 1024;
 
     // Folder on data node to store blocks
-    public static final String  BLOCK_FOLDER = "data";
+    public static final String BLOCK_FOLDER = "data";
 
     // Text file that logs files in the namespace for persistence
-    public static final String  NAMESPACE_LOG = "kdfs_namespace";
+    public static final String NAMESPACE_LOG = "kdfs_namespace";
 
 }

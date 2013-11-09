@@ -7,6 +7,5 @@ package distsys.kdfs;
  */
 public class DistFile {
 
-    
 
 }
