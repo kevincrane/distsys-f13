@@ -44,9 +44,6 @@ public class SlaveNode extends Thread {
         dataNode = new DataNode(slaveNum);
         System.out.println("Connected as SlaveNode " + slaveNum);
         initHandle.sendMessage(new BlockMapMessage(slaveNum, dataNode.generateBlockMap()));
-
-//        System.out.println("Slave: sent initial BlockMap to master at " + initHandle.getHostname() + ":" +
-//                initHandle.getPort() + ".");    //todo remove
     }
 
 

@@ -22,7 +22,7 @@ public class Config {
     public static final int BLOCK_SIZE = 50; // 1 * 1024 * 1024;
 
     // Number of DataNodes that should store each block
-    public static final int REPLICATION = 4;
+    public static final int REPLICATION = 2;
 
     // Folder on data node to store blocks
     public static final String BLOCK_FOLDER = "data";

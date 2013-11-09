@@ -58,8 +58,6 @@ public class MasterNode extends Thread {
 //                i++;
                 break;
             case BLOCK_ADDR:
-                //TODO
-                System.err.println("Handling request " + msgIn.getType());
                 namenode.retrieveBlockAddress(comm, ((BlockAddrMessage) msgIn).getBlockId());
                 break;
             default:
@@ -80,6 +78,14 @@ public class MasterNode extends Thread {
             e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
         }
         namenode.putFile("testFile.txt");
+
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+        }
+        System.out.println("\ntestFile.txt contains:\n" + namenode.readFile("testFile.txt"));
+
         while (running) {
             try {
                 final Socket sock = masterServer.accept();

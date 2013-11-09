@@ -79,13 +79,13 @@ public class DataNode {
                 String blockContents = new Scanner(blockFile).useDelimiter("\\Z").next();
                 return blockContents;
             } catch (FileNotFoundException e) {
-                System.err.println("Error: could not open DataNode file " + blockMap.get(blockID) + ".");
+                System.err.println("Error: could not open DataNode file " + blockMap.get(blockID) + " (" +
+                        e.getMessage() + ").");
             }
         } else {
             System.out.println("Looking elsewhere for block " + blockID);
             try {
                 // Block is stored elsewhere, bleh. Ask the NameNode where it lives
-                //TODO make new CommHandler
                 CommHandler masterHandle = new CommHandler(Config.MASTER_NODE, Config.DATA_PORT);
                 masterHandle.sendMessage(new BlockAddrMessage(blockID));
                 BlockAddrMessage msgIn = (BlockAddrMessage) masterHandle.receiveMessage();
@@ -106,7 +106,7 @@ public class DataNode {
                 System.err.println("Error: failed sending block request to master (" + e.getMessage() + ").");
             }
         }
-        return "";
+        return null;
     }
 
     /**
@@ -121,10 +121,10 @@ public class DataNode {
             return;
         }
 
-        String fileName = String.format("%s/%s%03d", Config.BLOCK_FOLDER, BLOCK_PREFIX, blockID);
+        String fileName = String.format("%s%03d", BLOCK_PREFIX, blockID);
         System.out.println("DataNode writing block " + fileName);
         try {
-            Writer outFile = new FileWriter(fileName);
+            Writer outFile = new FileWriter(Config.BLOCK_FOLDER + "/" + fileName);
             outFile.write(contents);
             outFile.close();
             blockMap.put(blockID, fileName);

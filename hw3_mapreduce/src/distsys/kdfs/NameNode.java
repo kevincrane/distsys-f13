@@ -13,7 +13,7 @@ import java.util.*;
  */
 public class NameNode {
 
-    // Map of datanode hostnames to block IDs they carry
+    // Map of datanode host IDs to block IDs they carry
     private Map<Integer, Set<Integer>> blockMap;
 
     // Map of file names to block IDs
@@ -22,6 +22,7 @@ public class NameNode {
     // Metadata about each KDFS block
     private Map<Integer, BlockInfo> blockData;
 
+    // Highest block ID currently in KDFS
     private int maxBlockID = 0;
 
 
@@ -42,13 +43,12 @@ public class NameNode {
     /**
      * Initialization of NameNode; load Namespace from log file and ask every known slave for its BlockMap
      */
-    public void pingSlaves() {
+    private void pingSlaves() {
         blockMap = new HashMap<Integer, Set<Integer>>();
 
         // Connect to all known slaves and ask for their BlockMap
         for (int i = 0; i < Config.SLAVE_NODES.length; i++) {
             String[] slave = Config.SLAVE_NODES[i];
-            int nextSlave = 0;
 
             if (slave.length != 2) {
                 //TODO: handle not having a port in config?
@@ -209,7 +209,6 @@ public class NameNode {
 
             // Separate out contents of this block
             String currentBlock = fileContents.substring(pos, endPos);
-            System.out.println("BLOCK: " + currentBlock);       //TODO remove
 
             // Write each block rep times, up to the Replication Factor
             for (int rep = 0; rep < Config.REPLICATION && rep < dataNodes.size(); rep++) {
@@ -227,6 +226,14 @@ public class NameNode {
                             Config.SLAVE_NODES[currentSlave][1]);
                     writingSlave.sendMessage(new BlockContentMessage(maxBlockID, currentBlock));
                     // TODO: if you need acknowledgement from DataNode, it would go here
+
+                    // Update BlockMap on success
+                    Set<Integer> slaveBlocks = blockMap.get(currentSlave);
+                    if (slaveBlocks == null) {
+                        slaveBlocks = new HashSet<Integer>();
+                    }
+                    slaveBlocks.add(maxBlockID);
+                    blockMap.put(currentSlave, slaveBlocks);
                 } catch (IOException e) {
                     System.err.println("Error: NameNode could not send Block write request to " +
                             Config.SLAVE_NODES[currentSlave][0] + ":" + Config.SLAVE_NODES[currentSlave][1]);
@@ -254,6 +261,50 @@ public class NameNode {
                 System.err.println("Error: failed to update namespace log file.");
             }
         }
+    }
+
+    /**
+     * Read a file from KDFS and return its contents as as tring
+     *
+     * @param fileName File's name in the namespace
+     * @return Contents of the file
+     */
+    public String readFile(String fileName) {
+        List<Integer> blockIDs = namespace.get(fileName);
+        if (blockIDs == null) {
+            System.err.println("Error: KDFS namespace does not contain file " + fileName + ".");
+            return null;
+        }
+
+        // Iterate through each block ID for this filename
+        StringBuilder fileContents = new StringBuilder();
+        for (int blockID : blockIDs) {
+            // Check each DataNode to see if they have this block
+            for (int slaveID : blockMap.keySet()) {
+                if (blockMap.get(slaveID).contains(blockID)) {
+                    // Found a DataNode with this block, try to get it
+                    try {
+                        CommHandler blockReadHandle = new CommHandler(Config.SLAVE_NODES[slaveID][0],
+                                Config.SLAVE_NODES[slaveID][1]);
+                        blockReadHandle.sendMessage(new BlockReqMessage(blockID));
+                        BlockContentMessage contentMsg = (BlockContentMessage) blockReadHandle.receiveMessage();
+
+                        if (contentMsg.getBlockContents() == null) {
+                            System.err.println("Error: DataNode " + slaveID + " returned empty content, trying new node.");
+                            continue;
+                        }
+
+                        // Append contents and move on to next Block ID
+                        fileContents.append(contentMsg.getBlockContents());
+                        break;
+                    } catch (IOException e) {
+                        System.err.println("Error: could not connect to DataNode " + slaveID + " (" + e.getMessage() + ").");
+                    }
+                }
+            }
+        }
+
+        return fileContents.toString();
     }
 
 
