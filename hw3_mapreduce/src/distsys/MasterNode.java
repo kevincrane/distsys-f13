@@ -47,9 +47,9 @@ public class MasterNode extends Thread {
                 comm.sendMessage(new AckMessage());
 
                 //TODO remove
-                CommHandler tempHandle = new CommHandler(Config.SLAVE_NODES[0][0], Config.SLAVE_NODES[0][1]);
-                System.out.println("Sending request to " + tempHandle.getHostname() + ":" + tempHandle.getPort());
-                tempHandle.sendMessage(new BlockContentMessage(12 + i, "HIHIHI I'M THE BEST!!"));
+//                CommHandler tempHandle = new CommHandler(Config.SLAVE_NODES[0][0], Config.SLAVE_NODES[0][1]);
+//                System.out.println("Sending request to " + tempHandle.getHostname() + ":" + tempHandle.getPort());
+//                tempHandle.sendMessage(new BlockContentMessage(12 + i, "HIHIHI I'M THE BEST!!"));
 
 //                System.out.print("REQUESTED " + i + ": ");
 //                tempHandle.sendMessage(new BlockReqMessage(i));
@@ -74,6 +74,12 @@ public class MasterNode extends Thread {
      * MasterNode thread loop
      */
     public void run() {
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+        }
+        namenode.putFile("testFile.txt");
         while (running) {
             try {
                 final Socket sock = masterServer.accept();
