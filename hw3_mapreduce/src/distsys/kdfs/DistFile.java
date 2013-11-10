@@ -15,18 +15,31 @@ public class DistFile {
 
     private DataNode dataNode;
     private String fileName;
-    private long position;
+    private int position;
     private String buffer;
-    private long bufferStart;
+    private int bufferStart;
 
-    public DistFile(DataNode dataNode, String fileName, long startingPosition) {
+    public DistFile(DataNode dataNode, String fileName, int startingPosition) {
         this.dataNode = dataNode;
         this.fileName = fileName;
 
+        // Set up starting position
         this.position = startingPosition;
         buffer = "";
         bufferStart = startingPosition;
-        seek(startingPosition);
+
+        // If starting buffer from later block, check if you need to skip the first record (leftover from prev. block)
+        if (startingPosition > 0) {
+            startingPosition--;
+            bufferStart--;
+            seek(startingPosition);
+        } else {
+            seek(startingPosition);
+        }
+    }
+
+    public int getPosition() {
+        return position;
     }
 
 
@@ -35,7 +48,7 @@ public class DistFile {
      *
      * @param position Position in file to seek to
      */
-    public void seek(long position) {
+    public void seek(int position) {
         if (position < bufferStart || position >= bufferStart + buffer.length()) {
             // Position is not stored in buffer, load new block
             try {
@@ -51,7 +64,9 @@ public class DistFile {
                     buffer = dataNode.readBlock(blockPosMessage.getBlockId(), position - blockPosMessage.getBlockStart());
                     this.position = position;
                     this.bufferStart = position;
-                    System.out.println("Seeked to position " + this.position + "; buffer contains:\n" + buffer);
+                } else {
+                    // Could not find valid block, must not exist
+                    this.position = -1;
                 }
             } catch (IOException e) {
                 System.err.println("Error: error sending block position request to NameNode.");
@@ -59,8 +74,40 @@ public class DistFile {
         } else {
             // We already have what we need in the buffer
             this.position = position;
-            System.out.println("Already have buffer. Seeked to position " + this.position + "; buffer contains:\n" + buffer);
         }
+    }
+
+    /**
+     * Read a mapreduce record from the DistFile.
+     * Delimited by newline.
+     * Extends into next blocks if needed
+     *
+     * @return Next String record from DistFile
+     */
+    public String nextRecord() {
+        int recordEnd = buffer.indexOf('\n', position - bufferStart);
+        String record = "";
+
+        // If this record extends past the end of a block, seek to a new block to continue
+        while (recordEnd == -1 && position >= 0) {
+            // Add remainder of the buffer to string and seek to next block
+            record += buffer.substring(position - bufferStart);
+            position = bufferStart + buffer.length();
+            seek(position);
+            recordEnd = buffer.indexOf('\n', position - bufferStart);
+        }
+
+        // Add remainder of the buffer read to the record
+        if (position >= 0) {
+            record += buffer.substring(position - bufferStart, recordEnd);
+            position += record.length() + 1;
+        }
+
+        // If you haven't read anything and you've finished the block or record, end
+        if (record.length() == 0 && (recordEnd < 0 || position < 0)) {
+            return null;
+        }
+        return record;
     }
 
 }

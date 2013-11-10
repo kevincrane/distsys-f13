@@ -9,10 +9,10 @@ public class BlockPosMessage extends Message {
 
     private String fileName;
     private int blockID;
-    private long blockStart;
+    private int blockStart;
 
     // Request a block address from NameNode
-    public BlockPosMessage(String fileName, int blockID, long blockStart) {
+    public BlockPosMessage(String fileName, int blockID, int blockStart) {
         super(MessageType.BLOCK_POS, blockID);
         this.fileName = fileName;
         this.blockID = blockID;
@@ -23,7 +23,7 @@ public class BlockPosMessage extends Message {
         return blockID;
     }
 
-    public long getBlockStart() {
+    public int getBlockStart() {
         return blockStart;
     }
 

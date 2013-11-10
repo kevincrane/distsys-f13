@@ -66,26 +66,50 @@ public class DataNode {
     }
 
     /**
+     * Read the contents of an entire file block into a string
+     * Referred from StackOverflow here: http://stackoverflow.com/questions/1656797/how-to-read-a-file-into-string-in-java
+     *
+     * @param filePath Name of file to read
+     * @return String file contents
+     * @throws IOException
+     */
+    private String readFileAsString(String filePath) throws IOException {
+        StringBuilder fileData = new StringBuilder();
+        BufferedReader reader = new BufferedReader(
+                new FileReader(filePath));
+        char[] buf = new char[1024];
+        int numRead;
+        while ((numRead = reader.read(buf)) != -1) {
+            String readData = String.valueOf(buf, 0, numRead);
+            fileData.append(readData);
+        }
+        reader.close();
+        return fileData.toString();
+    }
+
+    /**
      * Reads a block of data from somewhere in KDFS by blockID, starting from an offset
      *
      * @param blockID ID of block to read from KDFS
      * @param offset  Start reading from a byte offset     //TODO: come back to add offset stuff
      * @return The contents of the block asked to read
      */
-    public String readBlock(int blockID, long offset) {
+    public String readBlock(int blockID, int offset) {
         if (blockMap.containsKey(blockID)) {
-            System.out.println("Block " + blockID + " found locally.");
+//            System.out.println("Block " + blockID + " found locally.");
             // Block is stored locally, just read it and return the contents as a String
             try {
-                //TODO: add offset here
-                File blockFile = new File(Config.BLOCK_FOLDER + "/" + blockMap.get(blockID));
-                return new Scanner(blockFile).useDelimiter("\\Z").next();
-            } catch (FileNotFoundException e) {
+                String blockContents = readFileAsString(Config.BLOCK_FOLDER + "/" + blockMap.get(blockID));
+                if (offset > 0) {
+                    blockContents = blockContents.substring(offset);
+                }
+                return blockContents;
+            } catch (IOException e) {
                 System.err.println("Error: could not open DataNode file " + blockMap.get(blockID) + " (" +
                         e.getMessage() + ").");
             }
         } else {
-            System.out.println("Looking elsewhere for block " + blockID);
+//            System.out.println("Looking elsewhere for block " + blockID);
             try {
                 // Block is stored elsewhere, bleh. Ask the NameNode where it lives
                 CommHandler masterHandle = new CommHandler(Config.MASTER_NODE, Config.DATA_PORT);

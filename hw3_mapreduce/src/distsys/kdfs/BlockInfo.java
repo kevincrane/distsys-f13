@@ -9,10 +9,10 @@ public class BlockInfo {
 
     private int blockID;
     private String filename;
-    private long offset;
-    private long fileLen;
+    private int offset;
+    private int fileLen;
 
-    public BlockInfo(int blockID, String filename, long offset, long fileLen) {
+    public BlockInfo(int blockID, String filename, int offset, int fileLen) {
         this.blockID = blockID;
         this.filename = filename;
         this.offset = offset;
@@ -29,7 +29,7 @@ public class BlockInfo {
         return (pos >= offset && pos < offset + fileLen);
     }
 
-    public long getOffset() {
+    public int getOffset() {
         return offset;
     }
 

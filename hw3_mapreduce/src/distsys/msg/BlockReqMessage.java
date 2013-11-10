@@ -8,7 +8,7 @@ package distsys.msg;
 public class BlockReqMessage extends Message {
 
     private int blockID;
-    private long offset;
+    private int offset;
 
     // Request a block address from NameNode
     public BlockReqMessage(int blockID) {
@@ -17,7 +17,7 @@ public class BlockReqMessage extends Message {
         this.offset = 0;
     }
 
-    public BlockReqMessage(int blockID, long offset) {
+    public BlockReqMessage(int blockID, int offset) {
         super(MessageType.BLOCK_REQ, blockID);
         this.blockID = blockID;
         this.offset = offset;
@@ -27,7 +27,7 @@ public class BlockReqMessage extends Message {
         return blockID;
     }
 
-    public long getOffset() {
+    public int getOffset() {
         return offset;
     }
 

@@ -106,8 +106,8 @@ public class NameNode {
 
                 // Extract block params for this particular block
                 int blockID = Integer.parseInt(blockInfo[0]);
-                long offset = Long.parseLong(blockInfo[1]);
-                long length = Long.parseLong(blockInfo[2]);
+                int offset = Integer.parseInt(blockInfo[1]);
+                int length = Integer.parseInt(blockInfo[2]);
                 if (blockID > maxBlockID) {
                     maxBlockID = blockID;
                 }
@@ -283,8 +283,8 @@ public class NameNode {
             String contentsToAdd = null;
             for (int slaveID : blockMap.keySet()) {
                 if (blockMap.get(slaveID).contains(blockID)) {
-                    // Found a DataNode with this block, try to get it
                     try {
+                        // Found a DataNode with this block, try to get it
                         CommHandler blockReadHandle = new CommHandler(Config.SLAVE_NODES[slaveID][0],
                                 Config.SLAVE_NODES[slaveID][1]);
                         blockReadHandle.sendMessage(new BlockReqMessage(blockID));
@@ -332,15 +332,16 @@ public class NameNode {
      *
      * @param fileName Name of file being read
      * @param position Position to seek in file
-     * @return Block ID that contains this position
      */
-    public void getBlockWithPosition(CommHandler dataNodeHandle, String fileName, long position) {
+    public void getBlockWithPosition(CommHandler dataNodeHandle, String fileName, int position) {
         List<Integer> fileBlocks = namespace.get(fileName);
 
         if (fileBlocks != null) {
+            // Iterate through each block that is listed for this file in the namespace
             for (int blockId : fileBlocks) {
                 BlockInfo blockInfo = blockData.get(blockId);
                 if (blockInfo.containsPosition(position)) {
+                    // Found a block that contains this position, send message back to slave
                     try {
                         System.out.println("Found " + fileName + " position " + position + " in block " + blockId);
                         dataNodeHandle.sendMessage(new BlockPosMessage(fileName, blockId, blockInfo.getOffset()));
@@ -352,7 +353,7 @@ public class NameNode {
             }
         }
 
-        System.err.println("Error: NameNode couldn't find file " + fileName + " to seek to.");
+//        System.err.println("Error: NameNode couldn't find file " + fileName + " to seek to for position " + position + ".");
         try {
             dataNodeHandle.sendMessage(new BlockPosMessage(fileName, -1, 0));
         } catch (IOException e) {

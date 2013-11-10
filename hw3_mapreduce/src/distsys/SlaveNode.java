@@ -1,6 +1,7 @@
 package distsys;
 
 import distsys.kdfs.DataNode;
+import distsys.kdfs.DistFile;
 import distsys.msg.*;
 
 import java.io.IOException;
@@ -81,6 +82,17 @@ public class SlaveNode extends Thread {
                 break;
             case ACK:
                 // Acknowledgement from something
+
+                //TODO remove this
+                DistFile file = new DistFile(dataNode, "alice.txt", 636);
+//                file.seek(0);
+                System.out.println();
+                String records = file.nextRecord();
+                while (records != null) {
+                    System.out.println("Record!!=" + records);
+                    records = file.nextRecord();
+                }
+
                 System.out.println("Someone acknowledged my existence. :3");
                 break;
             default:

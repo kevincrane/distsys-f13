@@ -123,13 +123,21 @@ public class MasterNode extends Thread {
 //        }
 //        namenode.putFile("testFile1");
 //
-//        try {
-//            Thread.sleep(1000);
-//        } catch (InterruptedException e) {
-//            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-//        }
+        //TODO remove
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+        }
+        try {
+            CommHandler tempHandle = new CommHandler(Config.SLAVE_NODES[0][0], Config.SLAVE_NODES[0][1]);
+            tempHandle.sendMessage(new AckMessage());
+        } catch (IOException e) {
+            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+        }
 //        System.out.println("\ntestFile.txt contains:\n" + namenode.readFile("testFile.txt"));
 //        namenode.listFiles();
+
 
         while (running) {
             try {
