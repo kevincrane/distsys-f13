@@ -1,6 +1,7 @@
 package distsys.kdfs;
 
 import distsys.Config;
+import distsys.mapreduce.Record;
 import distsys.msg.BlockPosMessage;
 import distsys.msg.CommHandler;
 
@@ -16,25 +17,27 @@ public class DistFile {
     private DataNode dataNode;
     private String fileName;
     private int position;
+    private int endPosition;
     private String buffer;
     private int bufferStart;
 
-    public DistFile(DataNode dataNode, String fileName, int startingPosition) {
+    public DistFile(DataNode dataNode, String fileName, int startPosition, int endPosition) {
         this.dataNode = dataNode;
         this.fileName = fileName;
 
         // Set up starting position
-        this.position = startingPosition;
+        this.position = startPosition;
+        this.endPosition = endPosition;
         buffer = "";
-        bufferStart = startingPosition;
+        bufferStart = startPosition;
 
         // If starting buffer from later block, check if you need to skip the first record (leftover from prev. block)
-        if (startingPosition > 0) {
-            startingPosition--;
+        if (startPosition > 0) {
+            startPosition--;
             bufferStart--;
-            seek(startingPosition);
+            seek(startPosition);
         } else {
-            seek(startingPosition);
+            seek(startPosition);
         }
     }
 
@@ -84,7 +87,15 @@ public class DistFile {
      *
      * @return Next String record from DistFile
      */
-    public String nextRecord() {
+    public Record<Integer, String> nextRecord() {
+        // Make sure you haven't extended past the end of the block assignment
+        if (position >= endPosition) {
+            return null;
+        }
+
+        // Set the Record key as the position offset of the file being read
+        int key = position;
+
         int recordEnd = buffer.indexOf('\n', position - bufferStart);
         String record = "";
 
@@ -107,7 +118,8 @@ public class DistFile {
         if (record.length() == 0 && (recordEnd < 0 || position < 0)) {
             return null;
         }
-        return record;
+
+        return new Record<Integer, String>(key, record);
     }
 
 }

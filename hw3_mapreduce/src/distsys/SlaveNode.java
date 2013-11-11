@@ -2,6 +2,7 @@ package distsys;
 
 import distsys.kdfs.DataNode;
 import distsys.kdfs.DistFile;
+import distsys.mapreduce.Record;
 import distsys.msg.*;
 
 import java.io.IOException;
@@ -84,14 +85,14 @@ public class SlaveNode extends Thread {
                 // Acknowledgement from something
 
                 //TODO remove this
-                DistFile file = new DistFile(dataNode, "alice.txt", 636);
+                DistFile file = new DistFile(dataNode, "alice.txt", 636, 16384);
 //                file.seek(0);
                 System.out.println();
-                String records = file.nextRecord();
-                while (records != null) {
-                    System.out.println("Record!!=" + records);
-                    records = file.nextRecord();
-                }
+                Record<Integer, String> record = file.nextRecord();
+                do {
+                    System.out.println(record.getKey() + "=" + record.getValue());
+                    record = file.nextRecord();
+                } while (record != null);
 
                 System.out.println("Someone acknowledged my existence. :3");
                 break;

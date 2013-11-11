@@ -19,23 +19,9 @@ public class DataNode {
     private Map<Integer, String> blockMap;
 //    private CommHandler masterHandle;
 
-    public DataNode(int slaveNu) {
+    public DataNode(int slaveNum) {
         this.blockMap = new HashMap<Integer, String>();
-        this.slaveNum = slaveNu;
-
-        // Automatically ping Master/NameNode every 2 seconds with current blockmap
-        //TODO: is this needed? or covered in NameNode?
-//        Timer pingTimer = new Timer();
-//        pingTimer.schedule(new TimerTask() {
-//            public void run() {
-//                try {
-//                    CommHandler timedHandle = new CommHandler(Config.MASTER_NODE, Config.DATA_PORT);
-//                    timedHandle.sendMessage(new BlockMapMessage(slaveNum, generateBlockMap()));
-//                } catch (IOException e) {
-//                    System.err.println("Error: could not send BlockMap to master node (" + e.getMessage() + ").");
-//                }
-//            }
-//        }, 5000, 5000);
+        this.slaveNum = slaveNum;
     }
 
     /**
@@ -71,7 +57,7 @@ public class DataNode {
      *
      * @param filePath Name of file to read
      * @return String file contents
-     * @throws IOException
+     * @throws IOException TODO change to use RandomAccessFile?
      */
     private String readFileAsString(String filePath) throws IOException {
         StringBuilder fileData = new StringBuilder();
@@ -91,12 +77,12 @@ public class DataNode {
      * Reads a block of data from somewhere in KDFS by blockID, starting from an offset
      *
      * @param blockID ID of block to read from KDFS
-     * @param offset  Start reading from a byte offset     //TODO: come back to add offset stuff
+     * @param offset  Start reading from a byte offset
      * @return The contents of the block asked to read
      */
     public String readBlock(int blockID, int offset) {
         if (blockMap.containsKey(blockID)) {
-//            System.out.println("Block " + blockID + " found locally.");
+            System.out.println("Block " + blockID + " found locally.");
             // Block is stored locally, just read it and return the contents as a String
             try {
                 String blockContents = readFileAsString(Config.BLOCK_FOLDER + "/" + blockMap.get(blockID));
@@ -109,7 +95,7 @@ public class DataNode {
                         e.getMessage() + ").");
             }
         } else {
-//            System.out.println("Looking elsewhere for block " + blockID);
+            System.out.println("Looking elsewhere for block " + blockID);
             try {
                 // Block is stored elsewhere, bleh. Ask the NameNode where it lives
                 CommHandler masterHandle = new CommHandler(Config.MASTER_NODE, Config.DATA_PORT);
