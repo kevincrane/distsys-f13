@@ -1,17 +1,17 @@
 package distsys;
 
 import distsys.kdfs.NameNode;
+import distsys.mapreduce.MapReduceJob;
 import distsys.msg.*;
 
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.Timer;
-import java.util.TimerTask;
+import java.util.*;
 
 /**
  * Created with IntelliJ IDEA.
- * User: kevin
+ * User: kevin, prashanth
  * Date: 11/6/13
  */
 public class MasterNode extends Thread {
@@ -101,14 +101,51 @@ public class MasterNode extends Thread {
      * @param fileName Name of file to store
      */
     public void putFile(String fileName) {
-        namenode.putFile(fileName);
+        int blocksWritten = namenode.putFile(fileName);
+        if (blocksWritten == 0) {
+            System.out.println("Error: no blocks written to KDFS file system. :(");
+        } else {
+            System.out.println("Successfully wrote " + blocksWritten + " to KDFS file system!");
+        }
     }
 
     /**
-     * User method: list files in namespace
+     * User method: print a list of the files in namespace
      */
     public void listFiles() {
-        namenode.listFiles();
+        Set<String> fileNames = namenode.listFiles();
+        List<String> sortedFileNames = new ArrayList<String>(fileNames);
+        Collections.sort(sortedFileNames);
+
+        System.out.println("KDFS namespace contains:");
+        for (String filename : sortedFileNames) {
+            System.out.println(filename + " : " + namenode.getFileBlockIds(filename).size() + " blocks");
+        }
+    }
+
+    /**
+     * Start a new Map Reduce job. Store input file to KDFS if it isn't already there, split the job into tasks, and
+     * add them to a queue for the Coordinator. Coordinator will eventually send the tasks to DataNodes for processing.
+     *
+     * @param newJob MapReduce job to be run
+     */
+    public void newMapReduceJob(MapReduceJob newJob) {
+        // Load input file into KDFS if it doesn't already exist
+        if (!namenode.listFiles().contains(newJob.getInputFile())) {
+            int blocksWritten = namenode.putFile(newJob.getInputFile());
+            if (blocksWritten == 0) {
+                System.out.println("Error: could not write file " + newJob.getInputFile() + " to file system.");
+                return;
+            }
+        }
+
+        //TODO BALA, start here; split Job into Tasks by how many blocks the file has (namespace.get(newJob.getInputFile()).size())
+        //  e.g. 9 blocks -> 9 tasks (Task - Mapper, filename, start index, end index)
+        //  distribute the tasks (find the next slave, send a MapperMessage to slave)
+        //      Which slaves have which blocks, which slaves are least full, queue of tasks that can't be scheduled yet
+        //  On the Slave node
+        //      when it receives MapperMessage, execute map, write the output to a file (key \t value\n)
+        //      Somehow, send output file to partitioner, send Master a message saying you're done
     }
 
 
@@ -135,9 +172,6 @@ public class MasterNode extends Thread {
         } catch (IOException e) {
             e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
         }
-//        System.out.println("\ntestFile.txt contains:\n" + namenode.readFile("testFile.txt"));
-//        namenode.listFiles();
-
 
         while (running) {
             try {

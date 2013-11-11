@@ -1,5 +1,7 @@
 package distsys;
 
+import distsys.mapreduce.MapReduceJob;
+
 import java.io.IOException;
 import java.util.Scanner;
 
@@ -12,6 +14,43 @@ public class MapReduceManager {
 
     static MasterNode masterNode;
 
+    /**
+     * Take user input and launch a new Map Reduce job
+     *
+     * @param lineIn Scanner to read user input from
+     */
+    public static void newMapReduceJob(Scanner lineIn) {
+        System.out.println("Enter the class, input file, and output file of the map reduce job you want to run:");
+        System.out.println("  e.g. distsys.WordCountJob inputFile.txt output.txt");
+        String input = lineIn.nextLine();
+
+        // Read MapReduce parameters from input
+        String[] params = input.split(" ");
+        if (params.length != 3) {
+            System.out.println("Invalid input. Format: ClassName InputFile OutputFile");
+            return;
+        }
+
+        try {
+            // Try to instantiate MapReduceJob from user input
+            MapReduceJob newJob = (MapReduceJob) Class.forName(params[0]).newInstance();
+            newJob.setInputFile(params[1]);
+            newJob.setOutputFile(params[2]);
+
+            // Send job to MasterNode to begin queuing up
+            masterNode.newMapReduceJob(newJob);
+            System.out.println("Sent a new " + params[0] + " map reduce job to the MasterNode!");
+        } catch (Exception e) {
+            // Yes, it's bad practice to catch generic exceptions, but it's cleaner to read and just as practical here
+            System.out.println("Error: could not open MapReduce class " + params[0]);
+        }
+    }
+
+    /**
+     * Take user input and perform a file system action using the KDFS
+     *
+     * @param lineIn Scanner to read user input from
+     */
     public static void kdfsOps(Scanner lineIn) {
         System.out.println("1. Read File | 2. Store New File | 3. List All Files | 4. Quit");
         String input = lineIn.nextLine();
@@ -65,7 +104,7 @@ public class MapReduceManager {
         int command;
         while (running) {
             System.out.println("\nEnter commands for the MapReduce master server:");
-            System.out.println("1. Run new MapReduce job | 2. KDFS ops | 3. Quit");
+            System.out.println("1. Run new MapReduce job | 2. List MapReduce jobs | 3. KDFS ops | 4. Quit");
             String input = lineIn.nextLine();
 
             try {
@@ -81,9 +120,14 @@ public class MapReduceManager {
                     //TODO map reduce stuff (start job, list jobs)
                     break;
                 case 2:
-                    kdfsOps(lineIn);
+                    // List all active MapReduce jobs
+                    //TODO list jobs
                     break;
                 case 3:
+                    // KDFS Operations
+                    kdfsOps(lineIn);
+                    break;
+                case 4:
                     // Quit
                     masterNode.close();
                     running = false;

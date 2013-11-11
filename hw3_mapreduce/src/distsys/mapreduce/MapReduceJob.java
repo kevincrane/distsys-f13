@@ -11,6 +11,25 @@ import java.util.List;
  */
 public class MapReduceJob {
 
+    private String inputFile;
+    private String outputFile;
+
+    public String getInputFile() {
+        return inputFile;
+    }
+
+    public void setInputFile(String inputFile) {
+        this.inputFile = inputFile;
+    }
+
+    public String getOutputFile() {
+        return outputFile;
+    }
+
+    public void setOutputFile(String outputFile) {
+        this.outputFile = outputFile;
+    }
+
     /**
      * Generic Mapper class for a Map Reduce job
      * User specifies the data type of the input/output keys and values,
@@ -21,6 +40,7 @@ public class MapReduceJob {
      * @param <Kout> Data type of the output key
      * @param <Vout> Data type of the output value
      */
+    //TODO make Mapper and Reducer static?
     class Mapper<Kin, Vin, Kout, Vout> implements Serializable {
         private List<Record<Kout, Vout>> output;
 
@@ -29,8 +49,8 @@ public class MapReduceJob {
         }
 
         /**
-         * Map method called on every record read from the input file in KDFS. Takes a Record
-         * from a DistFile (from DataNode), performs the map operation on it, and stores the
+         * Map method called on every record read from the input file in KDFS. Takes a key/value
+         * pair from a DistFile Record (from DataNode), performs the map operation on it, and stores
          * result in List output
          *
          * @param key   Key for mapper
@@ -51,10 +71,11 @@ public class MapReduceJob {
         }
     }
 
+
     /**
      * Generic Reducer class for a Map Reduce job
      * User specifies the data type of the input/output keys and values,
-     * and overrides the map(Kin, Vin) method
+     * and overrides the reduce(Kin, List<Vin></Vin>) method
      *
      * @param <Kin>  Data type of the input key
      * @param <Vin>  Data type of the input value
@@ -69,9 +90,9 @@ public class MapReduceJob {
         }
 
         /**
-         * Map method called on every record read from the input file in KDFS. Takes a Record
-         * from a DistFile (from DataNode), performs the map operation on it, and stores the
-         * result in List output
+         * Reduce method called after shuffling and sorting of map results. Is fed a key
+         * and all values associated with that key. Performs the reduce method on each value
+         * and stores the resulting key/value pair in output list
          *
          * @param key    Key for reducer
          * @param values List of all values corresponding to this key

@@ -172,11 +172,12 @@ public class NameNode {
      * Write a new file to the KDFS filesystem
      *
      * @param fileName Filename of the file to write
+     * @return The number of blocks written to the file system
      */
-    public void putFile(String fileName) {
+    public int putFile(String fileName) {
         if (namespace.containsKey(fileName)) {
             System.err.println("Error: KDFS namespace already contains file " + fileName + ".");
-            return;
+            return 0;
         }
 
         String fileContents;
@@ -184,7 +185,7 @@ public class NameNode {
             fileContents = new Scanner(new File(fileName)).useDelimiter("\\Z").next();
         } catch (FileNotFoundException e) {
             System.err.println("Error: NameNode could not open file " + fileName + " (" + e.getMessage() + ").");
-            return;
+            return 0;
         }
 
         // Randomize order of nodes to check for even distribution of requests
@@ -215,7 +216,6 @@ public class NameNode {
                 // Make sure slave doesn't contain this block already
                 int currentSlave = dataNodes.get(nextSlaveIdx);
                 if (blockMap.get(currentSlave).contains(maxBlockID)) {
-                    System.out.println("breakin'");
                     break;
                 }
 
@@ -261,6 +261,8 @@ public class NameNode {
                 System.err.println("Error: failed to update namespace log file.");
             }
         }
+
+        return blocksWritten.size();
     }
 
     /**
@@ -315,16 +317,20 @@ public class NameNode {
     }
 
     /**
-     * Print out a list of all files in the namespace
+     * Return the names of all of the files stored in the namespace
      */
-    public void listFiles() {
-        List<String> sortedFileNames = new ArrayList<String>(namespace.keySet());
-        Collections.sort(sortedFileNames);
+    public Set<String> listFiles() {
+        return namespace.keySet();
+    }
 
-        System.out.println("KDFS namespace contains:");
-        for (String filename : sortedFileNames) {
-            System.out.println(filename + " : " + namespace.get(filename).size() + " blocks");
-        }
+    /**
+     * Get the block IDs of a file by name
+     *
+     * @param fileName Name of file to retrieve blocks
+     * @return A list of block IDs that correspond to a particular filename
+     */
+    public List<Integer> getFileBlockIds(String fileName) {
+        return namespace.get(fileName);
     }
 
     /**
