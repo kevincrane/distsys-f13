@@ -142,10 +142,7 @@ public class NameNode {
      * @param blockID        ID of block to retrieve
      */
     public void retrieveBlockAddress(CommHandler dataNodeHandle, int blockID) {
-        // Randomize order of nodes to check for even distribution of requests
-        List<Integer> dataNodes = new ArrayList<Integer>();
-        dataNodes.addAll(blockMap.keySet());
-        Collections.shuffle(dataNodes);
+        List<Integer> dataNodes = getDataNodes();
 
         // Check to see if each node in the block map contains this ID
         for (Integer slaveNum : dataNodes) {
@@ -169,6 +166,18 @@ public class NameNode {
     }
 
     /**
+     * Randomize order of nodes to check for even distribution of requests
+     *
+     * @return List of DataNodes in randomized order
+     */
+    private List<Integer> getDataNodes() {
+        List<Integer> dataNodes = new ArrayList<Integer>();
+        dataNodes.addAll(blockMap.keySet());
+        Collections.shuffle(dataNodes);
+        return dataNodes;
+    }
+
+    /**
      * Write a new file to the KDFS filesystem
      *
      * @param fileName Filename of the file to write
@@ -188,10 +197,7 @@ public class NameNode {
             return 0;
         }
 
-        // Randomize order of nodes to check for even distribution of requests
-        List<Integer> dataNodes = new ArrayList<Integer>();
-        dataNodes.addAll(blockMap.keySet());
-        Collections.shuffle(dataNodes);
+        List<Integer> dataNodes = getDataNodes();
 
         int pos = 0;
         int nextSlaveIdx = 0;
@@ -226,6 +232,7 @@ public class NameNode {
                             Config.SLAVE_NODES[currentSlave][1]);
                     writingSlave.sendMessage(new BlockContentMessage(maxBlockID, currentBlock));
                     // TODO: if you need acknowledgement from DataNode, it would go here
+                    // TODO: NEED THIS FOR FAULT TOLERANCE, IF NODE HASN'T WRITTEN OR FAILED - TRY NEXT SLAVE TILL WE RUN OUT - also if we implement this we need a way to ensure replicas don't go the same slave
 
                     // Update BlockMap on success
                     Set<Integer> slaveBlocks = blockMap.get(currentSlave);
