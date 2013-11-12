@@ -1,5 +1,6 @@
 package distsys;
 
+import distsys.mapreduce.IdentityMapReduceJob;
 import distsys.mapreduce.MapReduceJob;
 
 import java.io.IOException;
@@ -117,7 +118,12 @@ public class MapReduceManager {
             // Send command to master
             switch (command) {
                 case 1:
-                    //TODO map reduce stuff (start job, list jobs)
+                    MapReduceJob mapReduceJob = new IdentityMapReduceJob();
+                    mapReduceJob.setInputFile("alice.txt");
+                    mapReduceJob.setOutputFile("alice_output.txt");
+
+                    masterNode.newMapReduceJob(mapReduceJob);
+
                     break;
                 case 2:
                     // List all active MapReduce jobs
