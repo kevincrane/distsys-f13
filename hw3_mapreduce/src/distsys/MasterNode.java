@@ -139,6 +139,8 @@ public class MasterNode extends Thread {
             }
         }
 
+
+
         //TODO BALA, start here; split Job into Tasks by how many blocks the file has (namespace.get(newJob.getInputFile()).size())
         //  e.g. 9 blocks -> 9 tasks (Task - Mapper, filename, start index, end index)
         //  distribute the tasks (find the next slave, send a MapperMessage to slave)

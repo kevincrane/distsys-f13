@@ -9,6 +9,15 @@ import java.util.List;
  * Time: 3:51 AM
  * To change this template use File | Settings | File Templates.
  */
+
+/**
+ * Generic Example of a Identity MapReduce Job with Identity functions for map as well as reduce operations
+ *
+ * @param <Kin>  Data type of the input key
+ * @param <Vin>  Data type of the input value
+ * @param <Kout> Data type of the output key
+ * @param <Vout> Data type of the output value
+ */
 public class IdentityMapReduceJob<Kin, Vin, Kout, Vout> extends MapReduceJob {
 
     public Mapper<Kin, Vin, Kout, Vout> getMapper() {
