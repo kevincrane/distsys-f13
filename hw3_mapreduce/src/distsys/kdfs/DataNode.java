@@ -95,6 +95,8 @@ public class DataNode {
                         e.getMessage() + ").");
             }
         } else {
+            //TODO Slave should just respond with whether it has the contents, if not we have to loop looking at different slaves for the blockId
+            //TODO  Why do we need this part? Causes extra looping, also this only checks master for source of truth anyways
             System.out.println("Looking elsewhere for block " + blockID);
             try {
                 // Block is stored elsewhere, bleh. Ask the NameNode where it lives

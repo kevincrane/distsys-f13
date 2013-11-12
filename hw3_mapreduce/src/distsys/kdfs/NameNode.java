@@ -67,6 +67,8 @@ public class NameNode {
                     blockMap.put(i, ((BlockMapMessage) returnedMsg).getBlocks());
                 }
             } catch (IOException ignored) {
+                //TODO Handle TimeoutException if slave doesn't reply and is down
+                //TODO handle removal of slave if slave is down and doesn't reply - need different AWAKE message instead of generating blockMap on Slave every 5 seconds
             }
         }
     }
@@ -142,10 +144,8 @@ public class NameNode {
      * @param blockID        ID of block to retrieve
      */
     public void retrieveBlockAddress(CommHandler dataNodeHandle, int blockID) {
-        List<Integer> dataNodes = getDataNodes();
-
         // Check to see if each node in the block map contains this ID
-        for (Integer slaveNum : dataNodes) {
+        for (Integer slaveNum : getDataNodes()) {
             if (blockMap.get(slaveNum).contains(blockID)) {
                 // Found a node, send a message with the socket
                 try {
@@ -198,7 +198,6 @@ public class NameNode {
         }
 
         List<Integer> dataNodes = getDataNodes();
-
         int pos = 0;
         int nextSlaveIdx = 0;
         List<Integer> blocksWritten = new ArrayList<Integer>();
@@ -290,7 +289,8 @@ public class NameNode {
         for (int blockID : blockIDs) {
             // Check each DataNode to see if they have this block
             String contentsToAdd = null;
-            for (int slaveID : blockMap.keySet()) {
+            // Randomize order to prevent one slave from getting more of the requests
+            for (int slaveID : getDataNodes()) {
                 if (blockMap.get(slaveID).contains(blockID)) {
                     try {
                         // Found a DataNode with this block, try to get it
@@ -299,6 +299,8 @@ public class NameNode {
                         blockReadHandle.sendMessage(new BlockReqMessage(blockID));
                         BlockContentMessage contentMsg = (BlockContentMessage) blockReadHandle.receiveMessage();
 
+                        //TODO FIX WEIRD LOOPING: Master sends message to slave to ask for block it knows exists on slave, slave checks, if not, slave requests master to find slave on which a block exists from the same blockMap, then proceeds to request a file from potentially itself
+                        //TODO Slave should just respond with whether it has the contents, if not we have to loop looking at different slaves for the blockId
                         if (contentMsg.getBlockContents() == null) {
                             System.err.println("Error: DataNode " + slaveID + " returned empty content, trying new node.");
                             continue;
@@ -314,7 +316,7 @@ public class NameNode {
             }
             // Append contents if they've been found and move on to next Block ID
             if (contentsToAdd == null) {
-                System.err.println("Error: could not read find block " + blockID + " in KDFS.");
+                System.err.println("Error: could not find block " + blockID + " in KDFS.");
                 return null;
             }
             fileContents.append(contentsToAdd);

@@ -61,6 +61,7 @@ public class SlaveNode extends Thread {
             case BLOCKMAP:
                 // BlockMap requested, send back to MasterNode
                 slaveNum = ((BlockMapMessage) msgIn).getHostnum();
+                //TODO don't generate BlockMap for every ping, wastes resources every 5 seconds, updated automatically in master during puts, don't need it to update constantly
                 comm.sendMessage(new BlockMapMessage(slaveNum, dataNode.generateBlockMap()));
                 break;
             case BLOCK_REQ:

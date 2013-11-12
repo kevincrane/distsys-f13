@@ -1,5 +1,6 @@
 package distsys;
 
+import distsys.kdfs.DistFile;
 import distsys.kdfs.NameNode;
 import distsys.mapreduce.MapReduceJob;
 import distsys.msg.*;
@@ -138,6 +139,9 @@ public class MasterNode extends Thread {
                 return;
             }
         }
+
+        List<Integer> blockIds = namenode.getFileBlockIds(newJob.getInputFile());
+        int numJobs = blockIds.size();
 
 
 
