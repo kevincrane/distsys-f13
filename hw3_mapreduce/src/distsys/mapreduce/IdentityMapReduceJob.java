@@ -29,12 +29,12 @@ public class IdentityMapReduceJob<Kin, Vin, Kout, Vout> extends MapReduceJob {
         };
     }
 
-    public Reducer<Kin, Vin, Kout, Vout> getReducer() {
-        return new Reducer<Kin, Vin, Kout, Vout>() {
+    public Reducer<Kout, Vout, Kout, Vout> getReducer() {
+        return new Reducer<Kout, Vout, Kout, Vout>() {
             @Override
-            public void reduce(Kin key, List<Vin> values) {
+            public void reduce(Kout key, List<Vout> values) {
                 // Default reduce method just produces an identity reducer
-                for (Vin value : values) {
+                for (Vout value : values) {
                     output.add(new Record<Kout, Vout>((Kout) key, (Vout) value));
                 }
             }

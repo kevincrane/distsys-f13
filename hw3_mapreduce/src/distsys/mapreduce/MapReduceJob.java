@@ -42,5 +42,5 @@ abstract public class MapReduceJob<Kin, Vin, Kout, Vout> implements Serializable
 
     abstract public Mapper<Kin, Vin, Kout, Vout> getMapper();
 
-    abstract public Reducer<Kin, Vin, Kout, Vout> getReducer();
+    abstract public Reducer<Kout, Vout, Kout, Vout> getReducer();
 }
