@@ -23,7 +23,7 @@ import java.util.List;
  * @param <Vout> Data type of the output value
  */
 
-abstract class Mapper<Kin, Vin, Kout, Vout> implements Serializable {
+public abstract class Mapper<Kin, Vin, Kout, Vout> implements Serializable {
     List<Record<Kout, Vout>> output;
 
     public Mapper() {

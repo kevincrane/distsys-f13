@@ -80,6 +80,9 @@ public class MasterNode extends Thread {
                 BlockPosMessage blockPosMessage = (BlockPosMessage) msgIn;
                 namenode.getBlockWithPosition(comm, blockPosMessage.getFileName(), blockPosMessage.getBlockStart());
                 break;
+            case TASKUPDATE:
+                // send update on mapreduce task status to the CoOrdinator
+                coordinator.processTaskUpdateMessage((TaskUpdateMessage) msgIn);
             default:
                 System.out.println("MasterNode: unhandled message type " + msgIn.getType());
                 break;

@@ -152,6 +152,8 @@ public class SlaveNode extends Thread {
     }
 
 
+    //TODO KEVIN: REMOVE
+
     /**
      * Run a Map or Reduce task and report back to Master after completion
      *
@@ -201,15 +203,27 @@ public class SlaveNode extends Thread {
                 //TODO: send acknowledgement back?
                 break;
             case TASK:
-                // Run either a map or reduce task
-                runMapReduceTask((TaskMessage) msgIn);
+                // Mapper or Reducer Task coming in to be run on this slave
+                Task task = ((TaskMessage) msgIn).getTask();
+                if (task instanceof MapperTask) {
+                    MapperTask mapperTask = (MapperTask) task;
+                    // set the dataNode of the DistFile to the current slave's DataNode
+                    mapperTask.setDataNode(dataNode);
+                    new MapTaskProcessor(mapperTask, comm);
+                } else if (task instanceof  ReducerTask) {
+                    // TODO PERFORM REDUCE
+                } else {
+                    System.out.println("Received unknown task, ignoring.");
+                }
                 break;
+
             case PARTITION:
                 // Read and partition all records from a completed Mapper task
                 ResultPartitionMessage partMsg = (ResultPartitionMessage) msgIn;
                 List<Record<String, String>> partRecords = getPartitionedRecords(partMsg.getReducerNum(), partMsg.getTaskIDs());
                 comm.sendMessage(new ResultPartitionMessage(partMsg.getReducerNum(), null, partRecords));
                 break;
+
             case KILL:
                 // Stop running the SlaveNode
                 running = false;

@@ -36,4 +36,7 @@ public class Config {
     // Text file that logs files in the namespace for persistence
     public static final String NAMESPACE_LOG = "kdfs_namespace";
 
+    // Maximum number of times a socket is pinged before we give up
+    public static final int MAX_SOCKET_TRIES = 2;
+
 }

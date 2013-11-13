@@ -1,5 +1,6 @@
 package distsys.mapreduce;
 
+import distsys.kdfs.DataNode;
 import distsys.kdfs.DistFile;
 
 /**
@@ -16,5 +17,9 @@ public abstract class FileTask extends Task {
     protected FileTask(int jobID, int slaveID, DistFile distFile) {
         super(jobID, slaveID);
         this.distFile = distFile;
+    }
+
+    public void setDataNode(DataNode dataNode) {
+        distFile.setDataNode(dataNode);
     }
 }

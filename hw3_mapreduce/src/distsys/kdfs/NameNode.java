@@ -68,7 +68,9 @@ public class NameNode {
                 }
             } catch (IOException ignored) {
                 //TODO Handle TimeoutException if slave doesn't reply and is down
-                //TODO handle removal of slave if slave is down and doesn't reply - need different AWAKE message instead of generating blockMap on Slave every 5 seconds
+                //TODO IMPORTANT IMPORTANT handle REMOVAL of slave if slave is down and doesn't reply - need different AWAKE message instead of generating blockMap on Slave every 5 seconds
+
+                //TODO IMP: IF slave down tell CoOrdinator that slave is down and so it can assign the job to some other slave with maxTries of 3
             }
         }
     }
@@ -145,11 +147,11 @@ public class NameNode {
      */
     public void retrieveBlockAddress(CommHandler dataNodeHandle, int blockID) {
         // Check to see if each node in the block map contains this ID
-        for (Integer slaveNum : getDataNodes()) {
-            if (blockMap.get(slaveNum).contains(blockID)) {
+        for (Integer slaveId : getSlaveIds()) {
+            if (blockMap.get(slaveId).contains(blockID)) {
                 // Found a node, send a message with the socket
                 try {
-                    dataNodeHandle.sendMessage(new BlockAddrMessage(slaveNum, blockID));
+                    dataNodeHandle.sendMessage(new BlockAddrMessage(slaveId, blockID));
                     return;
                 } catch (IOException e) {
                     System.err.println("Error: error sending block address to DataNode.");
@@ -168,9 +170,9 @@ public class NameNode {
     /**
      * Randomize order of nodes to check for even distribution of requests
      *
-     * @return List of DataNodes in randomized order
+     * @return List of DataNode Ids in randomized order
      */
-    private List<Integer> getDataNodes() {
+    public List<Integer> getSlaveIds() {
         List<Integer> dataNodes = new ArrayList<Integer>();
         dataNodes.addAll(blockMap.keySet());
         Collections.shuffle(dataNodes);
@@ -197,7 +199,7 @@ public class NameNode {
             return 0;
         }
 
-        List<Integer> dataNodes = getDataNodes();
+        List<Integer> slaveIds = getSlaveIds();
         int pos = 0;
         int nextSlaveIdx = 0;
         List<Integer> blocksWritten = new ArrayList<Integer>();
@@ -217,9 +219,9 @@ public class NameNode {
             String currentBlock = fileContents.substring(pos, endPos);
 
             // Write each block rep times, up to the Replication Factor
-            for (int rep = 0; rep < Config.REPLICATION && rep < dataNodes.size(); rep++) {
+            for (int rep = 0; rep < Config.REPLICATION && rep < slaveIds.size(); rep++) {
                 // Make sure slave doesn't contain this block already
-                int currentSlave = dataNodes.get(nextSlaveIdx);
+                int currentSlave = slaveIds.get(nextSlaveIdx);
                 if (blockMap.get(currentSlave).contains(maxBlockID)) {
                     break;
                 }
@@ -245,7 +247,7 @@ public class NameNode {
                             Config.SLAVE_NODES[currentSlave][0] + ":" + Config.SLAVE_NODES[currentSlave][1]);
                 }
 
-                nextSlaveIdx = (nextSlaveIdx + 1) % dataNodes.size();
+                nextSlaveIdx = (nextSlaveIdx + 1) % slaveIds.size();
             }
 
             // Update metadata in NameNode
@@ -290,7 +292,7 @@ public class NameNode {
             // Check each DataNode to see if they have this block
             String contentsToAdd = null;
             // Randomize order to prevent one slave from getting more of the requests
-            for (int slaveID : getDataNodes()) {
+            for (int slaveID : getSlaveIds()) {
                 if (blockMap.get(slaveID).contains(blockID)) {
                     try {
                         // Found a DataNode with this block, try to get it

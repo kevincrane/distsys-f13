@@ -18,6 +18,7 @@ public abstract class Message implements Serializable {
         BLOCK_POS,
         TASK,
         PARTITION,
+        TASKUPDATE,
         KILL
     }
 
