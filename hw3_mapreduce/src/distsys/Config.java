@@ -27,6 +27,9 @@ public class Config {
     // Folder on data node to store blocks
     public static final String BLOCK_FOLDER = "data";
 
+    // Location and file prefix of mapper result files
+    public static final String MAP_RESULT = "/tmp/mapreduce/mpr_";
+
     // Text file that logs files in the namespace for persistence
     public static final String NAMESPACE_LOG = "kdfs_namespace";
 
