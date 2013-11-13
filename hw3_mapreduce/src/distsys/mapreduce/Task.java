@@ -1,5 +1,7 @@
 package distsys.mapreduce;
 
+import distsys.kdfs.DistFile;
+
 import java.io.Serializable;
 
 /**
@@ -18,5 +20,10 @@ public abstract class Task implements Serializable {
         this.slaveID = slaveID;
         running = false;
         done = false;
+    }
+
+    @Override
+    public String toString() {
+        return "Task: {jobId: " + jobID + ", slaveId: " + slaveID + ", running: " + running + ", done: " + done + "}";
     }
 }

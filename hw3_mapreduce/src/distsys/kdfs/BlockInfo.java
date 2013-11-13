@@ -33,4 +33,8 @@ public class BlockInfo {
         return offset;
     }
 
+    public int getFileLen() {
+        return fileLen;
+    }
+
 }

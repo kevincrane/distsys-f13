@@ -1,8 +1,9 @@
 package distsys;
 
+import distsys.kdfs.BlockInfo;
 import distsys.kdfs.DistFile;
 import distsys.kdfs.NameNode;
-import distsys.mapreduce.MapReduceJob;
+import distsys.mapreduce.*;
 import distsys.msg.*;
 
 import java.io.IOException;
@@ -21,6 +22,8 @@ public class MasterNode extends Thread {
     private ServerSocket masterServer;
     private boolean running;
     private Timer pingTimer;
+    private Coordinator coordinator;
+    private int currentJobId = 0;
 
     // Namenode of KDFS
     private NameNode namenode;
@@ -28,6 +31,7 @@ public class MasterNode extends Thread {
     public MasterNode() throws IOException {
         masterServer = new ServerSocket(Config.DATA_PORT);
         namenode = new NameNode();
+        coordinator = new Coordinator(namenode);
 
         running = true;
 
@@ -131,6 +135,11 @@ public class MasterNode extends Thread {
      * @param newJob MapReduce job to be run
      */
     public void newMapReduceJob(MapReduceJob newJob) {
+        // Input File has to be specified
+        if (newJob.getInputFile() == null) {
+            System.out.println("Error: no input file specified for mapreduce job");
+            return;
+        }
         // Load input file into KDFS if it doesn't already exist
         if (!namenode.listFiles().contains(newJob.getInputFile())) {
             int blocksWritten = namenode.putFile(newJob.getInputFile());
@@ -141,17 +150,24 @@ public class MasterNode extends Thread {
         }
 
         List<Integer> blockIds = namenode.getFileBlockIds(newJob.getInputFile());
-        int numJobs = blockIds.size();
+        List<Task> tasks = new ArrayList<Task>();
+        List<Integer> mapperJobIds = new ArrayList<Integer>();
 
+        for (int blockId: blockIds) {
+            BlockInfo blockInfo = namenode.getBlockInfo(blockId);
+            int startPosition = blockInfo.getOffset();
+            // all tasks are initially set as slaveId -1 and then scheduled to the right slave by the Co-ordinator
+            tasks.add(new MapperTask(
+                    newJob.getMapper(),
+                    new DistFile(newJob.getInputFile(), startPosition, startPosition + blockInfo.getFileLen()),
+                    currentJobId,
+                    -1
+            ));
+            mapperJobIds.add(currentJobId++);
+        }
+        tasks.add(new ReducerTask(newJob.getReducer(), currentJobId++, -1, mapperJobIds));
 
-
-        //TODO BALA, start here; split Job into Tasks by how many blocks the file has (namespace.get(newJob.getInputFile()).size())
-        //  e.g. 9 blocks -> 9 tasks (Task - Mapper, filename, start index, end index)
-        //  distribute the tasks (find the next slave, send a MapperMessage to slave)
-        //      Which slaves have which blocks, which slaves are least full, queue of tasks that can't be scheduled yet
-        //  On the Slave node
-        //      when it receives MapperMessage, execute map, write the output to a file (key \t value\n)
-        //      Somehow, send output file to partitioner, send Master a message saying you're done
+        coordinator.scheduleTasks(tasks);
     }
 
 

@@ -86,7 +86,8 @@ public class SlaveNode extends Thread {
                 // Acknowledgement from something
 
                 //TODO remove this
-                DistFile file = new DistFile(dataNode, "alice.txt", 636, 16384);
+                DistFile file = new DistFile("alice.txt", 636, 16384);
+                file.setDataNode(dataNode);
 //                file.seek(0);
                 System.out.println();
                 Record<Integer, String> record = file.nextRecord();

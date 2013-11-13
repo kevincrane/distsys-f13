@@ -11,6 +11,10 @@ import java.io.IOException;
  * Created with IntelliJ IDEA.
  * User: kevin
  * Date: 11/6/13
+ *
+ * Abstraction representing a distributed file that allows the user to read records from the DataNode
+ * which is set by the slave to it's own DataNode
+ *
  */
 public class DistFile {
 
@@ -21,14 +25,22 @@ public class DistFile {
     private String buffer;
     private int bufferStart;
 
-    public DistFile(DataNode dataNode, String fileName, int startPosition, int endPosition) {
-        this.dataNode = dataNode;
+    public DistFile(String fileName, int startPosition, int endPosition) {
         this.fileName = fileName;
 
         // Set up starting position
         this.position = startPosition;
         this.endPosition = endPosition;
+    }
+
+    public int getPosition() {
+        return position;
+    }
+
+    public void setDataNode(DataNode dataNode) {
+        this.dataNode = dataNode;
         buffer = "";
+        int startPosition = position;
         bufferStart = startPosition;
 
         // If starting buffer from later block, check if you need to skip the first record (leftover from prev. block)
@@ -41,8 +53,9 @@ public class DistFile {
         }
     }
 
-    public int getPosition() {
-        return position;
+    @Override
+    public String toString() {
+        return "DistFile: {dataNode: " + dataNode + ", fileName: " + fileName + ", position: " + position + ", endposition: " + endPosition + "}";
     }
 
 

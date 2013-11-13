@@ -118,7 +118,7 @@ public class MapReduceManager {
             // Send command to master
             switch (command) {
                 case 1:
-                    MapReduceJob mapReduceJob = new IdentityMapReduceJob();
+                    MapReduceJob mapReduceJob = new IdentityMapReduceJob<Integer, String, Integer, String>();
                     mapReduceJob.setInputFile("alice.txt");
                     mapReduceJob.setOutputFile("alice_output.txt");
 

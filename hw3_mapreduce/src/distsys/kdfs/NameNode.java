@@ -343,6 +343,16 @@ public class NameNode {
     }
 
     /**
+     * Get the Block MetaData assocaited with a particular blockId
+     *
+     * @param blockId ID for the block whose data you wish to receive
+     * @return BlockInfo that corresponds to a particular blockId
+     */
+    public BlockInfo getBlockInfo(int blockId) {
+        return blockData.get(blockId);
+    }
+
+    /**
      * Return a Block ID that contains a given position to seek to
      *
      * @param fileName Name of file being read
