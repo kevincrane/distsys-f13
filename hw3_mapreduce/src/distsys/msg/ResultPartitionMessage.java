@@ -2,7 +2,9 @@ package distsys.msg;
 
 import distsys.mapreduce.Record;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Created with IntelliJ IDEA.
@@ -12,11 +14,11 @@ import java.util.List;
 public class ResultPartitionMessage extends Message {
 
     private int reducerNum;
-    private List<Integer> taskIDs;
+    private Set<Integer> taskIDs;
     private List<Record<String, String>> partitionedRecords;
 
     // Ask for and return the partitioned results from a previously run map job
-    public ResultPartitionMessage(int reducerNum, List<Integer> taskIDs, List<Record<String, String>> records) {
+    public ResultPartitionMessage(int reducerNum, Set<Integer> taskIDs, List<Record<String, String>> records) {
         super(MessageType.PARTITION, reducerNum);
         this.reducerNum = reducerNum;
         this.taskIDs = taskIDs;
@@ -27,7 +29,7 @@ public class ResultPartitionMessage extends Message {
         return reducerNum;
     }
 
-    public List<Integer> getTaskIDs() {
+    public Set<Integer> getTaskIDs() {
         return taskIDs;
     }
 
