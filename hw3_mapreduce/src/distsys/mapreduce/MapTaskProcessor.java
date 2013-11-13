@@ -26,7 +26,7 @@ public class MapTaskProcessor extends TaskProcessor {
 
         System.out.println("Got Map Task in Slave: " + task);
         // DO MAP
-        //TODO MAPPER JOB FILE IS NAMED SO IT CAN BE FETCHED BY JOBID
+        //TODO MAPPER JOB FILE IS NAMED SO IT CAN BE FETCHED BY JOBID  mpr_<JOBID>
         //TODO HANDLE FAILURE BY SENDING MASTER NO MESSAGES OR BY SENDING ISrunning false, IsDONE false, message
 
         // DONE MAP
