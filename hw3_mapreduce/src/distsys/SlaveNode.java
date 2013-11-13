@@ -60,12 +60,16 @@ public class SlaveNode extends Thread {
             MapperTask mapperTask = (MapperTask) task;
             // set the dataNode of the DistFile to the current slave's DataNode
             mapperTask.setDataNode(dataNode);
-            new MapTaskProcessor(mapperTask, comm);
+            new MapTaskProcessor(mapperTask, comm).start();
         } else if (task instanceof  ReducerTask) {
             ReducerTask reducerTask = (ReducerTask) task;
-            new ReduceTaskProcessor(reducerTask, comm);
+            new ReduceTaskProcessor(reducerTask, comm).start();
         } else {
-            System.out.println("Received unknown task, ignoring.");
+            String clazz = "NULL";
+            if (task != null) {
+                clazz = task.getClass().toString();
+            }
+            System.out.println("Received unknown task of type: " + clazz + ", ignoring.");
         }
     }
 

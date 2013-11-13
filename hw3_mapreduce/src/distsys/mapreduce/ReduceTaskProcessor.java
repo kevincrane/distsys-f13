@@ -33,6 +33,10 @@ public class ReduceTaskProcessor extends TaskProcessor {
         List<Record> reducerResults = runReducer(task);
         // TODO Send response back to Master, store in KDFS
         // TODO PERFORM REDUCE
+        // TODO Don't forget to also send a TASKUPDATE message with the results to Master so that Co-ordinator will remove the REDUCER
+        // TODO task from the queue
+        // NOTE: KEVIN - TASKUPDATE Message also takes in a payload to which the results of the last reduce can be attached to
+        // send to master for processing.
     }
 
 

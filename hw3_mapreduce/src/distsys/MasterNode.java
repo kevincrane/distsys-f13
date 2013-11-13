@@ -81,6 +81,7 @@ public class MasterNode extends Thread {
                 namenode.getBlockWithPosition(comm, blockPosMessage.getFileName(), blockPosMessage.getBlockStart());
                 break;
             case TASKUPDATE:
+                //TODO KEVIN HELP - this message never comes thru from slave - slave MapTaskProcessor sends a message thru it's commHandler
                 // send update on mapreduce task status to the CoOrdinator
                 coordinator.processTaskUpdateMessage((TaskUpdateMessage) msgIn);
             default:

@@ -6,6 +6,8 @@ package distsys.mapreduce;
  * Date: 11/10/13
  */
 
+import java.io.Serializable;
+
 /**
  * Generic MapReduceJob class that encapsulates a Map Reduce job
  * User needs to set the inputFile and the outputFile for the Job
@@ -17,7 +19,7 @@ package distsys.mapreduce;
  * @param <Vout> Data type of the output value
  */
 
-abstract public class MapReduceJob<Kin, Vin, Kout, Vout> {
+abstract public class MapReduceJob<Kin, Vin, Kout, Vout> implements Serializable {
 
     private String inputFile;
     private String outputFile;

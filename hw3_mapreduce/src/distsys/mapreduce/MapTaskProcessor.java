@@ -35,7 +35,8 @@ public class MapTaskProcessor extends TaskProcessor {
         int maxTries = Config.MAX_SOCKET_TRIES;
         while (maxTries > 0) {
             try {
-                getMasterComm().sendMessage(new TaskUpdateMessage(task.jobID, false, true));
+                getMasterComm().sendMessage(new TaskUpdateMessage(task.getJobID(), false, true));
+                System.out.println("Sent message to master. Map Job with Id: " + task.getJobID() + " is done.");
                 break;
             } catch (IOException e) {
                 maxTries--;

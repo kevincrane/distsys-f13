@@ -6,6 +6,7 @@ import distsys.msg.BlockPosMessage;
 import distsys.msg.CommHandler;
 
 import java.io.IOException;
+import java.io.Serializable;
 
 /**
  * Created with IntelliJ IDEA.
@@ -16,7 +17,7 @@ import java.io.IOException;
  * which is set by the slave to it's own DataNode
  *
  */
-public class DistFile {
+public class DistFile implements Serializable {
 
     private DataNode dataNode;
     private String fileName;

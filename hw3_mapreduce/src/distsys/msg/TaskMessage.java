@@ -16,6 +16,7 @@ public class TaskMessage extends Message {
 
     public TaskMessage(Task task) {
         super(MessageType.TASK, task);
+        this.task = task;
     }
 
     public Task getTask() {

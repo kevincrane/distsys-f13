@@ -23,6 +23,6 @@ public class MapperTask extends FileTask {
 
     @Override
     public String toString() {
-        return super.toString() + "\n" + distFile;
+        return "Mapper" + super.toString() + "\n" + getDistFile();
     }
 }

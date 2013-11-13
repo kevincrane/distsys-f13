@@ -12,7 +12,7 @@ import distsys.kdfs.DistFile;
  */
 
 public abstract class FileTask extends Task {
-    protected DistFile distFile;
+    private DistFile distFile;
 
     protected FileTask(int jobID, int slaveID, DistFile distFile) {
         super(jobID, slaveID);
@@ -21,5 +21,9 @@ public abstract class FileTask extends Task {
 
     public void setDataNode(DataNode dataNode) {
         distFile.setDataNode(dataNode);
+    }
+
+    public DistFile getDistFile() {
+        return distFile;
     }
 }

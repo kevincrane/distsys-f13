@@ -39,4 +39,7 @@ public class Config {
     // Maximum number of times a socket is pinged before we give up
     public static final int MAX_SOCKET_TRIES = 2;
 
+    // Maximum number of times a job is retried on a different slave before we give up on the entire mapreduce job
+    public static final int MAX_JOB_RETRIES = 2;
+
 }

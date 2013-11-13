@@ -8,7 +8,7 @@ import java.io.Serializable;
  * Date: 11/11/13
  */
 public abstract class Task implements Serializable {
-    protected int jobID;
+    private int jobID;
     protected int slaveID;
     protected boolean running;
     protected boolean done;

@@ -68,7 +68,7 @@ public class ReducerTask extends Task {
 
     @Override
     public String toString() {
-        return super.toString() + "\n MapperJobDependencies: " + new ArrayList<Integer>(getDependentMapperJobIds());
+        return "Reducer" + super.toString() + "\n MapperJobDependencies: " + new ArrayList<Integer>(getDependentMapperJobIds());
     }
 
 }

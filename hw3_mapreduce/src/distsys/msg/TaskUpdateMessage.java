@@ -14,6 +14,9 @@ import distsys.mapreduce.Task;
  * Message for sending an update to master regarding the status of a task being processed
  * We need both running and done because a process might not be done, but it has stopped running because of some reasons
  * which might include failure
+ *
+ * TaskUpdate message also takes a Payload which in which the results of the final reduce can be sent back to master
+ * for displaying to the user
  */
 public class TaskUpdateMessage extends Message {
     private int jobId;
@@ -22,6 +25,16 @@ public class TaskUpdateMessage extends Message {
 
     public TaskUpdateMessage(int jobId, boolean running, boolean done) {
         super(MessageType.TASKUPDATE, jobId);
+        this.jobId = jobId;
+        this.running = running;
+        this.done = done;
+    }
+
+    public TaskUpdateMessage(int jobId, boolean running, boolean done, Object payload) {
+        super(MessageType.TASKUPDATE, payload);
+        this.jobId = jobId;
+        this.running = running;
+        this.done = done;
     }
 
     public int getJobId() {
@@ -33,5 +46,9 @@ public class TaskUpdateMessage extends Message {
 
     public boolean isDone() {
         return done;
+    }
+
+    public Object getPayload() {
+        return payload;
     }
 }
