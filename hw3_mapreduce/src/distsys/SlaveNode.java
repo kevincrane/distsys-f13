@@ -6,6 +6,7 @@ import distsys.mapreduce.*;
 import distsys.msg.*;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.net.InetAddress;
@@ -225,6 +226,10 @@ public class SlaveNode extends Thread {
         if (args.length == 1) {
             PORT = Integer.parseInt(args[0]);
         }
+
+        //create data and tmp directories if they don't exist
+        new File(Config.BLOCK_FOLDER).mkdirs();
+        new File(Config.MAP_RESULTS_FOLDER).mkdirs();
 
         // Run the SlaveNode
         SlaveNode slave = new SlaveNode(PORT);
