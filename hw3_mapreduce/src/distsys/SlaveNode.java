@@ -66,8 +66,9 @@ public class SlaveNode extends Thread {
                 break;
             case BLOCK_REQ:
                 // A block was requested, read it and send its contents back
+                // we set global fetching to false since in this case we are only checking locally
                 BlockReqMessage blockReq = (BlockReqMessage) msgIn;
-                String contents = dataNode.readBlock(blockReq.getBlockId(), blockReq.getOffset());
+                String contents = dataNode.readBlock(blockReq.getBlockId(), blockReq.getOffset(), false);
                 comm.sendMessage(new BlockContentMessage(blockReq.getBlockId(), contents));
                 break;
             case BLOCK_CONTENT:

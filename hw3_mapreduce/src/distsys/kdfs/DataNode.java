@@ -78,9 +78,11 @@ public class DataNode {
      *
      * @param blockID ID of block to read from KDFS
      * @param offset  Start reading from a byte offset
+     * @param globalFetch whether the block should only be looked for locally or if it should try to fetch it from
+     *                    another slave by asking master
      * @return The contents of the block asked to read
      */
-    public String readBlock(int blockID, int offset) {
+    public String readBlock(int blockID, int offset, boolean globalFetch) {
         if (blockMap.containsKey(blockID)) {
             System.out.println("Block " + blockID + " found locally.");
             // Block is stored locally, just read it and return the contents as a String
@@ -94,9 +96,7 @@ public class DataNode {
                 System.err.println("Error: could not open DataNode file " + blockMap.get(blockID) + " (" +
                         e.getMessage() + ").");
             }
-        } else {
-            //TODO Slave should just respond with whether it has the contents, if not we have to loop looking at different slaves for the blockId
-            //TODO  Why do we need this part? Causes extra looping, also this only checks master for source of truth anyways
+        } else if(globalFetch) {
             System.out.println("Looking elsewhere for block " + blockID);
             try {
                 // Block is stored elsewhere, bleh. Ask the NameNode where it lives
@@ -121,6 +121,13 @@ public class DataNode {
             }
         }
         return null;
+    }
+
+    /**
+     * Overloaded implementation with global reading set to true by default
+     */
+    public String readBlock(int blockID, int offset) {
+        return readBlock(blockID, offset, true);
     }
 
     /**
