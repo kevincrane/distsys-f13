@@ -12,7 +12,9 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
 
 /**
  * Created with IntelliJ IDEA.
@@ -62,7 +64,7 @@ public class SlaveNode extends Thread {
             // set the dataNode of the DistFile to the current slave's DataNode
             mapperTask.setDataNode(dataNode);
             new MapTaskProcessor(mapperTask, comm).start();
-        } else if (task instanceof  ReducerTask) {
+        } else if (task instanceof ReducerTask) {
             ReducerTask reducerTask = (ReducerTask) task;
             new ReduceTaskProcessor(reducerTask, comm).start();
         } else {

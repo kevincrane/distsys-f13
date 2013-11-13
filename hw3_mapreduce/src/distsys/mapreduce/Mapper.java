@@ -24,7 +24,7 @@ import java.util.List;
  */
 
 public abstract class Mapper<Kin, Vin, Kout, Vout> implements Serializable {
-    List<Record<Kout, Vout>> output;
+    protected List<Record<Kout, Vout>> output;
 
     public Mapper() {
         output = new ArrayList<Record<Kout, Vout>>();

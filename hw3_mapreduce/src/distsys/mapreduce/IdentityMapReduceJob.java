@@ -1,6 +1,5 @@
 package distsys.mapreduce;
 
-import java.io.Serializable;
 import java.util.List;
 
 /**

@@ -50,10 +50,6 @@ public class NameNode {
         for (int i = 0; i < Config.SLAVE_NODES.length; i++) {
             String[] slave = Config.SLAVE_NODES[i];
 
-            if (slave.length != 2) {
-                //TODO: handle not having a port in config?
-                continue;
-            }
             try {
                 // Create connection with slave
                 CommHandler slaveHandle = new CommHandler(slave[0], slave[1]);

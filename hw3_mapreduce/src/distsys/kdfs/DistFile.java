@@ -12,10 +12,9 @@ import java.io.Serializable;
  * Created with IntelliJ IDEA.
  * User: kevin
  * Date: 11/6/13
- *
+ * <p/>
  * Abstraction representing a distributed file that allows the user to read records from the DataNode
  * which is set by the slave to it's own DataNode
- *
  */
 public class DistFile implements Serializable {
 

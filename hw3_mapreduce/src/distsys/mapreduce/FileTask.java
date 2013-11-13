@@ -7,8 +7,6 @@ import distsys.kdfs.DistFile;
  * Created with IntelliJ IDEA.
  * User: Prashanth
  * Date: 11/13/13
- * Time: 1:37 AM
- * To change this template use File | Settings | File Templates.
  */
 
 public abstract class FileTask extends Task {

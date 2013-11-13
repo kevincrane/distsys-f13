@@ -1,8 +1,8 @@
 package distsys.mapreduce;
 
-import java.util.List;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -23,7 +23,7 @@ public class ReducerTask extends Task {
         this.reducerNum = reducerNum;
 
         mapperJobsStatus = new HashMap<Integer, Boolean>();
-        for (int mapperJobId: mapperJobIds) {
+        for (int mapperJobId : mapperJobIds) {
             mapperJobsStatus.put(mapperJobId, false);
         }
     }
@@ -41,6 +41,7 @@ public class ReducerTask extends Task {
 
     /**
      * Method ensures new dependent mappers are not added to Reducer, only changes status of existing mapper jobs
+     *
      * @param jobId  Id of the mapper job whose status you wish to change
      * @param isDone current running status of that mapper, true: that mapper done, false: mapper is still running
      */
@@ -52,11 +53,12 @@ public class ReducerTask extends Task {
 
     /**
      * Is the reducer is ready to be executed? Which means every mapper that it is dependent on should have completed
+     *
      * @return boolean indicating whether all the mappers that the reducer depends on are completed
      */
     public boolean allMappersAreReady() {
         boolean mappersReady = true;
-        for (int jobID: getDependentMapperJobIds()) {
+        for (int jobID : getDependentMapperJobIds()) {
             mappersReady &= mapperJobsStatus.get(jobID);
         }
         return mappersReady;

@@ -3,9 +3,8 @@ package distsys.mapreduce;
 import distsys.Config;
 import distsys.msg.CommHandler;
 import distsys.msg.ResultPartitionMessage;
+import distsys.msg.TaskUpdateMessage;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -14,10 +13,8 @@ import java.util.List;
 
 /**
  * Created with IntelliJ IDEA.
- * User: Prashanth
+ * User: Prashanth, kevin
  * Date: 11/13/13
- * Time: 4:34 AM
- * To change this template use File | Settings | File Templates.
  */
 public class ReduceTaskProcessor extends TaskProcessor {
     private ReducerTask task;
@@ -28,15 +25,23 @@ public class ReduceTaskProcessor extends TaskProcessor {
     }
 
     public void run() {
-        // TODO: KEVIN REDUCING HERE
-
         List<Record> reducerResults = runReducer(task);
-        // TODO Send response back to Master, store in KDFS
-        // TODO PERFORM REDUCE
-        // TODO Don't forget to also send a TASKUPDATE message with the results to Master so that Co-ordinator will remove the REDUCER
-        // TODO task from the queue
-        // NOTE: KEVIN - TASKUPDATE Message also takes in a payload to which the results of the last reduce can be attached to
-        // send to master for processing.
+
+        // We are DONE, TELL MASTER we are done, we retry in case of failure for MAX_SOCKET_TRIES times
+        int triesLeft = Config.MAX_SOCKET_TRIES;
+        while (triesLeft > 0) {
+            try {
+                getMasterComm().sendMessage(new TaskUpdateMessage(task.getJobID(), false, true, reducerResults));
+                System.out.println("Sent message to master. Reduce Job with Id: " + task.getJobID() + " is done.");
+                break;
+            } catch (IOException e) {
+                triesLeft--;
+                e.printStackTrace();
+                if (triesLeft == 0) {
+                    System.err.println("ERROR: Could not send any messages to master, master is down.");
+                }
+            }
+        }
     }
 
 

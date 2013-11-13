@@ -4,10 +4,8 @@ import distsys.msg.CommHandler;
 
 /**
  * Created with IntelliJ IDEA.
- * User: Prashanth
+ * User: Prashanth, kevin
  * Date: 11/13/13
- * Time: 3:38 AM
- * To change this template use File | Settings | File Templates.
  */
 
 abstract public class TaskProcessor extends Thread {

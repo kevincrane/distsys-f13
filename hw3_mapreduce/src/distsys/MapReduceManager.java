@@ -1,8 +1,7 @@
 package distsys;
 
-import distsys.mapreduce.IdentityMapReduceJob;
+import distsys.examples.WordCountMapReduceJob;
 import distsys.mapreduce.MapReduceJob;
-import distsys.mapreduce.WordCountMapReduceJob;
 
 import java.io.IOException;
 import java.util.Scanner;
@@ -123,6 +122,7 @@ public class MapReduceManager {
                     mapReduceJob.setInputFile("alice.txt");
                     mapReduceJob.setOutputFile("alice_output.txt");
 
+                    //TODO replace this with newMapReduceJob above
                     masterNode.newMapReduceJob(mapReduceJob);
 
                     break;

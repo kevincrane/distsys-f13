@@ -5,8 +5,11 @@ import distsys.kdfs.NameNode;
 import distsys.msg.CommHandler;
 import distsys.msg.TaskMessage;
 import distsys.msg.TaskUpdateMessage;
+
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 
 /**
  * Created with IntelliJ IDEA.
@@ -27,10 +30,11 @@ public class Coordinator {
      * Main entry point for scheduling tasks
      * Coordinator - Takes care of scheduling job on slaves, handling failure in case a task or a slave node failed
      * as well as scheudling reducers on mapper completions
+     *
      * @param tasks Takes in a list of tasks which include MapperTasks as well as ReducerTasks
      */
     public void scheduleTasks(List<Task> tasks) {
-        for (Task task: tasks) {
+        for (Task task : tasks) {
             System.out.println("Task received for scheduling: \n" + task);
             // schedule mappers immediately, reducers scheduled only when the mappers are ready
             if (task instanceof MapperTask) {
@@ -55,10 +59,11 @@ public class Coordinator {
 
     /**
      * Master Node receives the task update message that was sent by a slave and sends that to the CoOrdinator
+     *
      * @param msg TaskUpdateMessage that was received from a slave indicating completion status of a particular task
      */
     public void processTaskUpdateMessage(TaskUpdateMessage msg) {
-        System.out.println("Received message from slave that taskId: " + msg.getJobId() + "is done: "+ msg.isDone());
+        System.out.println("Received message from slave that taskId: " + msg.getJobId() + "is done: " + msg.isDone());
         Task targetTask = taskMap.get(msg.getJobId());
         // if no task exists with that job id then we ignore the message
         if (targetTask == null)
@@ -71,8 +76,8 @@ public class Coordinator {
             targetTask.done = msg.isDone();
 
             // changes waiting status of reduce jobs that have the map job as it's dependant
-            for (Task task: taskMap.values()) {
-                if(task instanceof ReducerTask) {
+            for (Task task : taskMap.values()) {
+                if (task instanceof ReducerTask) {
                     ReducerTask reducerTask = (ReducerTask) task;
                     reducerTask.setMapperJobStatus(msg.getJobId(), msg.isDone());
                     if (reducerTask.allMappersAreReady()) {
@@ -86,7 +91,7 @@ public class Coordinator {
             if (msg.isDone()) {
                 // ReducerTask is done, remove reducer as well as all dependant map tasks from Co-ordinator's Queue
                 // Remove dependant maps
-                for (int jobID: ((ReducerTask) targetTask).getDependentMapperJobIds()) {
+                for (int jobID : ((ReducerTask) targetTask).getDependentMapperJobIds()) {
                     taskMap.remove(jobID);
                 }
                 // Remove reduce job
@@ -109,7 +114,7 @@ public class Coordinator {
     private int getChillestSlaveId() {
         int minSlave = -1;
         int minJobs = Integer.MAX_VALUE;
-        for (int slaveId: nameNode.getSlaveIds()) {
+        for (int slaveId : nameNode.getSlaveIds()) {
             int numJobs = getRunningTasks(slaveId).size();
             if (numJobs < minJobs) {
                 minJobs = numJobs;
@@ -122,12 +127,13 @@ public class Coordinator {
 
     /**
      * Gives a list of running tasks for a particular Slave
+     *
      * @param slaveId Id of slave for which we are requesting running tasks
      * @return List of running tasks for a particular slave node
      */
     protected List<Task> getRunningTasks(int slaveId) {
         List<Task> runningTasks = new ArrayList<Task>();
-        for (Task task: taskMap.values()) {
+        for (Task task : taskMap.values()) {
             if (task.slaveID == slaveId && task.running) {
                 runningTasks.add(task);
             }

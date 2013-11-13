@@ -12,10 +12,8 @@ import java.util.List;
 
 /**
  * Created with IntelliJ IDEA.
- * User: Prashanth
+ * User: Prashanth, kevin
  * Date: 11/13/13
- * Time: 3:45 AM
- * To change this template use File | Settings | File Templates.
  */
 public class MapTaskProcessor extends TaskProcessor {
     private MapperTask task;
@@ -34,16 +32,19 @@ public class MapTaskProcessor extends TaskProcessor {
         DistFile distFile = task.getDistFile();
         Record<Integer, String> currentRecord;
 
+        // Run map(key, value) for every record in the block
         while ((currentRecord = distFile.nextRecord()) != null) {
             mapper.map(currentRecord.getKey(), currentRecord.getValue());
         }
 
+        // Write output of mapper to temp file
         List<Record> mapOutput = mapper.getMapOutput();
-        File outputFile = new File(Config.MAP_RESULTS + task.getJobID());
+        String resultFileName = String.format("%s%03d", Config.MAP_RESULTS, task.getJobID());
+        File outputFile = new File(resultFileName);
         boolean isDone = false;
         try {
             FileWriter fw = new FileWriter(outputFile);
-            for(Record record: mapOutput) {
+            for (Record record : mapOutput) {
                 fw.write(record.getKey() + "\t" + record.getValue() + "\n");
             }
             fw.close();
@@ -54,16 +55,16 @@ public class MapTaskProcessor extends TaskProcessor {
         }
 
         // We are DONE, TELL MASTER we are done, we retry in case of failure for MAX_SOCKET_TRIES times
-        int maxTries = Config.MAX_SOCKET_TRIES;
-        while (maxTries > 0) {
+        int triesLeft = Config.MAX_SOCKET_TRIES;
+        while (triesLeft > 0) {
             try {
                 getMasterComm().sendMessage(new TaskUpdateMessage(task.getJobID(), false, isDone));
                 System.out.println("Sent message to master. Map Job with Id: " + task.getJobID() + " is done.");
                 break;
             } catch (IOException e) {
-                maxTries--;
+                triesLeft--;
                 e.printStackTrace();
-                if (maxTries == 0)  {
+                if (triesLeft == 0) {
                     System.err.println("ERROR: Could not send any messages to master, master is down.");
                 }
             }
