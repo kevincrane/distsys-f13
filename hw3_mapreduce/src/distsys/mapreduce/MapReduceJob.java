@@ -1,9 +1,5 @@
 package distsys.mapreduce;
 
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
-
 /**
  * Created with IntelliJ IDEA.
  * User: kevin, prashanth

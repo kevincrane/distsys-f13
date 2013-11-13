@@ -14,7 +14,7 @@ public class Partitioner {
      * @param numReducers The number of Reducers to consider
      * @return Which partition/reducer the key should be sent to
      */
-    public int getPartition(Object key, int numReducers) {
+    public static int getPartition(Object key, int numReducers) {
         return key.hashCode() % numReducers;
     }
 }

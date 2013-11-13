@@ -153,7 +153,7 @@ public class MasterNode extends Thread {
         List<Task> tasks = new ArrayList<Task>();
         List<Integer> mapperJobIds = new ArrayList<Integer>();
 
-        for (int blockId: blockIds) {
+        for (int blockId : blockIds) {
             BlockInfo blockInfo = namenode.getBlockInfo(blockId);
             int startPosition = blockInfo.getOffset();
             // all tasks are initially set as slaveId -1 and then scheduled to the right slave by the Co-ordinator
@@ -165,7 +165,7 @@ public class MasterNode extends Thread {
             ));
             mapperJobIds.add(currentJobId++);
         }
-        tasks.add(new ReducerTask(newJob.getReducer(), currentJobId++, -1, mapperJobIds));
+        tasks.add(new ReducerTask(newJob.getReducer(), currentJobId++, -1, 0, mapperJobIds));
 
         coordinator.scheduleTasks(tasks);
     }

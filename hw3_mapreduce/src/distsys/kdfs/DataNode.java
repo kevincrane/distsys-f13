@@ -15,9 +15,9 @@ public class DataNode {
 
     private final String BLOCK_PREFIX = "blk_";
     private final int slaveNum;
+
     // BlockMap maps: blockID -> filename
     private Map<Integer, String> blockMap;
-//    private CommHandler masterHandle;
 
     public DataNode(int slaveNum) {
         this.blockMap = new HashMap<Integer, String>();
@@ -76,8 +76,8 @@ public class DataNode {
     /**
      * Reads a block of data from somewhere in KDFS by blockID, starting from an offset
      *
-     * @param blockID ID of block to read from KDFS
-     * @param offset  Start reading from a byte offset
+     * @param blockID     ID of block to read from KDFS
+     * @param offset      Start reading from a byte offset
      * @param globalFetch whether the block should only be looked for locally or if it should try to fetch it from
      *                    another slave by asking master
      * @return The contents of the block asked to read
@@ -96,7 +96,7 @@ public class DataNode {
                 System.err.println("Error: could not open DataNode file " + blockMap.get(blockID) + " (" +
                         e.getMessage() + ").");
             }
-        } else if(globalFetch) {
+        } else if (globalFetch) {
             System.out.println("Looking elsewhere for block " + blockID);
             try {
                 // Block is stored elsewhere, bleh. Ask the NameNode where it lives

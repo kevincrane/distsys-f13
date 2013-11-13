@@ -2,7 +2,6 @@ package distsys.mapreduce;
 
 import distsys.kdfs.NameNode;
 
-import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
@@ -22,16 +21,19 @@ public class Coordinator {
     }
 
     public void scheduleTasks(List<Task> tasks) {
-        for (Task task: tasks) {
+        for (Task task : tasks) {
             // assign correct slaveIds for each task
             // send tasks to slaves to begin processing, set running in each task processed to one
             System.out.println("Recevied Task to schedule: \n" + task);
         }
         taskQueue.addAll(tasks);
     }
+
+    //TODO: make this match up with whatever Bala has
+    public void beginReducers(int jobId, MapReduceJob job) {
+        //todo for each living slave, if it has space in taskQueue, open CommHandler, send new TaskMessage(ReducerTask)
+    }
 }
-
-
 
 
 //TODO BALA, start here; split Job into Tasks by how many blocks the file has (namespace.get(newJob.getInputFile()).size())

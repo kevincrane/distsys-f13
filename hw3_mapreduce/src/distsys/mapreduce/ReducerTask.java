@@ -1,25 +1,24 @@
 package distsys.mapreduce;
 
-import distsys.kdfs.DistFile;
-
 import java.util.List;
 
 /**
  * Created with IntelliJ IDEA.
- * User: Prashanth
+ * User: Prashanth, kevin
  * Date: 11/13/13
- * Time: 1:32 AM
- * To change this template use File | Settings | File Templates.
  */
 
 public class ReducerTask extends Task {
+    private int reducerNum;
     private Reducer reducer;
     private List<Integer> mapperJobIds;
 
-    public ReducerTask(Reducer reducer, int jobID, int slaveID, List<Integer> mapperJobIds) {
+    public ReducerTask(Reducer reducer, int jobID, int slaveID, int reducerNum, List<Integer> mapperJobIds) {
         super(jobID, slaveID);
         this.reducer = reducer;
         this.mapperJobIds = mapperJobIds;
+        this.reducerNum = reducerNum;
+
     }
 
     public Reducer getReducer() {
@@ -28,6 +27,10 @@ public class ReducerTask extends Task {
 
     public List<Integer> getDependentMapperJobIds() {
         return mapperJobIds;
+    }
+
+    public int getReducerNum() {
+        return reducerNum;
     }
 
     @Override

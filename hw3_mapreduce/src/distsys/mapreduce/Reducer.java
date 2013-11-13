@@ -22,7 +22,7 @@ import java.util.List;
  * @param <Kout> Data type of the output key
  * @param <Vout> Data type of the output value
  */
-abstract class Reducer<Kin, Vin, Kout, Vout> implements Serializable {
+public abstract class Reducer<Kin, Vin, Kout, Vout> implements Serializable {
     List<Record<Kout, Vout>> output;
 
     public Reducer() {

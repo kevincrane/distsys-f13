@@ -24,11 +24,14 @@ public class Config {
     // Number of DataNodes that should store each block
     public static final int REPLICATION = 2;
 
+    // Number of Reducers that should run during the reduce phase (more reducers = more and smaller partitions)
+    public static final int NUM_REDUCERS = 4;
+
     // Folder on data node to store blocks
     public static final String BLOCK_FOLDER = "data";
 
     // Location and file prefix of mapper result files
-    public static final String MAP_RESULT = "/tmp/mapreduce/mpr_";
+    public static final String MAP_RESULTS = "/tmp/mapreduce/mpr_";
 
     // Text file that logs files in the namespace for persistence
     public static final String NAMESPACE_LOG = "kdfs_namespace";

@@ -2,17 +2,23 @@ package distsys;
 
 import distsys.kdfs.DataNode;
 import distsys.kdfs.DistFile;
-import distsys.mapreduce.Record;
+import distsys.mapreduce.*;
 import distsys.msg.*;
 
+import java.io.BufferedReader;
+import java.io.FileReader;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 
 /**
  * Created with IntelliJ IDEA.
- * User: kevin
+ * User: kevin, prashanth
  * Date: 11/6/13
  */
 public class SlaveNode extends Thread {
@@ -48,6 +54,122 @@ public class SlaveNode extends Thread {
 
 
     /**
+     * Run a ReduceTask on the SlaveNode
+     * Has three phases: partition/shuffle, sort, reduce
+     *
+     * @param reduceTask Which Reduce operation you should run
+     *                   TODO: any way to generify Records here, rather than always be String? probably don't care for now
+     */
+    public List<Record> runReducer(ReducerTask reduceTask) {
+        // 1. Partition - Ping each Slave and ask Records that belong to task ID and this partition/slaveNum
+        List<Record<String, String>> partitionedRecords = new ArrayList<Record<String, String>>();
+        for (String[] slave : Config.SLAVE_NODES) {
+            try {
+                // Ask for the result partitions from each slave for this Job ID
+                CommHandler requestHandle = new CommHandler(slave[0], slave[1]);
+                requestHandle.sendMessage(new ResultPartitionMessage(reduceTask.getReducerNum(),
+                        reduceTask.getDependentMapperJobIds(), null));
+                ResultPartitionMessage partitionMessage = (ResultPartitionMessage) requestHandle.receiveMessage();
+                partitionedRecords.addAll(partitionMessage.getPartitionedRecords());
+                System.out.println("Now have " + partitionedRecords.size() + " records in reducer partition.");
+            } catch (IOException e) {
+                // Slave isn't running; Smarter way to just ping slaves that are alive?
+            }
+        }
+
+        // 2. Sort - Sort partitionedRecords by key and merge like keys together
+        List<Record<String, List<String>>> reducerRecords = new ArrayList<Record<String, List<String>>>();
+        Collections.sort(partitionedRecords, new Comparator<Record<String, String>>() {
+            @Override
+            public int compare(Record<String, String> record, Record<String, String> record2) {
+                return record.getKey().compareTo(record2.getKey());
+            }
+        });
+
+        // Merge the sorted records by key
+        String currentKey = partitionedRecords.get(0).getKey();
+        List<String> currentValues = new ArrayList<String>();
+        for (Record<String, String> partitionedRecord : partitionedRecords) {
+            if (partitionedRecord.getKey().equals(currentKey)) {
+                // Keys match, add value to list
+                currentValues.add(partitionedRecord.getValue());
+            } else {
+                // Moved on to the next key, add previous Records to reducerRecords
+                reducerRecords.add(new Record<String, List<String>>(currentKey, currentValues));
+                currentKey = partitionedRecord.getKey();
+                currentValues = new ArrayList<String>();
+            }
+        }
+
+        // 3. Reduce - Perform reduce operation on every record (key -> list of all values for that key)
+        Reducer reducer = reduceTask.getReducer();
+        for (Record<String, List<String>> reducerRecord : reducerRecords) {
+            reducer.reduce(reducerRecord.getKey(), reducerRecord.getValue());
+        }
+
+        // Done! Return and alert Master that you've finished your job
+        return reducer.getReduceOutput();
+    }
+
+    /**
+     * Read the completed records from the Mapper tasks out of temp files; hash their keys and return them
+     * if the hash would assign them to a given reducer number
+     *
+     * @param reducerNum Which reducer receives these records
+     * @param taskIDs    Which task IDs you should look for in local temp storage
+     * @return A list of Records that belong to reducerNum
+     */
+    public List<Record<String, String>> getPartitionedRecords(int reducerNum, List<Integer> taskIDs) {
+        // Iterate through each desired task ID, partition if you have it
+        List<Record<String, String>> partitionedRecords = new ArrayList<Record<String, String>>();
+        for (Integer taskID : taskIDs) {
+            // Try to read a mapper result file with task ID; skips if can't open because you don't have it
+            try {
+                String resultFileName = String.format("%s%03d", Config.MAP_RESULTS, taskID);
+                BufferedReader br = new BufferedReader(new FileReader(resultFileName));
+                System.out.println("Opened Mapper result file " + resultFileName);
+                String recordLine;
+                while ((recordLine = br.readLine()) != null) {
+                    // Split record line into key and value by tab
+                    int tabIndex = recordLine.indexOf('\t');
+                    if (tabIndex < 0) continue;
+
+                    // Read key/value, partition by key, store if it fits with right reducer
+                    String key = recordLine.substring(0, tabIndex);
+                    int partition = Partitioner.getPartition(key, Config.NUM_REDUCERS);
+                    if (partition == reducerNum) {
+                        String value = recordLine.substring(tabIndex + 1);
+                        partitionedRecords.add(new Record<String, String>(key, value));
+                        //TODO: make this work with any object? Not possible while reading from text file
+                    }
+                }
+                br.close();
+            } catch (IOException ignored) {
+            }
+        }
+
+        return partitionedRecords;
+    }
+
+
+    /**
+     * Run a Map or Reduce task and report back to Master after completion
+     *
+     * @param taskMsg The MapReduce task to run
+     */
+    private void runMapReduceTask(TaskMessage taskMsg) {
+        if (taskMsg.getTask() instanceof MapperTask) {
+            //TODO: handle mapper from somewhere; make this into a new method
+            System.out.println("Slave is handling Map task.");
+        } else if (taskMsg.getTask() instanceof ReducerTask) {
+            // Handle Reduce task
+            List<Record> reducerResults = runReducer((ReducerTask) taskMsg.getTask());
+            // TODO Send response back to Master, store in KDFS
+        }
+    }
+
+
+    /**
      * Handle an incoming socket connection for SlaveNode
      *
      * @param comm CommHandler that is sending a message to this Slave
@@ -61,7 +183,8 @@ public class SlaveNode extends Thread {
             case BLOCKMAP:
                 // BlockMap requested, send back to MasterNode
                 slaveNum = ((BlockMapMessage) msgIn).getHostnum();
-                //TODO don't generate BlockMap for every ping, wastes resources every 5 seconds, updated automatically in master during puts, don't need it to update constantly
+                //TODO don't generate BlockMap for every ping, wastes resources every 5 seconds,
+                // updated automatically in master during puts, don't need it to update constantly
                 comm.sendMessage(new BlockMapMessage(slaveNum, dataNode.generateBlockMap()));
                 break;
             case BLOCK_REQ:
@@ -77,11 +200,21 @@ public class SlaveNode extends Thread {
                 dataNode.writeBlock(blockContent.getBlockID(), blockContent.getBlockContents());
                 //TODO: send acknowledgement back?
                 break;
+            case TASK:
+                // Run either a map or reduce task
+                runMapReduceTask((TaskMessage) msgIn);
+                break;
+            case PARTITION:
+                // Read and partition all records from a completed Mapper task
+                ResultPartitionMessage partMsg = (ResultPartitionMessage) msgIn;
+                List<Record<String, String>> partRecords = getPartitionedRecords(partMsg.getReducerNum(), partMsg.getTaskIDs());
+                comm.sendMessage(new ResultPartitionMessage(partMsg.getReducerNum(), null, partRecords));
+                break;
             case KILL:
                 // Stop running the SlaveNode
                 running = false;
                 slaveServer.close();
-                System.out.println("\nEnding now, byee!");
+                System.out.println("\nEnding now, byee! <3");
                 break;
             case ACK:
                 // Acknowledgement from something
