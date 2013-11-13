@@ -13,14 +13,14 @@ import java.util.List;
  * Counts the number of each type of word in the entire distributed file
  *
  */
-public class WordCountMapReduceJob extends MapReduceJob<String, String, String, Integer> {
+public class WordCountMapReduceJob extends MapReduceJob<Integer, String, String, Integer> {
 
-    public Mapper<String, String, String, Integer> getMapper() {
-        return new Mapper<String, String, String, Integer>() {
+    public Mapper<Integer, String, String, Integer> getMapper() {
+        return new Mapper<Integer, String, String, Integer>() {
             @Override
-            public void map(String key, String value) {
+            public void map(Integer key, String value) {
                 // Default map method just produces an identity mapper
-                String[] words = value.split(" ");
+                String[] words = value.trim().split(" ");
                 for (String word: words) {
                     output.add(new Record<String, Integer>(word, 1));
                 }
