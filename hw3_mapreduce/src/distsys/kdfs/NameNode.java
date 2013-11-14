@@ -1,6 +1,7 @@
 package distsys.kdfs;
 
 import distsys.Config;
+import distsys.MasterNode;
 import distsys.msg.*;
 
 import java.io.*;
@@ -10,6 +11,11 @@ import java.util.*;
  * Created with IntelliJ IDEA.
  * User: kevin
  * Date: 11/6/13
+ */
+
+/**
+ * Responsible for maintaing list of block addresses and record of living slaves.
+ * Can potentially be run on an instance that is seperate from the master Node
  */
 public class NameNode {
 
@@ -24,7 +30,6 @@ public class NameNode {
 
     // Highest block ID currently in KDFS
     private int maxBlockID = 0;
-
 
     /**
      * Default Constructor
@@ -43,8 +48,9 @@ public class NameNode {
     /**
      * Initialization of NameNode; load Namespace from log file and ask every known slave for its BlockMap
      */
-    public void pingSlaves() {
-        blockMap = new HashMap<Integer, Set<Integer>>();
+    public List<Integer> pingSlaves() {
+        HashMap<Integer, Set<Integer>> newblockMap = new HashMap<Integer, Set<Integer>>();
+        List<Integer> deadSlaveIds = new ArrayList<Integer>();
 
         // Connect to all known slaves and ask for their BlockMap
         for (int i = 0; i < Config.SLAVE_NODES.length; i++) {
@@ -60,15 +66,20 @@ public class NameNode {
 
                 // Received Blockmap, adding its contents to memory
                 if (returnedMsg instanceof BlockMapMessage) {
-                    blockMap.put(i, ((BlockMapMessage) returnedMsg).getBlocks());
+                    newblockMap.put(i, ((BlockMapMessage) returnedMsg).getBlocks());
                 }
             } catch (IOException ignored) {
+                // tell master that a slave failed
+                deadSlaveIds.add(i);
                 //TODO Handle TimeoutException if slave doesn't reply and is down
                 //TODO IMPORTANT IMPORTANT handle REMOVAL of slave if slave is down and doesn't reply - need different AWAKE message instead of generating blockMap on Slave every 5 seconds
 
                 //TODO IMP: IF slave down tell CoOrdinator that slave is down and so it can assign the job to some other slave with maxTries of 3
             }
         }
+
+        blockMap = newblockMap;
+        return deadSlaveIds;
     }
 
 

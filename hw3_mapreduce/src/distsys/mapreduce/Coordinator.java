@@ -52,8 +52,14 @@ public class Coordinator {
                     task.running = true;
 //                    slaveComm.receiveMessage();
                 } catch (IOException e) {
-                    // TODO handle case where slave is down, retry on different slave, maxTries of 3, if still doesn't work throw job return failure
                     e.printStackTrace();
+                    System.err.println("Could not send task to slave with SlaveId: " + task.slaveID + ", retrying with different slave if possible");
+                    // We remove task from queue and try to reschedule, this is fine because getChillestSlaveId will
+                    // not pick the same slaveId again for rescheduling the task that failed
+                    taskMap.remove(task.getJobID());
+                    List<Task> retryTask = new ArrayList<Task>();
+                    retryTask.add(task);
+                    scheduleTasks(retryTask);
                 }
             }
             // add every task to queue to keep track of them and retry them upon failure
@@ -68,10 +74,18 @@ public class Coordinator {
      */
     public void processTaskUpdateMessage(TaskUpdateMessage msg) {
         System.out.println("Received message from slave that taskId " + msg.getJobId() + " is done: " + msg.isDone());
-        Task targetTask = taskMap.get(msg.getJobId());
+
+        final Task targetTask = taskMap.get(msg.getJobId());
         // if no task exists with that job id then we ignore the message
         if (targetTask == null) {
             return;
+        }
+
+        //First before processing for normal circumstances, we check if the message is indicating a failure
+        if (!msg.isDone() && !msg.isRunning()) {
+            // Task failed on slave, reschedule
+            taskMap.remove(targetTask.getJobID());
+            scheduleTasks(new ArrayList<Task>(){{add(targetTask);}});
         }
 
         //If it is a Map task, update the particular map task as well as reduce tasks that are dependant on that map
@@ -124,6 +138,9 @@ public class Coordinator {
      * Ideally pick the least burdened slave that contains a local copy of the block
      * desired by a mapper task; if that doesn't work (or you're running for a reducer),
      * just pick the least burdened slave overall
+     *
+     * If the slaveId of the current task is given (!= -1), then it is a resassignment upon failure
+     * we pick the node using the same algorithm but we cannot choose the node in which the job already failed
      */
     private int getChillestSlaveId(MapperTask mapTask) {
         int minSlave = -1;
@@ -136,7 +153,13 @@ public class Coordinator {
             List<Integer> containingSlaves = nameNode.getSlaveIdsFromPosition(fileName, startPosition);
             for (Integer slaveId : containingSlaves) {
                 int numJobs = getRunningTasks(slaveId).size();
-                if (numJobs <= minJobs && numJobs <= Config.MAX_TASKS_PER_NODE) {
+                // if (mapTask.getSlaveID() == -1)
+                // NEW TASK ASSIGNMENT TO SLAVE
+                // never been assigned a slave so we get to choose from all slaveIds
+                // else
+                // FAILURE REASSIGNMENT, has already been assigned a slave before,
+                // We cannot choose the slave where it already failed
+                if (numJobs <= minJobs && numJobs <= Config.MAX_TASKS_PER_NODE && mapTask.getSlaveID() != slaveId) {
                     minJobs = numJobs;
                     minSlave = slaveId;
                 }
@@ -147,15 +170,23 @@ public class Coordinator {
         if (minSlave == -1) {
             for (int slaveId : nameNode.getSlaveIds()) {
                 int numJobs = getRunningTasks(slaveId).size();
-                if (numJobs < minJobs) {
+                // if (mapTask.getSlaveID() == -1)
+                // NEW TASK ASSIGNMENT TO SLAVE
+                // never been assigned a slave so we get to choose from all slaveIds
+                // else
+                // FAILURE REASSIGNMENT, has already been assigned a slave before,
+                // We cannot choose the slave where it already failed
+                if (numJobs < minJobs && mapTask.getSlaveID() != slaveId) {
                     minJobs = numJobs;
                     minSlave = slaveId;
                 }
             }
         }
+
         if (mapTask != null)
             System.out.println("Current chillest slave is " + minSlave + " for position " +
                     mapTask.getDistFile().getStartPosition() + ", so sending task to it");
+
         return minSlave;
     }
 
@@ -165,7 +196,7 @@ public class Coordinator {
      * @param slaveId Id of slave for which we are requesting running tasks
      * @return List of running tasks for a particular slave node
      */
-    protected List<Task> getRunningTasks(int slaveId) {
+    public List<Task> getRunningTasks(int slaveId) {
         List<Task> runningTasks = new ArrayList<Task>();
         for (Task task : taskMap.values()) {
             if (task.slaveID == slaveId && task.running) {
@@ -173,6 +204,25 @@ public class Coordinator {
             }
         }
         return runningTasks;
+    }
+
+    /**
+     * Processes a dead slave event
+     * Gets dead slaves tasks and re-schedules them
+     * @param deadSlaveIds Ids of the slaves that are now DEAD (SLAVE ZOMBIE ALERT)
+     */
+    public void processDeadSlaveEvent(List<Integer> deadSlaveIds) {
+        // REAP TASKS of dead slaves
+        List<Task> runningTasks = new ArrayList<Task>();
+        for (int deadSlaveId: deadSlaveIds) {
+            runningTasks.addAll(getRunningTasks(deadSlaveId));
+        }
+        for (Task task: runningTasks) {
+            task.running = false;
+            taskMap.remove(task.getJobID());
+        }
+        // Reschedule them
+        scheduleTasks(runningTasks);
     }
 
 

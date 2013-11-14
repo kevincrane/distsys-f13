@@ -108,17 +108,20 @@ public class DataNode {
                 BlockAddrMessage msgIn = (BlockAddrMessage) masterHandle.receiveMessage();
 
                 // Send message to correct DataNode asking for block contents
-                if (msgIn.getSlaveNum() >= 0) {
-                    int slaveNum = msgIn.getSlaveNum();
-                    CommHandler dataNodeHandle = new CommHandler(Config.SLAVE_NODES[slaveNum][0], Config.SLAVE_NODES[slaveNum][1]);
-                    dataNodeHandle.sendMessage(new BlockReqMessage(blockID, offset));
+                for (Integer slaveId: msgIn.getSlaveIds()) {
+                    try {
+                        CommHandler dataNodeHandle = new CommHandler(Config.SLAVE_NODES[slaveId][0], Config.SLAVE_NODES[slaveId][1]);
+                        dataNodeHandle.sendMessage(new BlockReqMessage(blockID, offset));
 
-                    // Receive message, return block contents
-                    Message blockContents = dataNodeHandle.receiveMessage();
-                    return ((BlockContentMessage) blockContents).getBlockContents();
-                } else {
-                    System.err.println("Error: could not find block ID " + blockID + " in NameNode.");
+                        // Receive message, return block contents
+                        Message blockContents = dataNodeHandle.receiveMessage();
+                        return ((BlockContentMessage) blockContents).getBlockContents();
+                    } catch (IOException e){
+                        System.err.println("Error: could not find block ID " + blockID + " in NameNode.");
+                    }
                 }
+                System.err.println("Error: Failed to communicate with any of the slaves " + msgIn.getSlaveIds() +" that were supposed to contain the block with ID " + blockID);
+                System.err.println("Returning null for contents of the block");
             } catch (IOException e) {
                 System.err.println("Error: failed sending block request to master (" + e.getMessage() + ").");
             }

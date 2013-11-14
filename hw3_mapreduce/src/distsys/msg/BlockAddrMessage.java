@@ -1,5 +1,7 @@
 package distsys.msg;
 
+import java.util.List;
+
 /**
  * Created with IntelliJ IDEA.
  * User: kevin
@@ -7,7 +9,7 @@ package distsys.msg;
  */
 public class BlockAddrMessage extends Message {
 
-    private int slaveNum;
+    private List<Integer> slaveIds;
     private int blockID;
 
     // Request a block address from NameNode
@@ -16,9 +18,9 @@ public class BlockAddrMessage extends Message {
         this.blockID = blockID;
     }
 
-    public BlockAddrMessage(int slaveNum, int blockID) {
+    public BlockAddrMessage(List<Integer> slaveIds, int blockID) {
         super(MessageType.BLOCK_ADDR, blockID);
-        this.slaveNum = slaveNum;
+        this.slaveIds = slaveIds;
         this.blockID = blockID;
     }
 
@@ -26,8 +28,8 @@ public class BlockAddrMessage extends Message {
         return blockID;
     }
 
-    public int getSlaveNum() {
-        return slaveNum;
+    public List<Integer> getSlaveIds() {
+        return slaveIds;
     }
 
 }
