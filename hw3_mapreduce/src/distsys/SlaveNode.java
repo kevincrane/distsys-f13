@@ -160,7 +160,7 @@ public class SlaveNode extends Thread {
         for (Integer taskID : taskIDs) {
             // Try to read a mapper result file with task ID; skips if can't open because you don't have it
             try {
-                String resultFileName = String.format("%s%03d", Config.MAP_RESULTS, taskID);
+                String resultFileName = String.format("%s%d%03d", Config.MAP_RESULTS, slaveNum, taskID);    //TODO here
                 BufferedReader br = new BufferedReader(new FileReader(resultFileName));
 //                System.out.println("Opened Mapper result file " + resultFileName);
 
@@ -184,7 +184,6 @@ public class SlaveNode extends Thread {
             }
         }
 
-        System.out.println("SlaveNode read " + partitionedRecords.size() + " records for Reducer partition " + partitionNum);
         return partitionedRecords;
     }
 

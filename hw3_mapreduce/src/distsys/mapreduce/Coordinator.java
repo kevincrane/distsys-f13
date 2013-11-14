@@ -6,7 +6,6 @@ import distsys.msg.CommHandler;
 import distsys.msg.TaskMessage;
 import distsys.msg.TaskUpdateMessage;
 
-import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.*;
@@ -85,7 +84,9 @@ public class Coordinator {
         if (!msg.isDone() && !msg.isRunning()) {
             // Task failed on slave, reschedule
             taskMap.remove(targetTask.getJobID());
-            scheduleTasks(new ArrayList<Task>(){{add(targetTask);}});
+            scheduleTasks(new ArrayList<Task>() {{
+                add(targetTask);
+            }});
         }
 
         //If it is a Map task, update the particular map task as well as reduce tasks that are dependant on that map
@@ -138,7 +139,7 @@ public class Coordinator {
      * Ideally pick the least burdened slave that contains a local copy of the block
      * desired by a mapper task; if that doesn't work (or you're running for a reducer),
      * just pick the least burdened slave overall
-     *
+     * <p/>
      * If the slaveId of the current task is given (!= -1), then it is a resassignment upon failure
      * we pick the node using the same algorithm but we cannot choose the node in which the job already failed
      */
@@ -209,15 +210,16 @@ public class Coordinator {
     /**
      * Processes a dead slave event
      * Gets dead slaves tasks and re-schedules them
+     *
      * @param deadSlaveIds Ids of the slaves that are now DEAD (SLAVE ZOMBIE ALERT)
      */
     public void processDeadSlaveEvent(List<Integer> deadSlaveIds) {
         // REAP TASKS of dead slaves
         List<Task> runningTasks = new ArrayList<Task>();
-        for (int deadSlaveId: deadSlaveIds) {
+        for (int deadSlaveId : deadSlaveIds) {
             runningTasks.addAll(getRunningTasks(deadSlaveId));
         }
-        for (Task task: runningTasks) {
+        for (Task task : runningTasks) {
             task.running = false;
             taskMap.remove(task.getJobID());
         }
@@ -241,7 +243,6 @@ public class Coordinator {
             slaveComm.sendMessage(new TaskMessage(reducerTask));
             // set running in each task processed to one
             reducerTask.running = true;
-//            slaveComm.receiveMessage();
         } catch (IOException e) {
             e.printStackTrace();
             System.err.println("Could not send task \n" + reducerTask + "\n to slave with SlaveId: " + reducerTask.slaveID + ", retrying with different slave if possible");
@@ -264,7 +265,7 @@ public class Coordinator {
     public void writeOutputReduceRecords(String outputFileName, List<Record> finalReducerResults) {
         // Append to output file
         try {
-            FileWriter fw = new FileWriter(new File(outputFileName));
+            FileWriter fw = new FileWriter(outputFileName, true);
             for (Record record : finalReducerResults) {
                 fw.append(record.getKey() + "\t" + record.getValue() + "\n");
             }

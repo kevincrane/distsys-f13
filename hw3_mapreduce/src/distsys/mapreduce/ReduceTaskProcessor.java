@@ -60,8 +60,10 @@ public class ReduceTaskProcessor extends TaskProcessor {
                 requestHandle.sendMessage(new ResultPartitionMessage(reduceTask.getPartitionNum(),
                         new HashSet<Integer>(reduceTask.getDependentMapperJobIds()), null));
                 ResultPartitionMessage partitionMessage = (ResultPartitionMessage) requestHandle.receiveMessage();
+
                 partitionedRecords.addAll(partitionMessage.getPartitionedRecords());
-                System.out.println("Now have " + partitionedRecords.size() + " records in reducer partition.");
+                System.out.println("Now have " + partitionedRecords.size() + " records in reducer partition " +
+                        reduceTask.getPartitionNum() + ".");
             } catch (IOException e) {
                 // Slave isn't running; Smarter way to just ping slaves that are alive?
             }
@@ -85,10 +87,11 @@ public class ReduceTaskProcessor extends TaskProcessor {
         String currentKey = partitionedRecords.get(0).getKey();
         List<String> currentValues = new ArrayList<String>();
         for (Record<String, String> partitionedRecord : partitionedRecords) {
-            if (partitionedRecord.getKey().equals(currentKey)) {
-                // Keys match, add value to list
-                currentValues.add(partitionedRecord.getValue());
-            } else {
+//            if (partitionedRecord.getKey().equals(currentKey)) {
+            // Keys match, add value to list
+            currentValues.add(partitionedRecord.getValue());
+//            } else {
+            if (!partitionedRecord.getKey().equals(currentKey)) {
                 // Moved on to the next key, add previous Records to reducerRecords
                 reducerRecords.add(new Record<String, List<String>>(currentKey, currentValues));
                 currentKey = partitionedRecord.getKey();

@@ -1,7 +1,5 @@
 package distsys;
 
-import distsys.examples.IntenseMapReduceJob;
-import distsys.examples.WordCountMapReduceJob;
 import distsys.mapreduce.MapReduceJob;
 import distsys.mapreduce.Task;
 
@@ -26,7 +24,7 @@ public class MapReduceManager {
      */
     public static void newMapReduceJob(Scanner lineIn) {
         System.out.println("Enter the class, input file, and output file of the map reduce job you want to run:");
-        System.out.println("  e.g. distsys.WordCountJob inputFile.txt output.txt");
+        System.out.println("  e.g. distsys.examples.WordCountMRJob inputFile.txt output.txt");
         String input = lineIn.nextLine();
 
         // Read MapReduce parameters from input
@@ -122,21 +120,19 @@ public class MapReduceManager {
             // Send command to master
             switch (command) {
                 case 1:
-                    MapReduceJob mapReduceJob = new IntenseMapReduceJob();
-                    mapReduceJob.setInputFile("alice.txt");
-                    mapReduceJob.setOutputFile("alice_output.txt");
-
-                    //TODO replace this with newMapReduceJob above
-                    masterNode.newMapReduceJob(mapReduceJob);
-
+                    newMapReduceJob(lineIn);
+//                    MapReduceJob mapReduceJob = new IdentityMRJob();
+//                    mapReduceJob.setInputFile("alice.txt");
+//                    mapReduceJob.setOutputFile("alice_output.txt");
+//                    masterNode.newMapReduceJob(mapReduceJob);
                     break;
                 case 2:
                     // List all active MapReduce jobs
                     System.out.println("Listing MapReduce Jobs:");
                     HashMap<Integer, List<Task>> jobMap = masterNode.getRunningMapReduceJobs();
-                    for (int slaveId: jobMap.keySet()) {
+                    for (int slaveId : jobMap.keySet()) {
                         System.out.println("SLAVE " + slaveId + " is running:");
-                        for (Task t: jobMap.get(slaveId)) {
+                        for (Task t : jobMap.get(slaveId)) {
                             System.out.println(t);
                         }
                         System.out.println();

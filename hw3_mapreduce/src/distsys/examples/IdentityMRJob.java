@@ -6,7 +6,6 @@ import distsys.mapreduce.Record;
 import distsys.mapreduce.Reducer;
 
 import java.util.List;
-import java.util.StringTokenizer;
 
 /**
  * Created with IntelliJ IDEA.
@@ -15,20 +14,17 @@ import java.util.StringTokenizer;
  */
 
 /**
- * Canonical Example of a MapReduce Job - WORD COUNT
- * Counts the number of each type of word in the entire distributed file
+ * Canonical Example of a MapReduce Job - IDENTITY
+ * Returns the same document that is loaded with the character offset as a key
  */
-public class WordCountMapReduceJob extends MapReduceJob<Integer, String, String, String> {
+public class IdentityMRJob extends MapReduceJob<Integer, String, String, String> {
 
     public Mapper<Integer, String, String, String> getMapper() {
         return new Mapper<Integer, String, String, String>() {
             @Override
             public void map(Integer key, String value) {
-                // Produces key value pairs indicating count of each token
-                StringTokenizer tokens = new StringTokenizer(value.trim());
-                while (tokens.hasMoreTokens()) {
-                    output.add(new Record<String, String>(tokens.nextToken(), "1"));
-                }
+                // Default map method just produces an identity mapper
+                output.add(new Record<String, String>(key.toString(), value));
             }
         };
     }
@@ -37,12 +33,10 @@ public class WordCountMapReduceJob extends MapReduceJob<Integer, String, String,
         return new Reducer<String, String, String, String>() {
             @Override
             public void reduce(String key, List<String> values) {
-                // Reduces values of each key by summing the counts of each token
-                Integer sum = 0;
+                // Default reduce method just produces an identity reducer
                 for (String value : values) {
-                    sum += Integer.parseInt(value);
+                    output.add(new Record<String, String>(key, value));
                 }
-                output.add(new Record<String, String>(key, sum.toString()));
             }
         };
     }
