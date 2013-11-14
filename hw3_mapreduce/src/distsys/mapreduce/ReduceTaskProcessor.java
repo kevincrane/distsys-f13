@@ -6,10 +6,7 @@ import distsys.msg.ResultPartitionMessage;
 import distsys.msg.TaskUpdateMessage;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 
 /**
  * Created with IntelliJ IDEA.
@@ -31,8 +28,9 @@ public class ReduceTaskProcessor extends TaskProcessor {
         int triesLeft = Config.MAX_SOCKET_TRIES;
         while (triesLeft > 0) {
             try {
-                getMasterComm().sendMessage(new TaskUpdateMessage(task.getJobID(), false, true, reducerResults));
-                System.out.println("Sent message to master. Reduce Job with Id: " + task.getJobID() + " is done.");
+                CommHandler masterComm = new CommHandler(Config.MASTER_NODE, Config.DATA_PORT);
+                masterComm.sendMessage(new TaskUpdateMessage(task.getJobID(), false, true, reducerResults));
+                System.out.println("Sent message to master, Reduce job with id " + task.getJobID() + " is done.");
                 break;
             } catch (IOException e) {
                 triesLeft--;
@@ -59,8 +57,8 @@ public class ReduceTaskProcessor extends TaskProcessor {
             try {
                 // Ask for the result partitions from each slave for this Job ID
                 CommHandler requestHandle = new CommHandler(slave[0], slave[1]);
-                requestHandle.sendMessage(new ResultPartitionMessage(reduceTask.getReducerNum(),
-                        reduceTask.getDependentMapperJobIds(), null));
+                requestHandle.sendMessage(new ResultPartitionMessage(reduceTask.getPartitionNum(),
+                        new HashSet<Integer>(reduceTask.getDependentMapperJobIds()), null));
                 ResultPartitionMessage partitionMessage = (ResultPartitionMessage) requestHandle.receiveMessage();
                 partitionedRecords.addAll(partitionMessage.getPartitionedRecords());
                 System.out.println("Now have " + partitionedRecords.size() + " records in reducer partition.");
@@ -77,6 +75,11 @@ public class ReduceTaskProcessor extends TaskProcessor {
                 return record.getKey().compareTo(record2.getKey());
             }
         });
+
+        if (partitionedRecords.size() == 0) {
+            System.err.println("Error: couldn't find any records for partition " + reduceTask.getPartitionNum() + " to reduce.");
+            return null;
+        }
 
         // Merge the sorted records by key
         String currentKey = partitionedRecords.get(0).getKey();

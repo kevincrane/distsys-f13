@@ -150,11 +150,11 @@ public class SlaveNode extends Thread {
      * Read the completed records from the Mapper tasks out of temp files; hash their keys and return them
      * if the hash would assign them to a given reducer number
      *
-     * @param reducerNum Which reducer receives these records
-     * @param taskIDs    Which task IDs you should look for in local temp storage
+     * @param partitionNum Which reducer receives these records
+     * @param taskIDs      Which task IDs you should look for in local temp storage
      * @return A list of Records that belong to reducerNum
      */
-    public List<Record<String, String>> getPartitionedRecords(int reducerNum, Set<Integer> taskIDs) {
+    public List<Record<String, String>> getPartitionedRecords(int partitionNum, Set<Integer> taskIDs) {
         // Iterate through each desired task ID, partition if you have it
         List<Record<String, String>> partitionedRecords = new ArrayList<Record<String, String>>();
         for (Integer taskID : taskIDs) {
@@ -162,7 +162,8 @@ public class SlaveNode extends Thread {
             try {
                 String resultFileName = String.format("%s%03d", Config.MAP_RESULTS, taskID);
                 BufferedReader br = new BufferedReader(new FileReader(resultFileName));
-                System.out.println("Opened Mapper result file " + resultFileName);
+//                System.out.println("Opened Mapper result file " + resultFileName);
+
                 String recordLine;
                 while ((recordLine = br.readLine()) != null) {
                     // Split record line into key and value by tab
@@ -172,7 +173,7 @@ public class SlaveNode extends Thread {
                     // Read key/value, partition by key, store if it fits with right reducer
                     String key = recordLine.substring(0, tabIndex);
                     int partition = Partitioner.getPartition(key, Config.NUM_REDUCERS);
-                    if (partition == reducerNum) {
+                    if (partition == partitionNum) {
                         String value = recordLine.substring(tabIndex + 1);
                         partitionedRecords.add(new Record<String, String>(key, value));
                         //TODO: make this work with any object? Not possible while reading from text file probably
@@ -183,6 +184,7 @@ public class SlaveNode extends Thread {
             }
         }
 
+        System.out.println("SlaveNode read " + partitionedRecords.size() + " records for Reducer partition " + partitionNum);
         return partitionedRecords;
     }
 
@@ -203,6 +205,7 @@ public class SlaveNode extends Thread {
                         } catch (IOException e) {
                             System.err.println("Error: Did not handle request from incoming msg properly (" +
                                     e.getMessage() + ").");
+                            e.printStackTrace();
                         }
                     }
                 }).start();

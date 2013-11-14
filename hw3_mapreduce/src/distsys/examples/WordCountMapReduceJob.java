@@ -26,7 +26,9 @@ public class WordCountMapReduceJob extends MapReduceJob<Integer, String, String,
                 // Default map method just produces an identity mapper
                 String[] words = value.trim().split(" ");
                 for (String word : words) {
-                    output.add(new Record<String, String>(word, "1"));
+                    if (word.trim().length() > 0) {
+                        output.add(new Record<String, String>(word.trim(), "1"));
+                    }
                 }
             }
         };

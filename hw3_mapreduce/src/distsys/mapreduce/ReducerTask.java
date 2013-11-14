@@ -12,15 +12,17 @@ import java.util.Set;
  */
 
 public class ReducerTask extends Task {
-    private int reducerNum;
+    private int partitionNum;
     private Reducer reducer;
+    private String outputFile;
     // Keeps track of whether job is running or not
     private HashMap<Integer, Boolean> mapperJobsStatus;
 
-    public ReducerTask(Reducer reducer, int jobID, int slaveID, int reducerNum, List<Integer> mapperJobIds) {
+    public ReducerTask(Reducer reducer, String output, int jobID, int slaveID, int partitionNum, List<Integer> mapperJobIds) {
         super(jobID, slaveID);
         this.reducer = reducer;
-        this.reducerNum = reducerNum;
+        this.partitionNum = partitionNum;
+        this.outputFile = output;
 
         mapperJobsStatus = new HashMap<Integer, Boolean>();
         for (int mapperJobId : mapperJobIds) {
@@ -64,8 +66,12 @@ public class ReducerTask extends Task {
         return mappersReady;
     }
 
-    public int getReducerNum() {
-        return reducerNum;
+    public int getPartitionNum() {
+        return partitionNum;
+    }
+
+    public String getOutputFile() {
+        return outputFile;
     }
 
     @Override

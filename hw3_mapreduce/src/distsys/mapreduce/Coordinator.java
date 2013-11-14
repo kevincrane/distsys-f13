@@ -6,10 +6,10 @@ import distsys.msg.CommHandler;
 import distsys.msg.TaskMessage;
 import distsys.msg.TaskUpdateMessage;
 
+import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 
 /**
  * Created with IntelliJ IDEA.
@@ -20,10 +20,11 @@ public class Coordinator {
 
     private NameNode nameNode;
     // Map from JobId to Task
-    private HashMap<Integer, Task> taskMap = new HashMap<Integer, Task>();
+    private Map<Integer, Task> taskMap;
 
     public Coordinator(NameNode nameNode) {
         this.nameNode = nameNode;
+        this.taskMap = Collections.synchronizedMap(new HashMap<Integer, Task>());
     }
 
     /**
@@ -70,7 +71,6 @@ public class Coordinator {
         Task targetTask = taskMap.get(msg.getJobId());
         // if no task exists with that job id then we ignore the message
         if (targetTask == null) {
-            System.out.println("No, i'm null :(");
             return;
         }
 
@@ -102,7 +102,10 @@ public class Coordinator {
                 // Remove reduce job
                 taskMap.remove(msg.getJobId());
 
-                displayReduceResultsToUser(msg.getPayload());
+                // Store results in user-defined output file
+                if (msg.getPayload() instanceof List) {
+                    writeOutputReduceRecords(((ReducerTask) targetTask).getOutputFile(), (List<Record>) msg.getPayload());
+                }
             } else if (!msg.isRunning()) {
                 // not done, but not running, FAILED on that slave
                 int maxRetries = Config.MAX_JOB_RETRIES;
@@ -157,28 +160,41 @@ public class Coordinator {
      * @param reducerTask Reduce task to be run
      */
     public void scheduleReducer(ReducerTask reducerTask) {
-        //todo for each living slave, if it has space in taskMap, open CommHandler, send new TaskMessage(ReducerTask)
         reducerTask.slaveID = getChillestSlaveId();
 
-        System.out.println("WANNA RUN REDUCER " + reducerTask.slaveID + " FOR: " + reducerTask);
-
         // send tasks to slave to begin processing
-//        try {
-//            CommHandler slaveComm = new CommHandler(Config.SLAVE_NODES[reducerTask.slaveID][0],
-//                    Config.SLAVE_NODES[reducerTask.slaveID][1]);
-//            slaveComm.sendMessage(new TaskMessage(reducerTask));
-//            // set running in each task processed to one
-//            reducerTask.running = true;
+        try {
+            CommHandler slaveComm = new CommHandler(Config.SLAVE_NODES[reducerTask.slaveID][0],
+                    Config.SLAVE_NODES[reducerTask.slaveID][1]);
+            slaveComm.sendMessage(new TaskMessage(reducerTask));
+            // set running in each task processed to one
+            reducerTask.running = true;
 //            slaveComm.receiveMessage();
-//        } catch (IOException e) {
-//            // TODO handle case where slave is down, retry on different slave, maxTries of 3, if still doesn't work throw job return failure
-//            e.printStackTrace();
-//        }
+        } catch (IOException e) {
+            // TODO handle case where slave is down, retry on different slave, maxTries of 3, if still doesn't work throw job return failure
+            e.printStackTrace();
+        }
 
     }
 
-    public void displayReduceResultsToUser(Object finalReducerResults) {
-        System.out.println("REDUCE FINISHED: \n Results: \n " + finalReducerResults);
+    /**
+     * Appends result records from Reducer to the specified output file
+     *
+     * @param outputFileName      Name of file to append to
+     * @param finalReducerResults List of result records
+     */
+    public void writeOutputReduceRecords(String outputFileName, List<Record> finalReducerResults) {
+        // Append to output file
+        try {
+            FileWriter fw = new FileWriter(new File(outputFileName));
+            for (Record record : finalReducerResults) {
+                fw.append(record.getKey() + "\t" + record.getValue() + "\n");
+            }
+            fw.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        System.out.println("Wrote " + finalReducerResults.size() + " result records to " + outputFileName + "!");
     }
 }
 

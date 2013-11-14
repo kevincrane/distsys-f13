@@ -6,6 +6,8 @@ import distsys.kdfs.NameNode;
 import distsys.mapreduce.*;
 import distsys.msg.*;
 
+import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -70,7 +72,6 @@ public class MasterNode extends Thread {
                 namenode.getBlockWithPosition(comm, blockPosMessage.getFileName(), blockPosMessage.getBlockStart());
                 break;
             case TASK_UPDATE:
-                //TODO KEVIN HELP - this message never comes thru from slave - slave MapTaskProcessor sends a message thru it's commHandler
                 // send update on mapreduce task status to the CoOrdinator
                 coordinator.processTaskUpdateMessage((TaskUpdateMessage) msgIn);
                 break;
@@ -135,6 +136,7 @@ public class MasterNode extends Thread {
             System.out.println("Error: no input file specified for mapreduce job");
             return;
         }
+
         // Load input file into KDFS if it doesn't already exist
         if (!namenode.listFiles().contains(newJob.getInputFile())) {
             int blocksWritten = namenode.putFile(newJob.getInputFile());
@@ -142,6 +144,16 @@ public class MasterNode extends Thread {
                 System.out.println("Error: could not write file " + newJob.getInputFile() + " to file system.");
                 return;
             }
+        }
+
+        // Prepare output file (open and empty)
+        try {
+            File outputFile = new File(newJob.getOutputFile());
+            FileWriter fw = new FileWriter(outputFile);
+            fw.write("");
+            fw.close();
+        } catch (IOException e) {
+            e.printStackTrace();
         }
 
         List<Integer> blockIds = namenode.getFileBlockIds(newJob.getInputFile());
@@ -161,7 +173,11 @@ public class MasterNode extends Thread {
             ));
             mapperJobIds.add(currentJobId++);
         }
-        tasks.add(new ReducerTask(newJob.getReducer(), currentJobId++, -1, 0, mapperJobIds));
+
+        // Add reducers to scheduled tasks
+        for (int i = 0; i < Config.NUM_REDUCERS; i++) {
+            tasks.add(new ReducerTask(newJob.getReducer(), newJob.getOutputFile(), currentJobId++, -1, i, mapperJobIds));
+        }
 
         coordinator.scheduleTasks(tasks);
     }
@@ -195,7 +211,8 @@ public class MasterNode extends Thread {
                         try {
                             handleConnection(new CommHandler(sock));
                         } catch (IOException e) {
-                            System.err.println("Error: Did not handle request from incoming msg properly (" + e.getMessage() + ").");
+                            System.err.println("Error: Did not handle request from incoming msg properly (" +
+                                    e.getMessage() + ").");
                         }
                     }
                 }).start();

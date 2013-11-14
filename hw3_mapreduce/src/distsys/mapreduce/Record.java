@@ -1,11 +1,13 @@
 package distsys.mapreduce;
 
+import java.io.Serializable;
+
 /**
  * Created with IntelliJ IDEA.
  * User: kevin, prashanth
  * Date: 11/10/13
  */
-public class Record<K, V> {
+public class Record<K, V> implements Serializable {
 
     private K key;
     private V value;

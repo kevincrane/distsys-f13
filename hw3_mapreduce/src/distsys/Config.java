@@ -25,7 +25,7 @@ public class Config {
     public static final int REPLICATION = 2;
 
     // Number of Reducers that should run during the reduce phase (more reducers = more and smaller partitions)
-    public static final int NUM_REDUCERS = 4;
+    public static final int NUM_REDUCERS = 3;
 
     // Folder on data node to store blocks
     public static final String BLOCK_FOLDER = "data";
