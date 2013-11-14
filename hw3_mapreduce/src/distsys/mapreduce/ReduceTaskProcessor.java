@@ -51,6 +51,10 @@ public class ReduceTaskProcessor extends TaskProcessor {
      *                   TODO: any way to generify Records here, rather than always be String? probably don't care for now
      */
     public List<Record> runReducer(ReducerTask reduceTask) {
+        System.out.println("num_lines=" + "num_lines".hashCode() % 3);
+        System.out.println("num_words=" + "num_words".hashCode() % 3);
+        System.out.println("avg_lines=" + "avg_word_len".hashCode() % 3);
+
         // 1. Partition - Ping each Slave and ask Records that belong to task ID and this partition/slaveNum
         List<Record<String, String>> partitionedRecords = new ArrayList<Record<String, String>>();
         for (String[] slave : Config.SLAVE_NODES) {
@@ -84,20 +88,20 @@ public class ReduceTaskProcessor extends TaskProcessor {
         }
 
         // Merge the sorted records by key
-        String currentKey = partitionedRecords.get(0).getKey();
         List<String> currentValues = new ArrayList<String>();
-        for (Record<String, String> partitionedRecord : partitionedRecords) {
-//            if (partitionedRecord.getKey().equals(currentKey)) {
-            // Keys match, add value to list
-            currentValues.add(partitionedRecord.getValue());
-//            } else {
-            if (!partitionedRecord.getKey().equals(currentKey)) {
+        String previousKey = partitionedRecords.get(0).getKey();
+        currentValues.add(partitionedRecords.get(0).getValue());
+        for (int i = 1; i < partitionedRecords.size(); i++) {
+            Record<String, String> currentRecord = partitionedRecords.get(i);
+            if (!currentRecord.getKey().equals(previousKey)) {
                 // Moved on to the next key, add previous Records to reducerRecords
-                reducerRecords.add(new Record<String, List<String>>(currentKey, currentValues));
-                currentKey = partitionedRecord.getKey();
+                reducerRecords.add(new Record<String, List<String>>(previousKey, currentValues));
+                previousKey = currentRecord.getKey();
                 currentValues = new ArrayList<String>();
             }
+            currentValues.add(partitionedRecords.get(i).getValue());
         }
+        reducerRecords.add(new Record<String, List<String>>(previousKey, currentValues));
 
         // 3. Reduce - Perform reduce operation on every record (key -> list of all values for that key)
         Reducer reducer = reduceTask.getReducer();

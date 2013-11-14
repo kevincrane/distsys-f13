@@ -15,6 +15,10 @@ public class Partitioner {
      * @return Which partition/reducer the key should be sent to
      */
     public static int getPartition(String key, int numReducers) {
-        return key.hashCode() % numReducers;
+        int partition = key.hashCode() % numReducers;
+        if (partition < 0) {
+            partition *= -1;
+        }
+        return partition;
     }
 }
