@@ -90,7 +90,6 @@ public class SlaveNode extends Thread {
             case BLOCKMAP:
                 // BlockMap requested, send back to MasterNode
                 slaveNum = ((BlockMapMessage) msgIn).getHostnum();
-                //TODO don't generate BlockMap for every ping, wastes resources every 5 seconds,
                 // updated automatically in master during puts, don't need it to update constantly
                 comm.sendMessage(new BlockMapMessage(slaveNum, dataNode.generateBlockMap()));
                 break;
@@ -132,20 +131,6 @@ public class SlaveNode extends Thread {
                 slaveServer.close();
                 System.out.println("\nEnding now, byee! <3");
                 break;
-            case ACK:
-                // Acknowledgement from something
-
-                //TODO remove this
-//                DistFile file = new DistFile("alice.txt", 636, 16384);
-//                file.setDataNode(dataNode);
-////                file.seek(0);
-//                System.out.println();
-//                Record<Integer, String> record = file.nextRecord();
-//                do {
-//                    System.out.println(record.getKey() + "=" + record.getValue());
-//                    record = file.nextRecord();
-//                } while (record != null);
-                break;
             default:
                 System.out.println("SlaveNode: unhandled message type " + msgIn.getType());
                 break;
@@ -185,6 +170,7 @@ public class SlaveNode extends Thread {
                         String value = recordLine.substring(tabIndex + 1);
                         partitionedRecords.add(new Record<String, String>(key, value));
                         //TODO: make this work with any object? Not possible while reading from text file probably
+                        //  Frown, this won't happen for as long we are reading map results from a text file :(
                     }
                 }
                 br.close();

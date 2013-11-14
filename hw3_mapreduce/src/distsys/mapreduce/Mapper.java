@@ -2,10 +2,8 @@ package distsys.mapreduce;
 
 /**
  * Created with IntelliJ IDEA.
- * User: Prashanth
+ * User: Prashanth, kevin
  * Date: 11/12/13
- * Time: 3:39 AM
- * To change this template use File | Settings | File Templates.
  */
 
 import java.io.Serializable;

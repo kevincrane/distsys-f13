@@ -130,7 +130,7 @@ public class Coordinator {
                 while (maxRetries > 0) {
                     maxRetries--;
                     break;
-                    //TODO (BALA) HANDLE FAILURE of reduce step from slave, send to another slave with a max tries from the config
+                    //TODO handle failure of reduce step from slave, send to another slave with a max tries from the config
                 }
             }
         }
