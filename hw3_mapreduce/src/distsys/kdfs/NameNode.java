@@ -177,13 +177,6 @@ public class NameNode {
     }
 
     /**
-     * @return list of blocks that a a particular slave contains
-     */
-    public Set<Integer> getBlockIds(int slaveId) {
-        return blockMap.get(slaveId);
-    }
-
-    /**
      * @return list of slaves that DO NOT contain a particular block
      */
     public Set<Integer> getSlavesWithoutBlock(int blockID) {

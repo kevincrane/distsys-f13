@@ -44,13 +44,16 @@ public class MasterNode extends Thread {
         pingTimer = new Timer();
         pingTimer.schedule(new TimerTask() {
             public void run() {
+                Map<Integer, Set<Integer>> oldBlockMap = namenode.blockMap;
                 // Ping slaves if any of them are dead, notify Co-Ordinator
                 List<Integer> deadSlaveIds = namenode.pingSlaves();
                 coordinator.processDeadSlaveEvent(deadSlaveIds);
                 // Ensure Replication Factor best effort by replicating blocks that have dissappeared
                 List<Integer> blockIds = new ArrayList<Integer>();
                 for (int deadSlaveId: deadSlaveIds) {
-                    blockIds.addAll(namenode.getBlockIds(deadSlaveId));
+                    Set<Integer> slaveBlockIds = oldBlockMap.get(deadSlaveId);
+                    if (slaveBlockIds != null)
+                        blockIds.addAll(slaveBlockIds);
                 }
                 replicateBlocksOnce(blockIds);
             }
@@ -153,8 +156,11 @@ public class MasterNode extends Thread {
      * @param blockIds blockIds that need to be duplicated once in another slave
      */
     private void replicateBlocksOnce(List<Integer> blockIds) {
+        if (blockIds.size() > 0)
+            System.out.println("Detected slave(s) down, if necessary, best effort replicating blockIds: " + blockIds);
         for (int blockId: blockIds) {
             for (int slaveWithoutBlock: namenode.getSlavesWithoutBlock(blockId)) {
+                System.out.println("Sending Replicate message to slave " + slaveWithoutBlock + " for blockId " + blockId);
                 // For one random slave without that block, ask him to replicate it
                 try {
                     CommHandler comm = new CommHandler(Config.SLAVE_NODES[slaveWithoutBlock][0], Config.SLAVE_NODES[slaveWithoutBlock][1]);
@@ -163,7 +169,7 @@ public class MasterNode extends Thread {
                     //we try every slave that doesn't have the block until one of them gets the message
                     //if all slaves without the block are down, there is no point so we ignored the exception
                 }
-                return;
+                break;
             }
         }
     }
