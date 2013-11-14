@@ -15,23 +15,22 @@ import java.util.StringTokenizer;
  */
 
 /**
- * Canonical Example of a MapReduce Job - WORD COUNT
- * Counts the number of each type of word in the entire distributed file
+ * WordCountMapReduceJob with a Thread.sleep so that it takes time on each operation for testing purposes
  */
 public class IntenseMapReduceJob extends MapReduceJob<Integer, String, String, String> {
-    public static final int CHRUNCH_TIME = 10000;
+    public static final int CHRUNCH_TIME = 10;
 
     public Mapper<Integer, String, String, String> getMapper() {
         return new Mapper<Integer, String, String, String>() {
             @Override
             public void map(Integer key, String value) {
-                // Default map method just produces an identity mapper
                 StringTokenizer tokens = new StringTokenizer(value.trim());
                 while (tokens.hasMoreTokens()) {
                     output.add(new Record<String, String>(tokens.nextToken(), "1"));
                 }
                 try {
-                    Thread.sleep(CHRUNCH_TIME);
+                    // maps are faster so make them go slower
+                    Thread.sleep(CHRUNCH_TIME * 5);
                 } catch (InterruptedException ignored) {
                 }
             }
@@ -42,7 +41,6 @@ public class IntenseMapReduceJob extends MapReduceJob<Integer, String, String, S
         return new Reducer<String, String, String, String>() {
             @Override
             public void reduce(String key, List<String> values) {
-                // Default reduce method just produces an identity reducer
                 Integer sum = 0;
                 for (String value : values) {
                     sum += Integer.parseInt(value);

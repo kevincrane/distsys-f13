@@ -24,7 +24,7 @@ public class WordCountMapReduceJob extends MapReduceJob<Integer, String, String,
         return new Mapper<Integer, String, String, String>() {
             @Override
             public void map(Integer key, String value) {
-                // Default map method just produces an identity mapper
+                // Produces key value pairs indicating count of each token
                 StringTokenizer tokens = new StringTokenizer(value.trim());
                 while (tokens.hasMoreTokens()) {
                     output.add(new Record<String, String>(tokens.nextToken(), "1"));
@@ -37,7 +37,7 @@ public class WordCountMapReduceJob extends MapReduceJob<Integer, String, String,
         return new Reducer<String, String, String, String>() {
             @Override
             public void reduce(String key, List<String> values) {
-                // Default reduce method just produces an identity reducer
+                // Reduces values of each key by summing the counts of each token
                 Integer sum = 0;
                 for (String value : values) {
                     sum += Integer.parseInt(value);
