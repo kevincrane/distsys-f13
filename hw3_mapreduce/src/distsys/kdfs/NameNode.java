@@ -71,10 +71,6 @@ public class NameNode {
             } catch (IOException ignored) {
                 // tell master that a slave failed
                 deadSlaveIds.add(i);
-                //TODO Handle TimeoutException if slave doesn't reply and is down
-                //TODO IMPORTANT IMPORTANT handle REMOVAL of slave if slave is down and doesn't reply - need different AWAKE message instead of generating blockMap on Slave every 5 seconds
-
-                //TODO IMP: IF slave down tell CoOrdinator that slave is down and so it can assign the job to some other slave with maxTries of 3
             }
         }
 
@@ -233,8 +229,6 @@ public class NameNode {
                     CommHandler writingSlave = new CommHandler(Config.SLAVE_NODES[currentSlave][0],
                             Config.SLAVE_NODES[currentSlave][1]);
                     writingSlave.sendMessage(new BlockContentMessage(maxBlockID, currentBlock));
-                    // TODO: NEED THIS FOR FAULT TOLERANCE, IF NODE HASN'T WRITTEN OR FAILED - TRY NEXT SLAVE TILL WE RUN OUT
-                    // - also if we implement this we need a way to ensure replicas don't go the same slave
 
                     // Update BlockMap on success
                     Set<Integer> slaveBlocks = blockMap.get(currentSlave);
