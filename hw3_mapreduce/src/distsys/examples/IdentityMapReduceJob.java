@@ -1,4 +1,9 @@
-package distsys.mapreduce;
+package distsys.examples;
+
+import distsys.mapreduce.MapReduceJob;
+import distsys.mapreduce.Mapper;
+import distsys.mapreduce.Record;
+import distsys.mapreduce.Reducer;
 
 import java.util.List;
 

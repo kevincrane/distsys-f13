@@ -2,8 +2,11 @@ package distsys;
 
 import distsys.examples.WordCountMapReduceJob;
 import distsys.mapreduce.MapReduceJob;
+import distsys.mapreduce.Task;
 
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Scanner;
 
 /**
@@ -128,7 +131,15 @@ public class MapReduceManager {
                     break;
                 case 2:
                     // List all active MapReduce jobs
-                    //TODO list jobs
+                    System.out.println("Listing MapReduce Jobs:");
+                    HashMap<Integer, List<Task>> jobMap = masterNode.getRunningMapReduceJobs();
+                    for (int slaveId: jobMap.keySet()) {
+                        System.out.println("SLAVE " + slaveId + " is running:");
+                        for (Task t: jobMap.get(slaveId)) {
+                            System.out.println(t);
+                        }
+                        System.out.println();
+                    }
                     break;
                 case 3:
                     // KDFS Operations

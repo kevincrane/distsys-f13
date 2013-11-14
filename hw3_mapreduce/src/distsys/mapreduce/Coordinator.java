@@ -53,7 +53,7 @@ public class Coordinator {
 //                    slaveComm.receiveMessage();
                 } catch (IOException e) {
                     e.printStackTrace();
-                    System.err.println("Could not send task to slave with SlaveId: " + task.slaveID + ", retrying with different slave if possible");
+                    System.err.println("Could not send task \n" + task + "\n to slave with SlaveId: " + task.slaveID + ", retrying with different slave if possible");
                     // We remove task from queue and try to reschedule, this is fine because getChillestSlaveId will
                     // not pick the same slaveId again for rescheduling the task that failed
                     taskMap.remove(task.getJobID());
@@ -176,7 +176,7 @@ public class Coordinator {
                 // else
                 // FAILURE REASSIGNMENT, has already been assigned a slave before,
                 // We cannot choose the slave where it already failed
-                if (numJobs < minJobs && mapTask.getSlaveID() != slaveId) {
+                if (numJobs < minJobs && (mapTask == null || mapTask.getSlaveID() != slaveId)) {
                     minJobs = numJobs;
                     minSlave = slaveId;
                 }
@@ -243,8 +243,14 @@ public class Coordinator {
             reducerTask.running = true;
 //            slaveComm.receiveMessage();
         } catch (IOException e) {
-            // TODO handle case where slave is down, retry on different slave, maxTries of 3, if still doesn't work throw job return failure
             e.printStackTrace();
+            System.err.println("Could not send task \n" + reducerTask + "\n to slave with SlaveId: " + reducerTask.slaveID + ", retrying with different slave if possible");
+            // We remove task from queue and try to reschedule, this is fine because getChillestSlaveId will
+            // not pick the same slaveId again for rescheduling the task that failed
+            taskMap.remove(reducerTask.getJobID());
+            List<Task> retryTask = new ArrayList<Task>();
+            retryTask.add(reducerTask);
+            scheduleTasks(retryTask);
         }
 
     }
@@ -269,12 +275,3 @@ public class Coordinator {
         System.out.println("Wrote " + finalReducerResults.size() + " result records to " + outputFileName + "!");
     }
 }
-
-
-//TODO BALA, start here; split Job into Tasks by how many blocks the file has (namespace.get(newJob.getInputFile()).size())
-//  e.g. 9 blocks -> 9 tasks (Task - Mapper, filename, start index, end index)
-//  distribute the tasks (find the next slave, send a MapperMessage to slave)
-//      Which slaves have which blocks, which slaves are least full, queue of tasks that can't be scheduled yet
-//  On the Slave node
-//      when it receives MapperMessage, execute map, write the output to a file (key \t value\n)
-//      Somehow, send output file to partitioner, send Master a message saying you're done

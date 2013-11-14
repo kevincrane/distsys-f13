@@ -83,6 +83,18 @@ public class MasterNode extends Thread {
         }
     }
 
+    /**
+     * Get running mapreduce jobs within all slaves
+     * @return Map from slave id to a list of tasks that it is currently running
+     */
+    public HashMap<Integer, List<Task>> getRunningMapReduceJobs() {
+        HashMap<Integer, List<Task>> runningJobMap = new HashMap<Integer, List<Task>>();
+        for (int slaveId: namenode.getSlaveIds()) {
+            runningJobMap.put(slaveId, coordinator.getRunningTasks(slaveId));
+        }
+        return runningJobMap;
+    }
+
 
     /**
      * Read file from KDFS
