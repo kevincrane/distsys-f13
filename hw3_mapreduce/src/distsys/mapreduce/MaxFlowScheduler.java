@@ -21,10 +21,9 @@ import java.util.Set;
  * With edges of capacity 1 from the SOURCE, connecting each job, each job connects with edges of infinite capacity to
  * the nodes on the other side representing the nodes. Nodes then connect to the SINK with capacity equal to the number
  * of cores on each
- *
+ * <p/>
  * The algorithm will produce the ideal scheduling, with some jobs having no slaves, these jobs shall then be assigned
  * to the freest slaves producing the theoretically best possible global scheduling
- *
  */
 public class MaxFlowScheduler {
 
@@ -53,6 +52,7 @@ public class MaxFlowScheduler {
     /**
      * Responsible for building the graph on which Ford Fulkerson shall be run
      * Creates graph according to specification described in the model
+     *
      * @param jobsToIdealSlaveMap Map from jobId to a list of integers with slaveIds that are the best for that job
      *                            Likely because they contain the block which is the target of the map/reduce operation
      * @param slaveToFreeCoresMap Map from slaves to number of cores on slave minus the number of jobs currently being
@@ -62,30 +62,30 @@ public class MaxFlowScheduler {
     private Node<Integer> buildGraph(HashMap<Integer, List<Integer>> jobsToIdealSlaveMap, HashMap<Integer, Integer> slaveToFreeCoresMap) {
         //Produce job nodes
         List<Node<Integer>> jobs = new ArrayList<Node<Integer>>();
-        for (Integer jobID: jobsToIdealSlaveMap.keySet()) {
+        for (Integer jobID : jobsToIdealSlaveMap.keySet()) {
             jobs.add(new Node<Integer>(jobID));
         }
         //Produce slave nodes
         HashMap<Integer, Node<Integer>> slaves = new HashMap<Integer, Node<Integer>>();
-        for (Integer slaveId: slaveToFreeCoresMap.keySet()) {
+        for (Integer slaveId : slaveToFreeCoresMap.keySet()) {
             slaves.put(slaveId, new Node<Integer>(slaveId));
         }
 
         // Create source, with capacity one edges from source to each job
         Node<Integer> source = new Node<Integer>(-1);
-        for (Node<Integer> job: jobs) {
+        for (Node<Integer> job : jobs) {
             source.setNeighbour(job, 1);
         }
 
         //Create sink, with capacity free cores edge going from each slave to sink
         Node<Integer> sink = new Node<Integer>(-1);
-        for (Node<Integer> slave: slaves.values()) {
+        for (Node<Integer> slave : slaves.values()) {
             slave.setNeighbour(sink, slaveToFreeCoresMap.get(slave.id));
         }
 
         //Create edges between each job and it's ideal slave (which has the block)
-        for (Node<Integer> job: jobs) {
-            for (int slaveId: jobsToIdealSlaveMap.get(job.id)) {
+        for (Node<Integer> job : jobs) {
+            for (int slaveId : jobsToIdealSlaveMap.get(job.id)) {
                 job.setNeighbour(slaves.get(slaveId), Integer.MAX_VALUE);
             }
         }

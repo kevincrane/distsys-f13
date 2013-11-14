@@ -53,6 +53,8 @@ public class DistFile implements Serializable {
             startPosition--;
             bufferStart--;
             seek(startPosition);
+            nextRecord();           // Modeled after implementation in HDFS; if reading a later block, you should skip
+            // unless it starts exactly at the split by backing up one character and reading to \n
         } else {
             seek(startPosition);
         }

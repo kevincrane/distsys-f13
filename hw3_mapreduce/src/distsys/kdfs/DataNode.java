@@ -111,7 +111,7 @@ public class DataNode {
                 }
 
                 // Send message to correct DataNode asking for block contents
-                for (Integer slaveId: msgIn.getSlaveIds()) {
+                for (Integer slaveId : msgIn.getSlaveIds()) {
                     try {
                         CommHandler dataNodeHandle = new CommHandler(Config.SLAVE_NODES[slaveId][0], Config.SLAVE_NODES[slaveId][1]);
                         dataNodeHandle.sendMessage(new BlockReqMessage(blockID, offset));
@@ -119,11 +119,11 @@ public class DataNode {
                         // Receive message, return block contents
                         Message blockContents = dataNodeHandle.receiveMessage();
                         return ((BlockContentMessage) blockContents).getBlockContents();
-                    } catch (IOException e){
+                    } catch (IOException e) {
                         System.err.println("Error: could not find block ID " + blockID + " in NameNode.");
                     }
                 }
-                System.err.println("Error: Failed to communicate with any of the slaves " + msgIn.getSlaveIds() +" that were supposed to contain the block with ID " + blockID);
+                System.err.println("Error: Failed to communicate with any of the slaves " + msgIn.getSlaveIds() + " that were supposed to contain the block with ID " + blockID);
                 System.err.println("Returning null for contents of the block");
             } catch (IOException e) {
                 System.err.println("Error: failed sending block request to master (" + e.getMessage() + ").");

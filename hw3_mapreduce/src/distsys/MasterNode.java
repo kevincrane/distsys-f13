@@ -51,7 +51,7 @@ public class MasterNode extends Thread {
                 if (Config.REPLICATE_BLOCKS_ON_SLAVE_DOWN) {
                     // Ensure Replication Factor best effort by replicating blocks that have dissappeared
                     List<Integer> blockIds = new ArrayList<Integer>();
-                    for (int deadSlaveId: deadSlaveIds) {
+                    for (int deadSlaveId : deadSlaveIds) {
                         Set<Integer> slaveBlockIds = oldBlockMap.get(deadSlaveId);
                         if (slaveBlockIds != null)
                             blockIds.addAll(slaveBlockIds);
@@ -100,11 +100,12 @@ public class MasterNode extends Thread {
 
     /**
      * Get running mapreduce jobs within all slaves
+     *
      * @return Map from slave id to a list of tasks that it is currently running
      */
     public HashMap<Integer, List<Task>> getRunningMapReduceJobs() {
         HashMap<Integer, List<Task>> runningJobMap = new HashMap<Integer, List<Task>>();
-        for (int slaveId: namenode.getSlaveIds()) {
+        for (int slaveId : namenode.getSlaveIds()) {
             runningJobMap.put(slaveId, coordinator.getRunningTasks(slaveId));
         }
         return runningJobMap;
@@ -155,13 +156,14 @@ public class MasterNode extends Thread {
 
     /**
      * Best effort attempt to replicate given block ids one more time
+     *
      * @param blockIds blockIds that need to be duplicated once in another slave
      */
     private void replicateBlocksOnce(List<Integer> blockIds) {
         if (blockIds.size() > 0)
             System.out.println("Detected slave(s) down, if necessary, best effort replicating blockIds: " + blockIds);
-        for (int blockId: blockIds) {
-            for (int slaveWithoutBlock: namenode.getSlavesWithoutBlock(blockId)) {
+        for (int blockId : blockIds) {
+            for (int slaveWithoutBlock : namenode.getSlavesWithoutBlock(blockId)) {
                 System.out.println("Sending Replicate message to slave " + slaveWithoutBlock + " for blockId " + blockId);
                 // For one random slave without that block, ask him to replicate it
                 try {
@@ -179,12 +181,13 @@ public class MasterNode extends Thread {
     /**
      * Notify master that a reducer task is done so that we can tell the user when all reducers of a related task
      * are completed and hence the user can check the output file
+     *
      * @param task ReducerTask that has been completed according to the CoOrdinator
      */
     public void notifyReducerTaskDone(ReducerTask task) {
-        for (int i=0; i<relatedReducers.size(); i++) {
+        for (int i = 0; i < relatedReducers.size(); i++) {
             List<Integer> relatedReducerList = relatedReducers.get(i);
-            for (int j=0; j<relatedReducerList.size(); j++) {
+            for (int j = 0; j < relatedReducerList.size(); j++) {
                 int reducerJobId = relatedReducerList.get(j);
                 if (reducerJobId == task.getJobID()) {
                     relatedReducerList.remove(j);

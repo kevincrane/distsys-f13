@@ -1,7 +1,6 @@
 package distsys.kdfs;
 
 import distsys.Config;
-import distsys.MasterNode;
 import distsys.msg.*;
 
 import java.io.*;
