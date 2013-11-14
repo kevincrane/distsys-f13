@@ -6,6 +6,7 @@ import distsys.mapreduce.Record;
 import distsys.mapreduce.Reducer;
 
 import java.util.List;
+import java.util.StringTokenizer;
 
 /**
  * Created with IntelliJ IDEA.
@@ -24,11 +25,9 @@ public class WordCountMapReduceJob extends MapReduceJob<Integer, String, String,
             @Override
             public void map(Integer key, String value) {
                 // Default map method just produces an identity mapper
-                String[] words = value.trim().split(" ");
-                for (String word : words) {
-                    if (word.trim().length() > 0) {
-                        output.add(new Record<String, String>(word.trim(), "1"));
-                    }
+                StringTokenizer tokens = new StringTokenizer(value.trim());
+                while (tokens.hasMoreTokens()) {
+                    output.add(new Record<String, String>(tokens.nextToken(), "1"));
                 }
             }
         };
