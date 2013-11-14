@@ -59,17 +59,6 @@ public class MasterNode extends Thread {
                 // SlaveNode sent a BlockMap to update
                 namenode.updateBlockMap(((BlockMapMessage) msgIn).getHostnum(), ((BlockMapMessage) msgIn).getBlocks());
                 comm.sendMessage(new AckMessage());
-
-                //TODO remove
-//                CommHandler tempHandle = new CommHandler(Config.SLAVE_NODES[0][0], Config.SLAVE_NODES[0][1]);
-//                System.out.println("Sending request to " + tempHandle.getHostname() + ":" + tempHandle.getPort());
-//                tempHandle.sendMessage(new BlockContentMessage(12 + i, "HIHIHI I'M THE BEST!!"));
-
-//                System.out.print("REQUESTED " + i + ": ");
-//                tempHandle.sendMessage(new BlockReqMessage(i));
-//                BlockContentMessage contents = (BlockContentMessage) tempHandle.receiveMessage();
-//                System.out.println(contents.getBlockContents());
-//                i++;
                 break;
             case BLOCK_ADDR:
                 // Retrieve the DataNode address of a Block ID and send it back
@@ -80,15 +69,17 @@ public class MasterNode extends Thread {
                 BlockPosMessage blockPosMessage = (BlockPosMessage) msgIn;
                 namenode.getBlockWithPosition(comm, blockPosMessage.getFileName(), blockPosMessage.getBlockStart());
                 break;
-            case TASKUPDATE:
+            case TASK_UPDATE:
                 //TODO KEVIN HELP - this message never comes thru from slave - slave MapTaskProcessor sends a message thru it's commHandler
                 // send update on mapreduce task status to the CoOrdinator
                 coordinator.processTaskUpdateMessage((TaskUpdateMessage) msgIn);
+                break;
             default:
                 System.out.println("MasterNode: unhandled message type " + msgIn.getType());
                 break;
         }
     }
+
 
     /**
      * Read file from KDFS
@@ -157,6 +148,7 @@ public class MasterNode extends Thread {
         List<Task> tasks = new ArrayList<Task>();
         List<Integer> mapperJobIds = new ArrayList<Integer>();
 
+        // Add mappers to scheduled tasks
         for (int blockId : blockIds) {
             BlockInfo blockInfo = namenode.getBlockInfo(blockId);
             int startPosition = blockInfo.getOffset();
@@ -179,25 +171,18 @@ public class MasterNode extends Thread {
      * MasterNode thread loop
      */
     public void run() {
+        //TODO remove
 //        try {
 //            Thread.sleep(1000);
 //        } catch (InterruptedException e) {
 //            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
 //        }
-//        namenode.putFile("testFile1");
-//
-        //TODO remove
-        try {
-            Thread.sleep(1000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-        }
-        try {
-            CommHandler tempHandle = new CommHandler(Config.SLAVE_NODES[0][0], Config.SLAVE_NODES[0][1]);
-            tempHandle.sendMessage(new AckMessage());
-        } catch (IOException e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-        }
+//        try {
+//            CommHandler tempHandle = new CommHandler(Config.SLAVE_NODES[0][0], Config.SLAVE_NODES[0][1]);
+//            tempHandle.sendMessage(new AckMessage());
+//        } catch (IOException e) {
+//            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+//        }
 
         while (running) {
             try {

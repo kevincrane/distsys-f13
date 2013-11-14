@@ -58,7 +58,9 @@ public class MapTaskProcessor extends TaskProcessor {
         int triesLeft = Config.MAX_SOCKET_TRIES;
         while (triesLeft > 0) {
             try {
-                getMasterComm().sendMessage(new TaskUpdateMessage(task.getJobID(), false, isDone));
+                CommHandler masterComm = new CommHandler(Config.MASTER_NODE, Config.DATA_PORT);
+                masterComm.sendMessage(new TaskUpdateMessage(task.getJobID(), false, isDone));
+//                getMasterComm().sendMessage(new TaskUpdateMessage(task.getJobID(), false, isDone));
                 System.out.println("Sent message to master. Map Job with Id: " + task.getJobID() + " is done.");
                 break;
             } catch (IOException e) {

@@ -73,10 +73,9 @@ public class DistFile implements Serializable {
                 nameNodeHandle.sendMessage(new BlockPosMessage(fileName, 0, position));
                 BlockPosMessage blockPosMessage = (BlockPosMessage) nameNodeHandle.receiveMessage();
 
-                System.out.println("Looking for position " + position + " in block " + blockPosMessage.getBlockId());
-
                 // Ask DataNode for contents of block starting from position
                 if (blockPosMessage.getBlockId() >= 0) {
+                    System.out.println("Looking for position " + position + " in block " + blockPosMessage.getBlockId());
                     buffer = dataNode.readBlock(blockPosMessage.getBlockId(), position - blockPosMessage.getBlockStart());
                     this.position = position;
                     this.bufferStart = position;

@@ -1,7 +1,6 @@
 package distsys;
 
 import distsys.kdfs.DataNode;
-import distsys.kdfs.DistFile;
 import distsys.mapreduce.*;
 import distsys.msg.*;
 
@@ -48,7 +47,7 @@ public class SlaveNode extends Thread {
         // Initialize data node
         slaveNum = initMsg.getHostnum();
         dataNode = new DataNode(slaveNum);
-        System.out.println("Connected as SlaveNode " + slaveNum);
+        System.out.println("Connected as SlaveNode " + slaveNum + ".\n");
         initHandle.sendMessage(new BlockMapMessage(slaveNum, dataNode.generateBlockMap()));
     }
 
@@ -106,7 +105,6 @@ public class SlaveNode extends Thread {
                 // Someone wants you to write a new block to the file system
                 BlockContentMessage blockContent = (BlockContentMessage) msgIn;
                 dataNode.writeBlock(blockContent.getBlockID(), blockContent.getBlockContents());
-                //TODO: send acknowledgement back?
                 break;
             case TASK:
                 // Mapper or Reducer Task coming in to be run on this slave
@@ -130,17 +128,15 @@ public class SlaveNode extends Thread {
                 // Acknowledgement from something
 
                 //TODO remove this
-                DistFile file = new DistFile("alice.txt", 636, 16384);
-                file.setDataNode(dataNode);
-//                file.seek(0);
-                System.out.println();
-                Record<Integer, String> record = file.nextRecord();
-                do {
-                    System.out.println(record.getKey() + "=" + record.getValue());
-                    record = file.nextRecord();
-                } while (record != null);
-
-                System.out.println("Someone acknowledged my existence. :3");
+//                DistFile file = new DistFile("alice.txt", 636, 16384);
+//                file.setDataNode(dataNode);
+////                file.seek(0);
+//                System.out.println();
+//                Record<Integer, String> record = file.nextRecord();
+//                do {
+//                    System.out.println(record.getKey() + "=" + record.getValue());
+//                    record = file.nextRecord();
+//                } while (record != null);
                 break;
             default:
                 System.out.println("SlaveNode: unhandled message type " + msgIn.getType());
@@ -179,7 +175,7 @@ public class SlaveNode extends Thread {
                     if (partition == reducerNum) {
                         String value = recordLine.substring(tabIndex + 1);
                         partitionedRecords.add(new Record<String, String>(key, value));
-                        //TODO: make this work with any object? Not possible while reading from text file
+                        //TODO: make this work with any object? Not possible while reading from text file probably
                     }
                 }
                 br.close();

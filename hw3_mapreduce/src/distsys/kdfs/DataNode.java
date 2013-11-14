@@ -60,7 +60,7 @@ public class DataNode {
      *
      * @param filePath Name of file to read
      * @return String file contents
-     * @throws IOException TODO change to use RandomAccessFile?
+     * @throws IOException
      */
     private String readFileAsString(String filePath) throws IOException {
         StringBuilder fileData = new StringBuilder();

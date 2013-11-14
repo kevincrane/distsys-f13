@@ -20,14 +20,14 @@ public class TaskUpdateMessage extends Message {
     private boolean done;
 
     public TaskUpdateMessage(int jobId, boolean running, boolean done) {
-        super(MessageType.TASKUPDATE, jobId);
+        super(MessageType.TASK_UPDATE, jobId);
         this.jobId = jobId;
         this.running = running;
         this.done = done;
     }
 
     public TaskUpdateMessage(int jobId, boolean running, boolean done, Object payload) {
-        super(MessageType.TASKUPDATE, payload);
+        super(MessageType.TASK_UPDATE, payload);
         this.jobId = jobId;
         this.running = running;
         this.done = done;

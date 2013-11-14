@@ -228,8 +228,8 @@ public class NameNode {
                     CommHandler writingSlave = new CommHandler(Config.SLAVE_NODES[currentSlave][0],
                             Config.SLAVE_NODES[currentSlave][1]);
                     writingSlave.sendMessage(new BlockContentMessage(maxBlockID, currentBlock));
-                    // TODO: if you need acknowledgement from DataNode, it would go here
-                    // TODO: NEED THIS FOR FAULT TOLERANCE, IF NODE HASN'T WRITTEN OR FAILED - TRY NEXT SLAVE TILL WE RUN OUT - also if we implement this we need a way to ensure replicas don't go the same slave
+                    // TODO: NEED THIS FOR FAULT TOLERANCE, IF NODE HASN'T WRITTEN OR FAILED - TRY NEXT SLAVE TILL WE RUN OUT
+                    // - also if we implement this we need a way to ensure replicas don't go the same slave
 
                     // Update BlockMap on success
                     Set<Integer> slaveBlocks = blockMap.get(currentSlave);
@@ -288,7 +288,8 @@ public class NameNode {
             // Check each DataNode to see if they have this block
             String contentsToAdd = null;
             // Randomize order to prevent one slave from getting more of the requests
-            for (int slaveID : getSlaveIds()) {
+            List<Integer> slaveIDs = getSlaveIds();
+            for (int slaveID : slaveIDs) {
                 if (blockMap.get(slaveID).contains(blockID)) {
                     try {
                         // Found a DataNode with this block, try to get it
@@ -297,8 +298,7 @@ public class NameNode {
                         blockReadHandle.sendMessage(new BlockReqMessage(blockID));
                         BlockContentMessage contentMsg = (BlockContentMessage) blockReadHandle.receiveMessage();
 
-                        //TODO FIX WEIRD LOOPING: Master sends message to slave to ask for block it knows exists on slave, slave checks, if not, slave requests master to find slave on which a block exists from the same blockMap, then proceeds to request a file from potentially itself
-                        //TODO Slave should just respond with whether it has the contents, if not we have to loop looking at different slaves for the blockId
+                        // Verify contents of block exist
                         if (contentMsg.getBlockContents() == null) {
                             System.err.println("Error: DataNode " + slaveID + " returned empty content, trying new node.");
                             continue;
@@ -366,7 +366,7 @@ public class NameNode {
                 if (blockInfo.containsPosition(position)) {
                     // Found a block that contains this position, send message back to slave
                     try {
-                        System.out.println("Found " + fileName + " position " + position + " in block " + blockId);
+//                        System.out.println("Found " + fileName + " position " + position + " in block " + blockId);
                         dataNodeHandle.sendMessage(new BlockPosMessage(fileName, blockId, blockInfo.getOffset()));
                         return;
                     } catch (IOException e) {
