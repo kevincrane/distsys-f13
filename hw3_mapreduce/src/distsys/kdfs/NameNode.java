@@ -154,21 +154,15 @@ public class NameNode {
      */
     public void retrieveBlockAddress(CommHandler dataNodeHandle, int blockID) {
         // Check to see if each node in the block map contains this ID
+        List<Integer> slavesWithBlock = new ArrayList<Integer>();
         for (Integer slaveId : getSlaveIds()) {
             if (blockMap.get(slaveId).contains(blockID)) {
-                // Found a node, send a message with the socket
-                try {
-                    dataNodeHandle.sendMessage(new BlockAddrMessage(slaveId, blockID));
-                    return;
-                } catch (IOException e) {
-                    System.err.println("Error: error sending block address to DataNode.");
-                }
+                slavesWithBlock.add(slaveId);
             }
         }
-
-        // Failed, send a sad message instead
         try {
-            dataNodeHandle.sendMessage(new BlockAddrMessage(-1, blockID));
+            // Hopefully found nodes, send a message with the socket
+            dataNodeHandle.sendMessage(new BlockAddrMessage(slavesWithBlock, blockID));
         } catch (IOException e) {
             System.err.println("Error: error sending block address to DataNode.");
         }

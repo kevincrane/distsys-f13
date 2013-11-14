@@ -42,7 +42,7 @@ public class MasterNode extends Thread {
             public void run() {
                 // Ping slaves if any of them are dead, notify Co-Ordinator
                 List<Integer> deadSlaveIds = namenode.pingSlaves();
-                coordinator.processDeadSlaveEvent(deadSlaveIds)
+                coordinator.processDeadSlaveEvent(deadSlaveIds);
             }
         }, 5000, 5000);
     }
@@ -132,7 +132,7 @@ public class MasterNode extends Thread {
      *
      * @param newJob MapReduce job to be run
      */
-    private void newMapReduceJob(MapReduceJob newJob) {
+    public void newMapReduceJob(MapReduceJob newJob) {
         // Input File has to be specified
         if (newJob.getInputFile() == null) {
             System.out.println("Error: no input file specified for mapreduce job");
@@ -230,7 +230,7 @@ public class MasterNode extends Thread {
     /**
      * Close master socket and slaves attached to it
      */
-    private void close() {
+    public void close() {
         running = false;
         try {
             pingTimer.cancel();
