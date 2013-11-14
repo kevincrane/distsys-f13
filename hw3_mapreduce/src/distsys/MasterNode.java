@@ -47,6 +47,12 @@ public class MasterNode extends Thread {
                 // Ping slaves if any of them are dead, notify Co-Ordinator
                 List<Integer> deadSlaveIds = namenode.pingSlaves();
                 coordinator.processDeadSlaveEvent(deadSlaveIds);
+                // Ensure Replication Factor best effort by replicating blocks that have dissappeared
+                List<Integer> blockIds = new ArrayList<Integer>();
+                for (int deadSlaveId: deadSlaveIds) {
+                    blockIds.addAll(namenode.getBlockIds(deadSlaveId));
+                }
+                replicateBlocksOnce(blockIds);
             }
         }, 5000, 5000);
     }
@@ -139,6 +145,26 @@ public class MasterNode extends Thread {
         System.out.println("KDFS namespace contains:");
         for (String filename : sortedFileNames) {
             System.out.println(filename + " : " + namenode.getFileBlockIds(filename).size() + " blocks");
+        }
+    }
+
+    /**
+     * Best effort attempt to replicate given block ids one more time
+     * @param blockIds blockIds that need to be duplicated once in another slave
+     */
+    private void replicateBlocksOnce(List<Integer> blockIds) {
+        for (int blockId: blockIds) {
+            for (int slaveWithoutBlock: namenode.getSlavesWithoutBlock(blockId)) {
+                // For one random slave without that block, ask him to replicate it
+                try {
+                    CommHandler comm = new CommHandler(Config.SLAVE_NODES[slaveWithoutBlock][0], Config.SLAVE_NODES[slaveWithoutBlock][1]);
+                    comm.sendMessage(new BlockAddrMessage(new ArrayList<Integer>(namenode.getSlavesWithBlock(blockId)), blockId));
+                } catch (IOException ignored) {
+                    //we try every slave that doesn't have the block until one of them gets the message
+                    //if all slaves without the block are down, there is no point so we ignored the exception
+                }
+                return;
+            }
         }
     }
 

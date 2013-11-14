@@ -177,6 +177,40 @@ public class NameNode {
     }
 
     /**
+     * @return list of blocks that a a particular slave contains
+     */
+    public Set<Integer> getBlockIds(int slaveId) {
+        return blockMap.get(slaveId);
+    }
+
+    /**
+     * @return list of slaves that DO NOT contain a particular block
+     */
+    public Set<Integer> getSlavesWithoutBlock(int blockID) {
+        Set<Integer> slaveIDs = new HashSet<Integer>();
+        for (int slaveID : getSlaveIds()) {
+            if (!blockMap.get(slaveID).contains(blockID)) {
+                slaveIDs.add(slaveID);
+            }
+        }
+        return slaveIDs;
+    }
+
+
+    /**
+     * @return list of slaves that DO contain a particular block
+     */
+    public Set<Integer> getSlavesWithBlock(int blockID) {
+        Set<Integer> slaveIDs = new HashSet<Integer>();
+        for (int slaveID : getSlaveIds()) {
+            if (blockMap.get(slaveID).contains(blockID)) {
+                slaveIDs.add(slaveID);
+            }
+        }
+        return slaveIDs;
+    }
+
+    /**
      * Write a new file to the KDFS filesystem
      *
      * @param fileName Filename of the file to write

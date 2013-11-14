@@ -106,6 +106,14 @@ public class SlaveNode extends Thread {
                 BlockContentMessage blockContent = (BlockContentMessage) msgIn;
                 dataNode.writeBlock(blockContent.getBlockID(), blockContent.getBlockContents());
                 break;
+            case BLOCK_ADDR:
+                // Master node is requesting this slave to copy over a blockId if it can
+                BlockAddrMessage replicateMessage = (BlockAddrMessage) msgIn;
+                // Get blockContents from nodes provided by master in the message
+                String blockContents = dataNode.readBlock(replicateMessage.getBlockId(), 0, true, replicateMessage);
+                // write the block to the slave
+                dataNode.writeBlock(replicateMessage.getBlockId(), blockContents);
+                break;
             case TASK:
                 // Mapper or Reducer Task coming in to be run on this slave
                 runMapReduceTask((TaskMessage) msgIn, comm);

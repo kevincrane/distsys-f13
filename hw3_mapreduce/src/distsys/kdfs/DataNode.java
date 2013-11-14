@@ -85,7 +85,7 @@ public class DataNode {
      *                    another slave by asking master
      * @return The contents of the block asked to read
      */
-    public String readBlock(int blockID, int offset, boolean globalFetch) {
+    public String readBlock(int blockID, int offset, boolean globalFetch, BlockAddrMessage msgIn) {
         if (blockMap.containsKey(blockID)) {
             System.out.println("Block " + blockID + " found locally.");
             // Block is stored locally, just read it and return the contents as a String
@@ -102,10 +102,13 @@ public class DataNode {
         } else if (globalFetch) {
             System.out.println("Looking elsewhere for block " + blockID);
             try {
-                // Block is stored elsewhere, bleh. Ask the NameNode where it lives
-                CommHandler masterHandle = new CommHandler(Config.MASTER_NODE, Config.DATA_PORT);
-                masterHandle.sendMessage(new BlockAddrMessage(blockID));
-                BlockAddrMessage msgIn = (BlockAddrMessage) masterHandle.receiveMessage();
+                // if we haven't received block information already from master during a replication request
+                if (msgIn == null) {
+                    // Block is stored elsewhere, bleh. Ask the NameNode where it lives
+                    CommHandler masterHandle = new CommHandler(Config.MASTER_NODE, Config.DATA_PORT);
+                    masterHandle.sendMessage(new BlockAddrMessage(blockID));
+                    msgIn = (BlockAddrMessage) masterHandle.receiveMessage();
+                }
 
                 // Send message to correct DataNode asking for block contents
                 for (Integer slaveId: msgIn.getSlaveIds()) {
@@ -127,6 +130,13 @@ public class DataNode {
             }
         }
         return null;
+    }
+
+    /**
+     * Overloaded implementation with msgIn set to null by default
+     */
+    public String readBlock(int blockID, int offset, boolean globalFetch) {
+        return readBlock(blockID, offset, globalFetch, null);
     }
 
     /**
