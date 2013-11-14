@@ -102,7 +102,7 @@ public class Coordinator {
                     reducerTask.setMapperJobStatus(msg.getJobId(), msg.isDone());
                     if (reducerTask.allMappersAreReady()) {
                         //schedule reducer task on a slave
-                        System.out.println("ALL MAPS DETECTED AS READY, SCHEDULING REDUCE!!! YESSS!!!! :D for task with jobID: " + reducerTask.getJobID());
+                        System.out.println("All Mappers detected as ready for reducer task with jobID " + reducerTask.getJobID() + ", initiating Reducer");
                         scheduleReducer(reducerTask);
                     }
                 }
