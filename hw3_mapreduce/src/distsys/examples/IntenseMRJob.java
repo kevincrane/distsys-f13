@@ -17,7 +17,7 @@ import java.util.StringTokenizer;
 /**
  * WordCountMapReduceJob with a Thread.sleep so that it takes time on each operation for testing purposes
  */
-public class IntenseMapReduceJob extends MapReduceJob<Integer, String, String, String> {
+public class IntenseMRJob extends MapReduceJob<Integer, String, String, String> {
     public static final int CHRUNCH_TIME = 10;
 
     public Mapper<Integer, String, String, String> getMapper() {

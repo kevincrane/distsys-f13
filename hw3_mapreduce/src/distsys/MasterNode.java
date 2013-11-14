@@ -25,15 +25,19 @@ public class MasterNode extends Thread {
     private boolean running;
     private Timer pingTimer;
     private Coordinator coordinator;
-    private int currentJobId = 0;
+    private int currentJobId;
+    // Keeps track of what reducers are related so that in we can tell the user when their task is finished
+    private List<List<Integer>> relatedReducers;
 
     // Namenode of KDFS
     private NameNode namenode;
 
     public MasterNode() throws IOException {
+        int currentJobId = 0;
+        relatedReducers = new ArrayList<List<Integer>>();
         masterServer = new ServerSocket(Config.DATA_PORT);
         namenode = new NameNode();
-        coordinator = new Coordinator(namenode);
+        coordinator = new Coordinator(namenode, this);
 
         running = true;
 
@@ -139,6 +143,27 @@ public class MasterNode extends Thread {
     }
 
     /**
+     * Notify master that a reducer task is done so that we can tell the user when all reducers of a related task
+     * are completed and hence the user can check the output file
+     * @param task ReducerTask that has been completed according to the CoOrdinator
+     */
+    public void notifyReducerTaskDone(ReducerTask task) {
+        for (int i=0; i<relatedReducers.size(); i++) {
+            List<Integer> relatedReducerList = relatedReducers.get(i);
+            for (int j=0; j<relatedReducerList.size(); j++) {
+                int reducerJobId = relatedReducerList.get(j);
+                if (reducerJobId == task.getJobID()) {
+                    relatedReducerList.remove(j);
+                }
+            }
+            if (relatedReducerList.size() == 0) {
+                relatedReducers.remove(i);
+                System.out.println("\n Congratulations! Your MapReduce task has been completed. Please check the results in the output file: " + task.getOutputFile());
+            }
+        }
+    }
+
+    /**
      * Start a new Map Reduce job. Store input file to KDFS if it isn't already there, split the job into tasks, and
      * add them to a queue for the Coordinator. Coordinator will eventually send the tasks to DataNodes for processing.
      *
@@ -188,10 +213,14 @@ public class MasterNode extends Thread {
             mapperJobIds.add(currentJobId++);
         }
 
+        List<Integer> jobReducers = new ArrayList<Integer>();
         // Add reducers to scheduled tasks
         for (int i = 0; i < Config.NUM_REDUCERS; i++) {
-            tasks.add(new ReducerTask(newJob.getReducer(), newJob.getOutputFile(), currentJobId++, -1, i, mapperJobIds));
+            ReducerTask reducerTask = new ReducerTask(newJob.getReducer(), newJob.getOutputFile(), currentJobId++, -1, i, mapperJobIds);
+            tasks.add(reducerTask);
+            jobReducers.add(reducerTask.getJobID());
         }
+        relatedReducers.add(jobReducers);
 
         coordinator.scheduleTasks(tasks);
     }

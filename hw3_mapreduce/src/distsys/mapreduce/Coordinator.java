@@ -1,6 +1,7 @@
 package distsys.mapreduce;
 
 import distsys.Config;
+import distsys.MasterNode;
 import distsys.kdfs.NameNode;
 import distsys.msg.CommHandler;
 import distsys.msg.TaskMessage;
@@ -18,11 +19,13 @@ import java.util.*;
 public class Coordinator {
 
     private NameNode nameNode;
+    private MasterNode masterNode;
     // Map from JobId to Task
     private Map<Integer, Task> taskMap;
 
-    public Coordinator(NameNode nameNode) {
+    public Coordinator(NameNode nameNode, MasterNode masterNode) {
         this.nameNode = nameNode;
+        this.masterNode = masterNode;
         this.taskMap = Collections.synchronizedMap(new HashMap<Integer, Task>());
     }
 
@@ -36,6 +39,7 @@ public class Coordinator {
     public void scheduleTasks(List<Task> tasks) {
         for (Task task : tasks) {
             System.out.println("Task received for scheduling:\n  " + task);
+            // add every task to queue to keep track of them and retry them upon failure
             taskMap.put(task.getJobID(), task);
 
             // schedule mappers immediately, reducers scheduled only when the mappers are ready
@@ -49,7 +53,6 @@ public class Coordinator {
                     slaveComm.sendMessage(new TaskMessage(task));
                     // set running in each task processed to one
                     task.running = true;
-//                    slaveComm.receiveMessage();
                 } catch (IOException e) {
                     e.printStackTrace();
                     System.err.println("Could not send task \n" + task + "\n to slave with SlaveId: " + task.slaveID + ", retrying with different slave if possible");
@@ -61,8 +64,6 @@ public class Coordinator {
                     scheduleTasks(retryTask);
                 }
             }
-            // add every task to queue to keep track of them and retry them upon failure
-//            taskMap.put(task.getJobID(), task);   // Moved ahead of loop
         }
     }
 
@@ -121,6 +122,8 @@ public class Coordinator {
                 if (msg.getPayload() instanceof List) {
                     writeOutputReduceRecords(((ReducerTask) targetTask).getOutputFile(), (List<Record>) msg.getPayload());
                 }
+
+                masterNode.notifyReducerTaskDone((ReducerTask) targetTask);
             } else if (!msg.isRunning()) {
                 // not done, but not running, FAILED on that slave
                 int maxRetries = Config.MAX_JOB_RETRIES;
