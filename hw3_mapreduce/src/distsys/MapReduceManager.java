@@ -128,7 +128,7 @@ public class MapReduceManager {
                     break;
                 case 2:
                     // List all active MapReduce jobs
-                    System.out.println("Listing MapReduce Jobs:");
+                    System.out.println("\nListing MapReduce Jobs:");
                     HashMap<Integer, List<Task>> jobMap = masterNode.getRunningMapReduceJobs();
                     for (int slaveId : jobMap.keySet()) {
                         System.out.println("SLAVE " + slaveId + " is running:");
