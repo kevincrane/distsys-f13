@@ -6,7 +6,6 @@ import distsys.mapreduce.Record;
 import distsys.mapreduce.Reducer;
 
 import java.util.List;
-import java.util.StringTokenizer;
 
 /**
  * Created with IntelliJ IDEA.
@@ -25,9 +24,8 @@ public class WordCountMRJob extends MapReduceJob<Integer, String, String, String
             @Override
             public void map(Integer key, String value) {
                 // Produces key value pairs indicating count of each token
-                StringTokenizer tokens = new StringTokenizer(value.trim());
-                while (tokens.hasMoreTokens()) {
-                    String keyWord = tokens.nextToken();
+                String[] words = value.replaceAll("[^a-zA-Z ]", "").toLowerCase().split("\\s+");
+                for (String keyWord : words) {
                     if (keyWord.trim().length() > 0) {
                         output.add(new Record<String, String>(keyWord.trim(), "1"));
                     }
@@ -43,7 +41,10 @@ public class WordCountMRJob extends MapReduceJob<Integer, String, String, String
                 // Reduces values of each key by summing the counts of each token
                 Integer sum = 0;
                 for (String value : values) {
-                    sum += Integer.parseInt(value);
+                    try {
+                        sum += Integer.parseInt(value);
+                    } catch (NumberFormatException ignored) {
+                    }
                 }
                 output.add(new Record<String, String>(key, sum.toString()));
             }

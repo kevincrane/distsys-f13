@@ -39,7 +39,7 @@ public class MapTaskProcessor extends TaskProcessor {
 
         // Write output of mapper to temp file
         List<Record> mapOutput = mapper.getMapOutput();
-        String resultFileName = String.format("%s%d%03d", Config.MAP_RESULTS, task.slaveID, task.getJobID());   //TODO here
+        String resultFileName = String.format("%s%d%03d", Config.MAP_RESULTS, task.slaveID, task.getJobID());
         File outputFile = new File(resultFileName);
         boolean isDone = false;
         try {

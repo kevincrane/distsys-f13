@@ -51,10 +51,6 @@ public class ReduceTaskProcessor extends TaskProcessor {
      *                   TODO: any way to generify Records here, rather than always be String? probably don't care for now
      */
     public List<Record> runReducer(ReducerTask reduceTask) {
-        System.out.println("num_lines=" + "num_lines".hashCode() % 3);
-        System.out.println("num_words=" + "num_words".hashCode() % 3);
-        System.out.println("avg_lines=" + "avg_word_len".hashCode() % 3);
-
         // 1. Partition - Ping each Slave and ask Records that belong to task ID and this partition/slaveNum
         List<Record<String, String>> partitionedRecords = new ArrayList<Record<String, String>>();
         for (String[] slave : Config.SLAVE_NODES) {
