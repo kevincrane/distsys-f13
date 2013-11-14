@@ -195,7 +195,14 @@ public class MasterNode extends Thread {
             }
             if (relatedReducerList.size() == 0) {
                 relatedReducers.remove(i);
-                System.out.println("\n Congratulations! Your MapReduce task has been completed. Please check the results in the output file: " + task.getOutputFile());
+
+                // Move results file to KDFS and delete the old version
+                namenode.putFile(task.getOutputFile());
+                File oldResults = new File(task.getOutputFile());
+                oldResults.delete();
+
+                System.out.println("\n Congratulations! Your MapReduce task has been completed. Please check the results " +
+                        "in the KDFS output file: " + task.getOutputFile());
             }
         }
     }
@@ -267,19 +274,6 @@ public class MasterNode extends Thread {
      * MasterNode thread loop
      */
     public void run() {
-        //TODO remove
-//        try {
-//            Thread.sleep(1000);
-//        } catch (InterruptedException e) {
-//            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-//        }
-//        try {
-//            CommHandler tempHandle = new CommHandler(Config.SLAVE_NODES[0][0], Config.SLAVE_NODES[0][1]);
-//            tempHandle.sendMessage(new AckMessage());
-//        } catch (IOException e) {
-//            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-//        }
-
         while (running) {
             try {
                 final Socket sock = masterServer.accept();
@@ -313,10 +307,22 @@ public class MasterNode extends Thread {
         try {
             pingTimer.cancel();
             masterServer.close();
+
+            // Tell each slave to pull the plug
             for (int i : namenode.blockMap.keySet()) {
                 CommHandler killHandle = new CommHandler(Config.SLAVE_NODES[i][0], Config.SLAVE_NODES[i][1]);
                 killHandle.sendMessage(new KillMessage());
             }
+
+            // Nuke the temp folder for maps
+            File tempResultsFolder = new File(Config.MAP_RESULTS_FOLDER);
+            File[] files = tempResultsFolder.listFiles();
+            if (files != null) {
+                for (File tempResult : files) {
+                    tempResult.delete();
+                }
+            }
+            tempResultsFolder.delete();
         } catch (IOException e) {
             System.err.println("Error: problem closing master socket ports.\n" + e.getMessage());
         }

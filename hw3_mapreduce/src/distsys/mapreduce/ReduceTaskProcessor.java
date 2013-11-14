@@ -48,7 +48,6 @@ public class ReduceTaskProcessor extends TaskProcessor {
      * Has three phases: partition/shuffle, sort, reduce
      *
      * @param reduceTask Which Reduce operation you should run
-     *                   TODO: any way to generify Records here, rather than always be String? probably don't care for now
      */
     public List<Record> runReducer(ReducerTask reduceTask) {
         // 1. Partition - Ping each Slave and ask Records that belong to task ID and this partition/slaveNum
