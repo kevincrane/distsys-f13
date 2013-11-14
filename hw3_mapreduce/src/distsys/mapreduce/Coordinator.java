@@ -42,7 +42,7 @@ public class Coordinator {
             // schedule mappers immediately, reducers scheduled only when the mappers are ready
             if (task instanceof MapperTask) {
                 // assign correct slaveIds for each task
-                task.slaveID = getChillestSlaveId();
+                task.slaveID = getChillestSlaveId((MapperTask) task);
                 // send tasks to slaves to begin processing
                 try {
                     CommHandler slaveComm = new CommHandler(Config.SLAVE_NODES[task.slaveID][0],
@@ -121,19 +121,41 @@ public class Coordinator {
 
     /**
      * Return the next Slave ID to run a Task
+     * Ideally pick the least burdened slave that contains a local copy of the block
+     * desired by a mapper task; if that doesn't work (or you're running for a reducer),
+     * just pick the least burdened slave overall
      */
-    // TODO (BALA) not final way for scheduling, only for initial testing purposes (max number of jobs/node and who has local block)
-    private int getChillestSlaveId() {
+    private int getChillestSlaveId(MapperTask mapTask) {
         int minSlave = -1;
         int minJobs = Integer.MAX_VALUE;
-        for (int slaveId : nameNode.getSlaveIds()) {
-            int numJobs = getRunningTasks(slaveId).size();
-            if (numJobs < minJobs) {
-                minJobs = numJobs;
-                minSlave = slaveId;
+
+        if (mapTask != null) {
+            // First try to pick the least burdened slave that locally contains the block we're interested in
+            String fileName = mapTask.getDistFile().getFileName();
+            int startPosition = mapTask.getDistFile().getStartPosition();
+            List<Integer> containingSlaves = nameNode.getSlaveIdsFromPosition(fileName, startPosition);
+            for (Integer slaveId : containingSlaves) {
+                int numJobs = getRunningTasks(slaveId).size();
+                if (numJobs <= minJobs && numJobs <= Config.MAX_TASKS_PER_NODE) {
+                    minJobs = numJobs;
+                    minSlave = slaveId;
+                }
             }
         }
-        System.out.println("Current chillest slave is " + minSlave + ", so sending task to it");
+
+        // Otherwise just pick the least burdened slaveNode
+        if (minSlave == -1) {
+            for (int slaveId : nameNode.getSlaveIds()) {
+                int numJobs = getRunningTasks(slaveId).size();
+                if (numJobs < minJobs) {
+                    minJobs = numJobs;
+                    minSlave = slaveId;
+                }
+            }
+        }
+        if (mapTask != null)
+            System.out.println("Current chillest slave is " + minSlave + " for position " +
+                    mapTask.getDistFile().getStartPosition() + ", so sending task to it");
         return minSlave;
     }
 
@@ -160,7 +182,7 @@ public class Coordinator {
      * @param reducerTask Reduce task to be run
      */
     public void scheduleReducer(ReducerTask reducerTask) {
-        reducerTask.slaveID = getChillestSlaveId();
+        reducerTask.slaveID = getChillestSlaveId(null);
 
         // send tasks to slave to begin processing
         try {

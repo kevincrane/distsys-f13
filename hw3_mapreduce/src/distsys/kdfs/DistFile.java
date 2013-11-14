@@ -30,11 +30,16 @@ public class DistFile implements Serializable {
 
         // Set up starting position
         this.position = startPosition;
+        this.bufferStart = startPosition;
         this.endPosition = endPosition;
     }
 
-    public int getPosition() {
-        return position;
+    public int getStartPosition() {
+        return bufferStart;
+    }
+
+    public String getFileName() {
+        return fileName;
     }
 
     public void setDataNode(DataNode dataNode) {

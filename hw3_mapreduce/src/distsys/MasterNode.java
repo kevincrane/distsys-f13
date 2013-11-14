@@ -69,7 +69,7 @@ public class MasterNode extends Thread {
             case BLOCK_POS:
                 // Determine which block contains a given position in a file and return the remainder of that block
                 BlockPosMessage blockPosMessage = (BlockPosMessage) msgIn;
-                namenode.getBlockWithPosition(comm, blockPosMessage.getFileName(), blockPosMessage.getBlockStart());
+                namenode.returnBlockIdByPosition(comm, blockPosMessage.getFileName(), blockPosMessage.getBlockStart());
                 break;
             case TASK_UPDATE:
                 // send update on mapreduce task status to the CoOrdinator

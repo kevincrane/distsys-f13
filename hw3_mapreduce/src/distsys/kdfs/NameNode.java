@@ -356,7 +356,7 @@ public class NameNode {
      * @param fileName Name of file being read
      * @param position Position to seek in file
      */
-    public void getBlockWithPosition(CommHandler dataNodeHandle, String fileName, int position) {
+    public void returnBlockIdByPosition(CommHandler dataNodeHandle, String fileName, int position) {
         List<Integer> fileBlocks = namespace.get(fileName);
 
         if (fileBlocks != null) {
@@ -382,6 +382,39 @@ public class NameNode {
         } catch (IOException e) {
             System.err.println("Error: error sending block address to DataNode.");
         }
+    }
+
+    /**
+     * Return a list of slave IDs that contain a block with given position in a file
+     *
+     * @param fileName Name of the file to look in
+     * @param position Where in the file we want
+     * @return List of block IDs
+     */
+    public List<Integer> getSlaveIdsFromPosition(String fileName, int position) {
+        List<Integer> fileBlocks = namespace.get(fileName);
+        List<Integer> matchingSlaveIDs = new ArrayList<Integer>();
+        int matchingBlock = -1;
+
+        // Iterate through each block that is listed for this file in the namespace
+        for (int blockId : fileBlocks) {
+            BlockInfo blockInfo = blockData.get(blockId);
+            if (blockInfo.containsPosition(position)) {
+                // Found a block that contains this position,
+                matchingBlock = blockId;
+            }
+        }
+
+        // For each living slave, check if it contains this block ID and add to list of matching slaves
+        if (matchingBlock >= 0) {
+            for (Integer slaveId : blockMap.keySet()) {
+                if (blockMap.get(slaveId).contains(matchingBlock)) {
+                    matchingSlaveIDs.add(slaveId);
+                }
+            }
+        }
+
+        return matchingSlaveIDs;
     }
 
 }

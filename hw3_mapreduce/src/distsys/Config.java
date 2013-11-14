@@ -26,6 +26,7 @@ public class Config {
 
     // Number of Reducers that should run during the reduce phase (more reducers = more and smaller partitions)
     public static final int NUM_REDUCERS = 3;
+    public static final int MAX_TASKS_PER_NODE = 4;
 
     // Folder on data node to store blocks
     public static final String BLOCK_FOLDER = "data";
