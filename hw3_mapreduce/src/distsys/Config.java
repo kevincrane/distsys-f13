@@ -46,4 +46,7 @@ public class Config {
     // Maximum number of times a job is retried on a different slave before we give up on the entire mapreduce job
     public static final int MAX_JOB_RETRIES = 2;
 
+    // Specifies whether all blocks on a dead slave should be replicated once in another slave to maintain the replication factor
+    public static final boolean REPLICATE_BLOCKS_ON_SLAVE_DOWN = true;
+
 }

@@ -48,14 +48,16 @@ public class MasterNode extends Thread {
                 // Ping slaves if any of them are dead, notify Co-Ordinator
                 List<Integer> deadSlaveIds = namenode.pingSlaves();
                 coordinator.processDeadSlaveEvent(deadSlaveIds);
-                // Ensure Replication Factor best effort by replicating blocks that have dissappeared
-                List<Integer> blockIds = new ArrayList<Integer>();
-                for (int deadSlaveId: deadSlaveIds) {
-                    Set<Integer> slaveBlockIds = oldBlockMap.get(deadSlaveId);
-                    if (slaveBlockIds != null)
-                        blockIds.addAll(slaveBlockIds);
+                if (Config.REPLICATE_BLOCKS_ON_SLAVE_DOWN) {
+                    // Ensure Replication Factor best effort by replicating blocks that have dissappeared
+                    List<Integer> blockIds = new ArrayList<Integer>();
+                    for (int deadSlaveId: deadSlaveIds) {
+                        Set<Integer> slaveBlockIds = oldBlockMap.get(deadSlaveId);
+                        if (slaveBlockIds != null)
+                            blockIds.addAll(slaveBlockIds);
+                    }
+                    replicateBlocksOnce(blockIds);
                 }
-                replicateBlocksOnce(blockIds);
             }
         }, 5000, 5000);
     }
