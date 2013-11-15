@@ -8,11 +8,13 @@ package distsys;
 public class Config {
 
     // Master and slave node locations
-    public static final String MASTER_NODE = "localhost";
+    public static final String MASTER_NODE = "unix1.andrew.cmu.edu";
     public static final String[][] SLAVE_NODES = {
-            {"localhost", "12345"},
-            {"localhost", "12346"},
-            {"localhost", "12347"}
+            {"unix2.andrew.cmu.edu", "14087"},
+            {"unix3.andrew.cmu.edu", "14087"},
+            {"unix5.andrew.cmu.edu", "14087"},
+            {"unix7.andrew.cmu.edu", "14087"},
+            {"unix11.andrew.cmu.edu", "14087"}
     };
 
     // Port used for transferring data between nodes
