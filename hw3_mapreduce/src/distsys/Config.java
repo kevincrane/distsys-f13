@@ -19,7 +19,7 @@ public class Config {
     public static final int DATA_PORT = 14087;
 
     // KDFS block size (in bytes)
-    public static final int BLOCK_SIZE = 16 * 1024;
+    public static final int BLOCK_SIZE = 16 * 1024;     // Currently set at 16kb
 
     // Number of DataNodes that should store each block
     public static final int REPLICATION = 2;

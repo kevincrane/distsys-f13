@@ -92,7 +92,7 @@ public class NameNode {
             // Open the namespace file on the local disk
             namespaceScanner = new Scanner(new File(namespaceFileName));
         } catch (FileNotFoundException e) {
-            System.err.println("Error: could not load namespace from file '" + namespaceFileName + "'. Namespace is empty.");
+//            System.err.println("Error: could not load namespace from file '" + namespaceFileName + "'. Namespace is empty.");
             return;
         }
 
