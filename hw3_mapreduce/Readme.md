@@ -25,6 +25,8 @@ Next, run the master in a similar way with
 java -cp out/ distsys.MapReduceManager
 ```
 
+When running it locally, run each slave in their own directory (e.g. slaves/slave1, slaves/slave2, etc.)
+
 To clean up all of these messy classfiles later, you can type:
 ```
 make clean
