@@ -121,10 +121,6 @@ public class MapReduceManager {
             switch (command) {
                 case 1:
                     newMapReduceJob(lineIn);
-//                    MapReduceJob mapReduceJob = new IdentityMRJob();
-//                    mapReduceJob.setInputFile("alice.txt");
-//                    mapReduceJob.setOutputFile("alice_output.txt");
-//                    masterNode.newMapReduceJob(mapReduceJob);
                     break;
                 case 2:
                     // List all active MapReduce jobs

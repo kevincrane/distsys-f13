@@ -13,8 +13,5 @@ default:
 clean: 
 	rm -r ./out
 
-# Slaves:
-#   java -cp out/ distsys.SlaveNode [port_number]
-# Master:
-#   java -cp out/ distsys.MapReduceManager
-# See Readme.md for more info
+# Main Method:
+#   java -cp out/ distsys.ClusterMain
