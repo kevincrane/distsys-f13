@@ -13,9 +13,16 @@ public abstract class DataPoint {
      * Abstract class to represent a data point that will be clustered.
      * Initially places each DataPoint in cluster -1 until it is formally sorted
      */
-    public DataPoint(int cluster) {
+    protected DataPoint(int cluster) {
         this.cluster = cluster;
     }
+
+    /**
+     * Convert a DataPoint into an equivalent Centroid with init cluster
+     *
+     * @return a new Centroid from this DataPoint
+     */
+    public abstract Centroid dataPointToCentroid(int cluster);
 
     public int getCluster() {
         return cluster;
@@ -24,5 +31,7 @@ public abstract class DataPoint {
     public void setCluster(int cluster) {
         this.cluster = cluster;
     }
+
+    public abstract String toString();
 
 }

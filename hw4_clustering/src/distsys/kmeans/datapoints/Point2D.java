@@ -1,6 +1,9 @@
 package distsys.kmeans.datapoints;
 
+import distsys.kmeans.Centroid;
 import distsys.kmeans.DataPoint;
+
+import java.text.DecimalFormat;
 
 /**
  * Created with IntelliJ IDEA.
@@ -9,8 +12,10 @@ import distsys.kmeans.DataPoint;
  */
 public class Point2D extends DataPoint {
 
-    protected double x;
-    protected double y;
+    double x;
+    double y;
+
+    private DecimalFormat df = new DecimalFormat("#.###");
 
     /**
      * DataPoint that represents a 2D point in space
@@ -24,6 +29,21 @@ public class Point2D extends DataPoint {
         this.y = y;
     }
 
+    /**
+     * Convert a Point2D into an equivalent Centroid with init cluster
+     *
+     * @return a new Point2DCentroid from this Point2D
+     */
+    @Override
+    public Centroid dataPointToCentroid(int cluster) {
+        return new Point2DCentroid(x, y, cluster);
+    }
+
+
+    @Override
+    public String toString() {
+        return cluster + " - (" + df.format(x) + ", " + df.format(y) + ")";
+    }
 
     public double getX() {
         return x;

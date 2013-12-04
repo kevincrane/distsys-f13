@@ -69,5 +69,7 @@ public class Point2DCentroid extends Point2D implements Centroid {
         // Set the new X and Y coordinates of the centroid to the average of the points
         x = (totalPoints == 0) ? 0 : (totalX / totalPoints);
         y = (totalPoints == 0) ? 0 : (totalY / totalPoints);
+
+        System.out.println("New centroid location " + this);
     }
 }

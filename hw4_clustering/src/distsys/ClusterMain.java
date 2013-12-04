@@ -1,5 +1,11 @@
 package distsys;
 
+import distsys.datagen.Point2DGenerator;
+import distsys.datagen.WallClock;
+import distsys.kmeans.DataPoint;
+import distsys.kmeans.KMeansSequential;
+
+import java.util.List;
 import java.util.Scanner;
 
 /**
@@ -18,7 +24,7 @@ public class ClusterMain {
         String hostFile;
         boolean done = false;
 
-        while(!done) {
+        while (!done) {
             // Decide which test program you want to run
             System.out.println("\nWhich k-means clustering program do you want to run?");
             System.out.println("1. 2D Points (sequential)");
@@ -26,6 +32,7 @@ public class ClusterMain {
             System.out.println("3. DNA Strings (sequential)");
             System.out.println("4. DNA Strings (parallel OpenMPI)");
 
+            /*
             String input = lineIn.nextLine();
             try {
                 program = Integer.parseInt(input);
@@ -64,9 +71,34 @@ public class ClusterMain {
                 continue;
             }
 
+            // Don't be a jerk, use fewer clusters
+            if(numClusters >= numPoints) {
+                System.out.println("You should probably look for fewer clusters than there are points. " +
+                        "Pigeon-hole principle and everything, you know.");
+                continue;
+            }
+            */
+            //TODO remove comments above!
+            program = 1;
+            numPoints = 1000000;
+            numClusters = 3;
+
+            WallClock clock = new WallClock();
             switch (program) {
                 case 1:
-                    System.out.println("2D Points (sequential)!");
+                    System.out.println("Running K-Means clustering (sequential) on 2D points..\n");
+                    // Generate data points
+                    Point2DGenerator pointGen = new Point2DGenerator(numPoints, numClusters);
+                    List<DataPoint> dataPoints = pointGen.generatePoints();
+
+                    // Run K-Means clustering
+                    clock.startTimer();
+                    KMeansSequential kmeans = new KMeansSequential(numPoints, numClusters);
+                    kmeans.setDataPoints(dataPoints);
+                    kmeans.findClusters();
+
+                    long stopTime = clock.getRunTime();
+                    System.out.printf("\nClustering completed in %.3f seconds!\n", stopTime / 1000.0);
                     break;
                 case 2:
                     System.out.println("2D Points (parallel)!");

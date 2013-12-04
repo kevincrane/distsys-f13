@@ -7,7 +7,7 @@ import java.util.List;
  * User: kevin
  * Date: 12/3/13
  */
-public interface Centroid {
+public abstract interface Centroid {
 
     /**
      * Calculate the distance from this DataPoint to another
@@ -25,4 +25,5 @@ public interface Centroid {
      */
     public void calculateNewCenter(List<DataPoint> points);
 
+    public int getCluster();
 }
