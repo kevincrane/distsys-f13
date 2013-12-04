@@ -14,11 +14,12 @@ public class Point2D extends DataPoint {
 
     /**
      * DataPoint that represents a 2D point in space
-     * @param x    X coordinate
-     * @param y    Y coordinate
+     *
+     * @param x X coordinate
+     * @param y Y coordinate
      */
     public Point2D(double x, double y) {
-        super();
+        super(-1);
         this.x = x;
         this.y = y;
     }

@@ -13,8 +13,8 @@ public abstract class DataPoint {
      * Abstract class to represent a data point that will be clustered.
      * Initially places each DataPoint in cluster -1 until it is formally sorted
      */
-    public DataPoint() {
-        this.cluster = -1;
+    public DataPoint(int cluster) {
+        this.cluster = cluster;
     }
 
     public int getCluster() {
