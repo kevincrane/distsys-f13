@@ -74,12 +74,27 @@ public class Point2DGenerator extends DataGenerator {
             for (int i = 0; i < Math.ceil(((double) numPoints) / numClusters) && randomPoints.size() < numPoints; i++) {
                 double nextX = cent.getX() + (rand.nextGaussian() * variance);
                 double nextY = cent.getY() + (rand.nextGaussian() * variance);
-                randomPoints.add(new Point2D(nextX, nextY));
+                randomPoints.add(new Point2D(boundCoords(nextX), boundCoords(nextY)));
 //                System.out.println("Added " + cent.getCluster() + " (" + nextX + ", " + nextY + ")");
             }
         }
 
         System.out.println("Generated " + randomPoints.size() + " random points in " + numClusters + " clusters!\n");
         return randomPoints;
+    }
+
+    /**
+     * Clip coordinate values to fit within the bounds of [0, MAX_WIDTH]
+     *
+     * @param unbounded Unbounded coordinate value
+     * @return The same coordinate value, but clipped to 0 or MAX_WIDTH if needed
+     */
+    private double boundCoords(double unbounded) {
+        if (unbounded < 0) {
+            return 0;
+        } else if (unbounded > MAX_WIDTH) {
+            return MAX_WIDTH;
+        }
+        return unbounded;
     }
 }

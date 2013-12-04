@@ -15,7 +15,7 @@ public class Point2D extends DataPoint {
     double x;
     double y;
 
-    private DecimalFormat df = new DecimalFormat("#.###");
+//    private DecimalFormat df = new DecimalFormat("#.###");
 
     /**
      * DataPoint that represents a 2D point in space
@@ -42,6 +42,7 @@ public class Point2D extends DataPoint {
 
     @Override
     public String toString() {
+        DecimalFormat df = new DecimalFormat("#.###");
         return cluster + " - (" + df.format(x) + ", " + df.format(y) + ")";
     }
 

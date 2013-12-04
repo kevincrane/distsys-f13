@@ -98,7 +98,7 @@ public class ClusterMain {
                     kmeans.findClusters();
 
                     long stopTime = clock.getRunTime();
-                    System.out.printf("\nClustering completed in %.3f seconds!\n", stopTime / 1000.0);
+                    System.out.printf("\nClustering completed in %.4f seconds!\n", stopTime / 1000.0);
                     break;
                 case 2:
                     System.out.println("2D Points (parallel)!");
@@ -116,5 +116,7 @@ public class ClusterMain {
 
             done = true;
         }
+
+        lineIn.nextLine();  //todo remove
     }
 }
