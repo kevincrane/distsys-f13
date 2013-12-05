@@ -9,6 +9,15 @@ TODO: update for project 4
 * Prashanth Balasubramaniam
 
 
+NOTE: In order to get Java bindings for OpenMPI, you need to download a Nightly version of OpenMPI from http://www.open-mpi.org/nightly/trunk/index.php, build it:
+```
+./configure --enable-mpi-java
+make
+make install
+```
+and hunt for mpi.jar (./ompi/mpi/java/java/mpi.jar). I put this file in this repo to make life easier, so hopefully nothing ever breaks.
+
+
 To compile from root directory (the one with *Makefile*):
 ```
 make
