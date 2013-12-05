@@ -34,4 +34,6 @@ public abstract class DataPoint {
 
     public abstract String toString();
 
+    public abstract boolean equals(Object obj);
+
 }

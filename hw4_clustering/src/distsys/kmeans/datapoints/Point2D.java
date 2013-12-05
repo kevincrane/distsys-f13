@@ -12,8 +12,8 @@ import java.text.DecimalFormat;
  */
 public class Point2D extends DataPoint {
 
-    double x;
-    double y;
+    protected double x;
+    protected double y;
 
     /**
      * DataPoint that represents a 2D point in space
@@ -42,6 +42,16 @@ public class Point2D extends DataPoint {
     public String toString() {
         DecimalFormat df = new DecimalFormat("#.###");
         return cluster + " - (" + df.format(x) + ", " + df.format(y) + ")";
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null || getClass() != obj.getClass()) {
+            return false;
+        } else {
+            Point2D otherPoint = (Point2D) obj;
+            return x == otherPoint.x && y == otherPoint.y;
+        }
     }
 
     public double getX() {

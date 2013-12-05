@@ -11,10 +11,10 @@ import distsys.kmeans.DataPoint;
 public class DnaStrand extends DataPoint {
 
     public enum Bases {
-        A, G, C, T;
+        A, G, C, T
     }
 
-    Bases[] strand;
+    protected final Bases[] strand;
 
     /**
      * DataPoint that represents a DNA strand
@@ -40,6 +40,25 @@ public class DnaStrand extends DataPoint {
             sb.append(base);
         }
         return sb.toString();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null || getClass() != obj.getClass()) {
+            return false;
+        } else {
+            DnaStrand otherPoint = (DnaStrand) obj;
+            if (strand.length != otherPoint.strand.length) {
+                return false;
+            }
+            for (int i = 0; i < strand.length; i++) {
+                if (strand[i] != otherPoint.strand[i]) {
+                    return false;
+                }
+            }
+
+            return true;
+        }
     }
 
     public Bases[] getStrand() {

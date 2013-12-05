@@ -2,7 +2,9 @@ package distsys.kmeans;
 
 import distsys.kmeans.datapoints.DnaStrand;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
 
 /**
  * Created with IntelliJ IDEA.
@@ -30,6 +32,7 @@ public class KMeansSequential {
 //        dataPoints.add(new Point2D(-3, 3));
 //        dataPoints.add(new Point2D(4, 3));
 //        dataPoints.add(new Point2D(2, -2));
+        dataPoints.clear();
         dataPoints.add(new DnaStrand(new DnaStrand.Bases[]{DnaStrand.Bases.A, DnaStrand.Bases.C, DnaStrand.Bases.T,
                 DnaStrand.Bases.G, DnaStrand.Bases.A, DnaStrand.Bases.G, DnaStrand.Bases.C}));
         dataPoints.add(new DnaStrand(new DnaStrand.Bases[]{DnaStrand.Bases.A, DnaStrand.Bases.T, DnaStrand.Bases.T,
@@ -76,21 +79,17 @@ public class KMeansSequential {
      */
     private List<Centroid> chooseInitialCentroids() {
         List<Centroid> centroids = new ArrayList<Centroid>(numClusters);
-        Set<Integer> usedPoints = new HashSet<Integer>();
         Random random = new Random();
         int nextCluster = 0;
 
         while (centroids.size() < numClusters) {
-            // Choose random datapoint to use as centroid
-            int nextPoint = random.nextInt(numPoints);
-            if (usedPoints.contains(nextPoint)) {
+            // Add random centroid to list
+            Centroid nextCentroid = dataPoints.get(random.nextInt(numPoints)).dataPointToCentroid(nextCluster);
+            if (centroids.contains(nextCentroid)) {
                 // Skip any point that's already been added
                 continue;
             }
-
-            // Add centroid to list
-            centroids.add(dataPoints.get(nextPoint).dataPointToCentroid(nextCluster));
-            usedPoints.add(nextPoint);
+            centroids.add(nextCentroid);
             nextCluster++;
 
             System.out.println("Chose initial centroid as " + centroids.get(nextCluster - 1) + "!!"); //TODO remove

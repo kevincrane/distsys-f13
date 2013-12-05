@@ -124,8 +124,8 @@ public class ClusterMain {
             */
             //TODO remove comments above!
             program = 3;
-            numPoints = 9;
-            numClusters = 2;
+            numPoints = 20;
+            numClusters = 3;
 
             WallClock clock = new WallClock();
             List<DataPoint> dataPoints = null;
