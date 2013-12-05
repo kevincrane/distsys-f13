@@ -15,8 +15,6 @@ public class Point2D extends DataPoint {
     double x;
     double y;
 
-//    private DecimalFormat df = new DecimalFormat("#.###");
-
     /**
      * DataPoint that represents a 2D point in space
      *

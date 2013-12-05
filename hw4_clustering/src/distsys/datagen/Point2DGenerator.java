@@ -15,8 +15,8 @@ import java.util.List;
 public class Point2DGenerator extends DataGenerator {
 
     private final int MAX_WIDTH = 100;  // Max width/height of coordinate plane
-    private final double MAX_VARIANCE = 10;
-    private final double minDistance = 3;
+    private final double MAX_VARIANCE = MAX_WIDTH * 0.1;
+    private final double MIN_DIST = MAX_WIDTH * 0.05;
     private List<Point2D> initPoints;
 
     public Point2DGenerator(int numPoints, int numClusters) {
@@ -33,13 +33,14 @@ public class Point2DGenerator extends DataGenerator {
         boolean tooNear;
         for (int i = 0; i < numClusters; i++) {
             tooNear = false;
-            // Generate random position for initial centroid
-            Point2DCentroid newInitPoint = new Point2DCentroid(rand.nextDouble() * MAX_WIDTH,
-                    rand.nextDouble() * MAX_WIDTH, i);
+            // Generate random position for initial centroid (at least MAX_VARIANCE away from the plane borders)
+            double initX = MAX_VARIANCE + (rand.nextDouble() * (MAX_WIDTH - 2 * MAX_VARIANCE));
+            double initY = MAX_VARIANCE + (rand.nextDouble() * (MAX_WIDTH - 2 * MAX_VARIANCE));
+            Point2DCentroid newInitPoint = new Point2DCentroid(initX, initY, i);
 
             // Make sure no other centroid is too nearby
             for (Point2D point : initPoints) {
-                if (newInitPoint.distanceFrom(point) < minDistance) {
+                if (newInitPoint.distanceFrom(point) < MIN_DIST) {
                     i--;
                     tooNear = true;
                     break;

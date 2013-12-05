@@ -1,10 +1,15 @@
 package distsys;
 
+import distsys.datagen.DnaStrandGenerator;
 import distsys.datagen.Point2DGenerator;
 import distsys.datagen.WallClock;
 import distsys.kmeans.DataPoint;
 import distsys.kmeans.KMeansSequential;
 
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.Writer;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
@@ -14,6 +19,45 @@ import java.util.Scanner;
  * Date: 12/2/13
  */
 public class ClusterMain {
+
+    private static final String outputFile = "clusteredData.txt";
+
+    /**
+     * Write clustered results to a file, sorted by cluster
+     *
+     * @param dataPoints List of DataPoints that have been clustered
+     */
+    public static void writeResultsToFile(List<DataPoint> dataPoints, int numClusters) {
+        List<List<DataPoint>> clusteredPoints = new ArrayList<List<DataPoint>>(numClusters);
+        for (int i = 0; i < numClusters; i++) {
+            // Initialize each cluster of points
+            clusteredPoints.add(new ArrayList<DataPoint>());
+        }
+
+        // Add each DataPoint to its corresponding cluster
+        for (DataPoint point : dataPoints) {
+            int pointCluster = point.getCluster();
+            if (pointCluster >= 0 && pointCluster < numClusters) {
+                clusteredPoints.get(pointCluster).add(point);
+            }
+        }
+
+        try {
+            // Write the points of each cluster to the output file
+            Writer outFile = new FileWriter(outputFile);
+            for (List<DataPoint> cluster : clusteredPoints) {
+                for (DataPoint point : cluster) {
+                    outFile.write(point + "\n");
+                }
+                outFile.write("\n");
+            }
+            outFile.close();
+        } catch (IOException e) {
+            System.err.println("Error: wasn't able to write output to file " + outputFile + " (" + e.getMessage() + ").");
+        }
+    }
+
+
     public static void main(String[] args) {
         System.out.println("Project 4 - Sequential and Parallel Clustering!\n");
 
@@ -79,17 +123,18 @@ public class ClusterMain {
             }
             */
             //TODO remove comments above!
-            program = 1;
-            numPoints = 1000000;
-            numClusters = 3;
+            program = 3;
+            numPoints = 9;
+            numClusters = 2;
 
             WallClock clock = new WallClock();
+            List<DataPoint> dataPoints = null;
             switch (program) {
                 case 1:
                     System.out.println("Running K-Means clustering (sequential) on 2D points..\n");
                     // Generate data points
                     Point2DGenerator pointGen = new Point2DGenerator(numPoints, numClusters);
-                    List<DataPoint> dataPoints = pointGen.generatePoints();
+                    dataPoints = pointGen.generatePoints();
 
                     // Run K-Means clustering
                     clock.startTimer();
@@ -104,19 +149,36 @@ public class ClusterMain {
                     System.out.println("2D Points (parallel)!");
                     break;
                 case 3:
-                    System.out.println("DNA (sequential)!");
+                    System.out.println("Running K-Means clustering (sequential) on DNA strands..\n");
+                    // Generate data points
+                    DnaStrandGenerator dnaStrandGen = new DnaStrandGenerator(numPoints, numClusters, 10);   //TODO ask for length
+                    dataPoints = dnaStrandGen.generatePoints();
+
+                    // Run K-Means clustering
+                    clock.startTimer();
+                    kmeans = new KMeansSequential(numPoints, numClusters);
+                    kmeans.setDataPoints(dataPoints);
+                    kmeans.findClusters();
+
+                    stopTime = clock.getRunTime();
+                    System.out.printf("\nClustering completed in %.4f seconds!\n", stopTime / 1000.0);
                     break;
                 case 4:
                     System.out.println("DNA (parallel)!!");
                     break;
                 default:
                     System.out.println("Unknown program number " + program + "??");
-                    break;
+                    return;
+            }
+
+            // Print clustered results to a file
+            if (dataPoints != null) {
+                writeResultsToFile(dataPoints, numClusters);
             }
 
             done = true;
         }
 
-        lineIn.nextLine();  //todo remove
+//        lineIn.nextLine();  //todo remove
     }
 }

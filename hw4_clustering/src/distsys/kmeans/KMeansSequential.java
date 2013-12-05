@@ -1,6 +1,6 @@
 package distsys.kmeans;
 
-import distsys.kmeans.datapoints.Point2D;
+import distsys.kmeans.datapoints.DnaStrand;
 
 import java.util.*;
 
@@ -15,20 +15,39 @@ public class KMeansSequential {
     private int numClusters;
     private List<DataPoint> dataPoints;
     private final double THRESHOLD = 0.001;
+    private final int MAX_ITERATIONS = 25;
 
 
     // TODO: remove
     private void generateData() {
-        dataPoints.add(new Point2D(2, 2));
-        dataPoints.add(new Point2D(-1, 3.5));
-        dataPoints.add(new Point2D(3, 1));
-        dataPoints.add(new Point2D(-1, -2));
-        dataPoints.add(new Point2D(-2, 2.5));
-        dataPoints.add(new Point2D(1, -1));
-        dataPoints.add(new Point2D(3, 3.5));
-        dataPoints.add(new Point2D(-3, 3));
-        dataPoints.add(new Point2D(4, 3));
-        dataPoints.add(new Point2D(2, -2));
+//        dataPoints.add(new Point2D(2, 2));
+//        dataPoints.add(new Point2D(-1, 3.5));
+//        dataPoints.add(new Point2D(3, 1));
+//        dataPoints.add(new Point2D(-1, -2));
+//        dataPoints.add(new Point2D(-2, 2.5));
+//        dataPoints.add(new Point2D(1, -1));
+//        dataPoints.add(new Point2D(3, 3.5));
+//        dataPoints.add(new Point2D(-3, 3));
+//        dataPoints.add(new Point2D(4, 3));
+//        dataPoints.add(new Point2D(2, -2));
+        dataPoints.add(new DnaStrand(new DnaStrand.Bases[]{DnaStrand.Bases.A, DnaStrand.Bases.C, DnaStrand.Bases.T,
+                DnaStrand.Bases.G, DnaStrand.Bases.A, DnaStrand.Bases.G, DnaStrand.Bases.C}));
+        dataPoints.add(new DnaStrand(new DnaStrand.Bases[]{DnaStrand.Bases.A, DnaStrand.Bases.T, DnaStrand.Bases.T,
+                DnaStrand.Bases.G, DnaStrand.Bases.A, DnaStrand.Bases.G, DnaStrand.Bases.C}));
+        dataPoints.add(new DnaStrand(new DnaStrand.Bases[]{DnaStrand.Bases.A, DnaStrand.Bases.C, DnaStrand.Bases.T,
+                DnaStrand.Bases.A, DnaStrand.Bases.G, DnaStrand.Bases.C, DnaStrand.Bases.C}));
+        dataPoints.add(new DnaStrand(new DnaStrand.Bases[]{DnaStrand.Bases.G, DnaStrand.Bases.T, DnaStrand.Bases.C,
+                DnaStrand.Bases.G, DnaStrand.Bases.A, DnaStrand.Bases.G, DnaStrand.Bases.C}));
+        dataPoints.add(new DnaStrand(new DnaStrand.Bases[]{DnaStrand.Bases.C, DnaStrand.Bases.C, DnaStrand.Bases.A,
+                DnaStrand.Bases.C, DnaStrand.Bases.G, DnaStrand.Bases.T, DnaStrand.Bases.A}));
+        dataPoints.add(new DnaStrand(new DnaStrand.Bases[]{DnaStrand.Bases.G, DnaStrand.Bases.C, DnaStrand.Bases.A,
+                DnaStrand.Bases.G, DnaStrand.Bases.G, DnaStrand.Bases.T, DnaStrand.Bases.A}));
+        dataPoints.add(new DnaStrand(new DnaStrand.Bases[]{DnaStrand.Bases.C, DnaStrand.Bases.C, DnaStrand.Bases.A,
+                DnaStrand.Bases.C, DnaStrand.Bases.G, DnaStrand.Bases.T, DnaStrand.Bases.A}));
+        dataPoints.add(new DnaStrand(new DnaStrand.Bases[]{DnaStrand.Bases.T, DnaStrand.Bases.C, DnaStrand.Bases.T,
+                DnaStrand.Bases.C, DnaStrand.Bases.T, DnaStrand.Bases.A, DnaStrand.Bases.A}));
+        dataPoints.add(new DnaStrand(new DnaStrand.Bases[]{DnaStrand.Bases.C, DnaStrand.Bases.C, DnaStrand.Bases.A,
+                DnaStrand.Bases.C, DnaStrand.Bases.T, DnaStrand.Bases.T, DnaStrand.Bases.A}));
     }
 
 
@@ -93,7 +112,7 @@ public class KMeansSequential {
         int numPointsChanged = Integer.MAX_VALUE;
 
         // Repeat until the number of points that changes clusters exceeds a certain threshold (0.1% of points)
-        while ((((double) numPointsChanged) / numPoints) > THRESHOLD) {
+        while ((((double) numPointsChanged) / numPoints) > THRESHOLD && iterations < MAX_ITERATIONS) {
             numPointsChanged = 0;
             iterations++;
 
@@ -116,7 +135,7 @@ public class KMeansSequential {
                     point.setCluster(closestCluster);
                     numPointsChanged++;
                 }
-//                System.out.println("DataPoint " + point);       //TODO remove
+                System.out.println("DataPoint " + point);       //TODO remove
             }
 
             // Update the position of each centroid
@@ -130,9 +149,6 @@ public class KMeansSequential {
         // All done!!
         System.out.println("Completed k-means for " + numClusters + " clusters of " + numPoints +
                 " data points in " + iterations + " iterations.");
-
-        // Sort everything into their final clusters
-        List<List<DataPoint>> clusteredData = new ArrayList<List<DataPoint>>(numClusters);
     }
 
 }
