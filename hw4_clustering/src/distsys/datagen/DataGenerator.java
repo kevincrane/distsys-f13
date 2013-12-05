@@ -10,7 +10,7 @@ import java.util.Random;
  * User: kevin, prashanth
  * Date: 12/4/13
  */
-abstract class DataGenerator {
+public abstract class DataGenerator {
 
     final int numPoints;
     final int numClusters;

@@ -84,7 +84,6 @@ public class DnaStrandGenerator extends DataGenerator {
                     centroidStrand[rand.nextInt(centroidStrand.length)] = randomBase();
                 }
                 randomPoints.add(new DnaStrand(centroidStrand));
-                System.out.println("Added " + cent.getCluster() + ": " + centroidStrand.toString());
             }
         }
 

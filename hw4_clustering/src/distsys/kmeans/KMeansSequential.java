@@ -71,6 +71,9 @@ public class KMeansSequential {
         this.dataPoints = dataPoints;
     }
 
+    public List<DataPoint> getDataPoints() {
+        return dataPoints;
+    }
 
     /**
      * Pick out a number of random DataPoints to act as initial Centroids
@@ -99,6 +102,28 @@ public class KMeansSequential {
     }
 
     /**
+     * Find the nearest cluster number for a DataPoint
+     *
+     * @param point     DataPoint to search around
+     * @param centroids List of current centroids
+     * @return Cluster number of the centroid that is closest
+     */
+    private int getClosestCluster(DataPoint point, List<Centroid> centroids) {
+        int closestCluster = 0;
+        double closestDistance = Double.MAX_VALUE;
+
+        // Find the nearest cluster
+        for (Centroid cent : centroids) {
+            if (cent.distanceFrom(point) < closestDistance) {
+                // Found a nearer centroid
+                closestDistance = cent.distanceFrom(point);
+                closestCluster = cent.getCluster();
+            }
+        }
+        return closestCluster;
+    }
+
+    /**
      * Execute the K-Means clustering algorithm
      */
     public void findClusters() {
@@ -115,26 +140,16 @@ public class KMeansSequential {
             numPointsChanged = 0;
             iterations++;
 
-            // Find the nearest centroid for each DataPoint
             for (DataPoint point : dataPoints) {
-                int closestCluster = 0;
-                double closestDistance = Double.MAX_VALUE;
-
-                // Find the nearest cluster
-                for (Centroid cent : centroids) {
-                    if (cent.distanceFrom(point) < closestDistance) {
-                        // Found a nearer centroid
-                        closestDistance = cent.distanceFrom(point);
-                        closestCluster = cent.getCluster();
-                    }
-                }
+                // Find the nearest centroid for each DataPoint
+                int closestCluster = getClosestCluster(point, centroids);
 
                 // Update the DataPoint's cluster if it changed
                 if (point.getCluster() != closestCluster) {
                     point.setCluster(closestCluster);
                     numPointsChanged++;
                 }
-                System.out.println("DataPoint " + point);       //TODO remove
+//                System.out.println("DataPoint " + point);       //TODO remove
             }
 
             // Update the position of each centroid

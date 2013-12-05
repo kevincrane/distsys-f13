@@ -1,5 +1,6 @@
 package distsys;
 
+import distsys.datagen.DataGenerator;
 import distsys.datagen.DnaStrandGenerator;
 import distsys.datagen.Point2DGenerator;
 import distsys.datagen.WallClock;
@@ -11,7 +12,6 @@ import java.io.IOException;
 import java.io.Writer;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Scanner;
 
 /**
  * Created with IntelliJ IDEA.
@@ -61,119 +61,83 @@ public class ClusterMain {
     public static void main(String[] args) {
         System.out.println("Project 4 - Sequential and Parallel Clustering!\n");
 
-        Scanner lineIn = new Scanner(System.in);
         int program;
         int numPoints;
         int numClusters;
+        int strandLength = 10;
         String hostFile;
         boolean done = false;
+        UserInput inputReader = new UserInput();
 
         while (!done) {
-            // Decide which test program you want to run
-            System.out.println("\nWhich k-means clustering program do you want to run?");
-            System.out.println("1. 2D Points (sequential)");
-            System.out.println("2. 2D Points (parallel OpenMPI)");
-            System.out.println("3. DNA Strings (sequential)");
-            System.out.println("4. DNA Strings (parallel OpenMPI)");
+//            try {     TODO: uncomment
+//                // Read user input on all the program parameters
+//                program = inputReader.getProgramNum();
+//                numPoints = inputReader.getNumDataPoints();
+//                numClusters = inputReader.getNumClusters();
+//                if(program == 3 || program == 4) {
+//                    strandLength = inputReader.getStrandLength();
+//                }
+//            } catch (NumberFormatException e) {
+//                continue;
+//            }
+//
+//            // Don't be a jerk, use fewer clusters
+//            if(numClusters >= numPoints) {
+//                System.out.println("You should probably look for fewer clusters than there are points. " +
+//                        "Pigeon-hole principle and everything, you know.");
+//                continue;
+//            }
 
-            /*
-            String input = lineIn.nextLine();
-            try {
-                program = Integer.parseInt(input);
-                if(program < 1 || program > 4) {
-                    throw new NumberFormatException();
-                }
-            } catch (NumberFormatException e) {
-                System.out.println("Invalid response, please enter one of the proper numeric choices.");
-                continue;
-            }
 
-            // Number of datapoints
-            System.out.println("\nHow many data points should we use?");
-            input = lineIn.nextLine();
-            try {
-                numPoints = Integer.parseInt(input);
-                if(numPoints <= 0) {
-                    throw new NumberFormatException();
-                }
-            } catch (NumberFormatException e) {
-                System.out.println("Invalid response, please enter a positive number of points.");
-                continue;
-            }
-
-            // Number of clusters
-            System.out.println("\nHow many clusters should we find?");
-            input = lineIn.nextLine();
-            try {
-                numClusters = Integer.parseInt(input);
-                if(numClusters <= 0) {
-                    throw new NumberFormatException();
-                }
-                System.out.println();
-            } catch (NumberFormatException e) {
-                System.out.println("Invalid response, please enter a positive number of clusters.");
-                continue;
-            }
-
-            // Don't be a jerk, use fewer clusters
-            if(numClusters >= numPoints) {
-                System.out.println("You should probably look for fewer clusters than there are points. " +
-                        "Pigeon-hole principle and everything, you know.");
-                continue;
-            }
-            */
             //TODO remove comments above!
             program = 3;
-            numPoints = 20;
-            numClusters = 3;
+            numPoints = 100;
+            numClusters = 5;
+            strandLength = 30;
 
             WallClock clock = new WallClock();
+            KMeansSequential kmeans;
+            DataGenerator dataGen;
             List<DataPoint> dataPoints = null;
+
+            // Choose which type of algorithm to run
             switch (program) {
                 case 1:
                     System.out.println("Running K-Means clustering (sequential) on 2D points..\n");
-                    // Generate data points
-                    Point2DGenerator pointGen = new Point2DGenerator(numPoints, numClusters);
-                    dataPoints = pointGen.generatePoints();
-
-                    // Run K-Means clustering
-                    clock.startTimer();
-                    KMeansSequential kmeans = new KMeansSequential(numPoints, numClusters);
-                    kmeans.setDataPoints(dataPoints);
-                    kmeans.findClusters();
-
-                    long stopTime = clock.getRunTime();
-                    System.out.printf("\nClustering completed in %.4f seconds!\n", stopTime / 1000.0);
+                    dataGen = new Point2DGenerator(numPoints, numClusters);
                     break;
-                case 2:
-                    System.out.println("2D Points (parallel)!");
-                    break;
+//                case 2:
+//                    System.out.println("2D Points (parallel)!");
+//                    break;
                 case 3:
                     System.out.println("Running K-Means clustering (sequential) on DNA strands..\n");
-                    // Generate data points
-                    DnaStrandGenerator dnaStrandGen = new DnaStrandGenerator(numPoints, numClusters, 10);   //TODO ask for length
-                    dataPoints = dnaStrandGen.generatePoints();
-
-                    // Run K-Means clustering
-                    clock.startTimer();
-                    kmeans = new KMeansSequential(numPoints, numClusters);
-                    kmeans.setDataPoints(dataPoints);
-                    kmeans.findClusters();
-
-                    stopTime = clock.getRunTime();
-                    System.out.printf("\nClustering completed in %.4f seconds!\n", stopTime / 1000.0);
+                    dataGen = new DnaStrandGenerator(numPoints, numClusters, strandLength);
                     break;
-                case 4:
-                    System.out.println("DNA (parallel)!!");
-                    break;
+//                case 4:
+//                    System.out.println("DNA (parallel)!!");
+//                    break;
                 default:
                     System.out.println("Unknown program number " + program + "??");
                     return;
             }
 
+            // Run (sequential?) k-means clustering
+            // Generate data points
+            dataPoints = dataGen.generatePoints();
+
+            // Run K-Means clustering
+            clock.startTimer();
+            kmeans = new KMeansSequential(numPoints, numClusters);
+            kmeans.setDataPoints(dataPoints);
+            kmeans.findClusters();
+
+            long stopTime = clock.getRunTime();
+            System.out.printf("\nClustering completed in %.4f seconds!\n", stopTime / 1000.0);
+
             // Print clustered results to a file
             if (dataPoints != null) {
-                writeResultsToFile(dataPoints, numClusters);
+                writeResultsToFile(kmeans.getDataPoints(), numClusters);
             }
 
             done = true;
