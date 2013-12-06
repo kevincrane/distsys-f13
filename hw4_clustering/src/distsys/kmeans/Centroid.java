@@ -25,5 +25,10 @@ public abstract interface Centroid {
      */
     public void calculateNewCenter(List<DataPoint> points);
 
+    /**
+     * Use OpenMPI parallel execution to calculate all centroids at once
+     */
+    public List<Centroid> calculateAllCentroidsParallel(List<DataPoint> points, int numClusters);
+
     public int getCluster();
 }

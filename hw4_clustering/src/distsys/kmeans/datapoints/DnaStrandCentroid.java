@@ -101,4 +101,9 @@ public class DnaStrandCentroid extends DnaStrand implements Centroid {
         }
         System.out.println("New centroid location " + this);
     }
+
+    @Override
+    public List<Centroid> calculateAllCentroidsParallel(List<DataPoint> points, int numClusters) {
+        return null;  //To change body of implemented methods use File | Settings | File Templates.
+    }
 }

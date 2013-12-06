@@ -7,7 +7,7 @@
 default:
 	find ./src -name *.java > sources_list.txt
 	mkdir -p ./out
-	javac -d ./out @sources_list.txt
+	javac -d ./out -cp mpi.jar @sources_list.txt
 	rm sources_list.txt
 
 clean: 

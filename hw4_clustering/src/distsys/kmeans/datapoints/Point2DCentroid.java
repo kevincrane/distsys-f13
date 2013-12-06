@@ -2,7 +2,10 @@ package distsys.kmeans.datapoints;
 
 import distsys.kmeans.Centroid;
 import distsys.kmeans.DataPoint;
+import mpi.MPI;
+import mpi.MPIException;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -11,7 +14,6 @@ import java.util.List;
  * Date: 12/3/13
  */
 public class Point2DCentroid extends Point2D implements Centroid {
-
 
     /**
      * Centroid DataPoint that represents the average (x,y) of all points in its cluster
@@ -71,5 +73,39 @@ public class Point2DCentroid extends Point2D implements Centroid {
         y = (totalPoints == 0) ? 0 : (totalY / totalPoints);
 
         System.out.println("New centroid location " + this);
+    }
+
+    @Override
+    public List<Centroid> calculateAllCentroidsParallel(List<DataPoint> points, int numClusters) {
+        List<Centroid> newCentroids = new ArrayList<Centroid>(numClusters);
+        double[] totalX = new double[numClusters];
+        double[] totalY = new double[numClusters];
+        int[] numCoords = new int[numClusters];
+
+        // Create sum of X and Y coords for each point in each cluster of this processor
+        for (DataPoint point : points) {
+            totalX[point.getCluster()] += ((Point2D) point).getX();
+            totalY[point.getCluster()] += ((Point2D) point).getY();
+            numCoords[point.getCluster()]++;
+        }
+
+        try {
+            // Reduce Sum the X and Y coordinates and number of coords for each cluster
+            MPI.COMM_WORLD.allReduce(totalX, numClusters, MPI.DOUBLE, MPI.SUM);
+            MPI.COMM_WORLD.allReduce(totalY, numClusters, MPI.DOUBLE, MPI.SUM);
+            MPI.COMM_WORLD.allReduce(numCoords, numClusters, MPI.INT, MPI.SUM);
+
+            // Create new list of centroids from the average coordinates
+            for (int i = 0; i < numClusters; i++) {
+                double avgX = totalX[i] / numCoords[i];
+                double avgY = totalY[i] / numCoords[i];
+                newCentroids.add(new Point2DCentroid(avgX, avgY, i));
+                System.out.println("(Proc " + MPI.COMM_WORLD.getRank() + ") New centroid location " + new Point2DCentroid(avgX, avgY, i));
+            }
+            return newCentroids;
+        } catch (MPIException e) {
+            System.err.println("Error during reducing point to find new centroid");
+            return null;
+        }
     }
 }

@@ -1,11 +1,13 @@
 package distsys.kmeans;
 
+import java.io.Serializable;
+
 /**
  * Created with IntelliJ IDEA.
  * User: kevin, prashanth
  * Date: 12/3/13
  */
-public abstract class DataPoint {
+public abstract class DataPoint implements Serializable {
 
     protected int cluster;        // Which cluster this data point belongs to
 

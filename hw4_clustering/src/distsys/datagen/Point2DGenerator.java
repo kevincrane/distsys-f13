@@ -16,7 +16,7 @@ public class Point2DGenerator extends DataGenerator {
 
     private final int MAX_WIDTH = 100;  // Max width/height of coordinate plane
     private final double MAX_VARIANCE = MAX_WIDTH * 0.1;
-    private final double MIN_DIST = MAX_WIDTH * 0.05;
+    private final double MIN_DIST = MAX_WIDTH * 0.1;
     private List<Point2D> initPoints;
 
     public Point2DGenerator(int numPoints, int numClusters) {
