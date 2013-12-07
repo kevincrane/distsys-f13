@@ -13,5 +13,8 @@ default:
 clean: 
 	rm -r ./out
 
-# Main Method:
-#   java -cp out/ distsys.ClusterMain
+# Run Sequentially:
+#   java -cp out:mpi.jar distsys.ClusterMainSeq {points|dna} [data_count] [cluster_count] (strand_length)
+# Run with OpenMPI:
+#   mpirun -np [num_hosts] -H localhost java -cp out:mpi.jar distsys.ClusterMainMPI {points|dna} [data_count] [cluster_count] (strand_length)
+#   mpirun -np [num_hosts] -hostfile [host_file] java -cp out:mpi.jar distsys.ClusterMainMPI {points|dna} [data_count] [cluster_count] (strand_length)

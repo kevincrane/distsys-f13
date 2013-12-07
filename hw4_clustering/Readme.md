@@ -1,8 +1,6 @@
 # Distributed Systems
 
-TODO: update for project 4
-
-### Lab 3 - Map Reduce Facility
+### Lab 4 - K-Means Clustering (sequential & parallel w/ OpenMPI)
 ### 15-640/440
 
 * Kevin Crane
@@ -15,7 +13,7 @@ NOTE: In order to get Java bindings for OpenMPI, you need to download a Nightly 
 make
 make install
 ```
-and hunt for mpi.jar (./ompi/mpi/java/java/mpi.jar). I put this file in this repo to make life easier, so hopefully nothing ever breaks.
+and hunt for mpi.jar (./ompi/mpi/java/java/mpi.jar). I put the file in this repo to make life easier, so hopefully nothing ever breaks.
 
 
 To compile from root directory (the one with *Makefile*):
@@ -24,19 +22,24 @@ make
 ```
 This must be done from each terminal that is running the application.
 
-
-First you must run a SlaveNode on any number of terminals. Check with Config.java under SLAVE_NODES to see where the system will be looking to communicate. By default they point to unix#.andrew.cmu.edu (where we ran them while at CMU), but you should likely change these to localhost (e.g. ["localhost", "12345"]. Likewise, update MASTER_NODE in this file as needed (again, to "localhost" if that is where you will be running these). Once these are set to your liking, you will run one SlaveNode per terminal, each in their own folder (e.g. one in dir slave1, slave2, etc.). Call
+There are two data types supported with this program, 2D points and DNA strands. You must select which you want through a command-line argument, along with the number of points, clusters, and (if applicable) length of DNA strand. Running this algorithm in sequential fashion is easy. Just run:
 ```
-java -cp out/ distsys.SlaveNode [port_number]
+java -cp out:mpi.jar distsys.ClusterMainSeq {points|dna} [data_count] [cluster_count] (strand_length)
 ```
-to run them.
-
-Next, run the master in a similar way with
+For example:
 ```
-java -cp out/ distsys.MapReduceManager
+java -cp out:mpi.jar distsys.ClusterMainSeq points 1000 5
+java -cp out:mpi.jar distsys.ClusterMainSeq dna 500 4 30
 ```
-
-When running it locally, run each slave in their own directory (e.g. slaves/slave1, slaves/slave2, etc.)
+To run in parallel across multiple hosts (or locally with multiple processors), call:
+```
+mpirun -np [num_hosts] -H [host_name] java -cp out:mpi.jar distsys.ClusterMainMPI {points|dna} [data_count] [cluster_count] (strand_length)
+mpirun -np [num_hosts] -hostfile [host_file] java -cp out:mpi.jar distsys.ClusterMainMPI {points|dna} [data_count] [cluster_count] (strand_length)
+```
+where the hostfile is just a text file with the names of each available host in the MPI cluster on its own line. For example:
+mpirun -np 4 -H localhost java -cp out:mpi.jar distsys.ClusterMainMPI points 1000 5
+mpirun -np 12 -hostfile host_file java -cp out:mpi.jar distsys.ClusterMainMPI dna 500 4 30
+```
 
 To clean up all of these messy classfiles later, you can type:
 ```
