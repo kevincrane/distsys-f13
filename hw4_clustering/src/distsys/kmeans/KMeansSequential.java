@@ -45,7 +45,7 @@ public class KMeansSequential extends KMeans {
                     point.setCluster(closestCluster);
                     numPointsChanged++;
                 }
-//                System.out.println("DataPoint " + point);       //TODO remove
+//                System.out.println("DataPoint " + point);       //TODO for debugging
             }
 
             // Update the position of each centroid

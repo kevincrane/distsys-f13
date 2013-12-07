@@ -129,7 +129,7 @@ public class KMeansParallel extends KMeans {
                 dataPoints.addAll(newDataPoints);
             }
 
-//            for (DataPoint d : dataPoints) {
+//            for (DataPoint d : dataPoints) {      //TODO for debugging
 //                System.out.print(d + "\n");
 //            }
         } else {
@@ -173,7 +173,7 @@ public class KMeansParallel extends KMeans {
                         point.setCluster(closestCluster);
                         numPointsChanged[0]++;
                     }
-//                    System.out.print("(P" + myRank + ") DataPoint " + point + "\n");       //TODO remove
+//                    System.out.print("(P" + myRank + ") DataPoint " + point + "\n");       //TODO for debugging
                 }
 
                 // Calculate the new centroids for all clusters and find total number of changed datapoints

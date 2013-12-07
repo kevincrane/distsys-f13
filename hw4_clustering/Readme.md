@@ -37,6 +37,7 @@ mpirun -np [num_hosts] -H [host_name] java -cp out:mpi.jar distsys.ClusterMainMP
 mpirun -np [num_hosts] -hostfile [host_file] java -cp out:mpi.jar distsys.ClusterMainMPI {points|dna} [data_count] [cluster_count] (strand_length)
 ```
 where the hostfile is just a text file with the names of each available host in the MPI cluster on its own line. For example:
+```
 mpirun -np 4 -H localhost java -cp out:mpi.jar distsys.ClusterMainMPI points 1000 5
 mpirun -np 12 -hostfile host_file java -cp out:mpi.jar distsys.ClusterMainMPI dna 500 4 30
 ```

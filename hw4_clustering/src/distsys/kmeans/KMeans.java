@@ -16,7 +16,7 @@ public abstract class KMeans {
     protected List<DataPoint> dataPoints;
     protected List<Centroid> centroids;
     protected final double THRESHOLD = 0.001;
-    protected final int MAX_ITERATIONS = 25;
+    protected final int MAX_ITERATIONS = 40;
 
 
     /**
