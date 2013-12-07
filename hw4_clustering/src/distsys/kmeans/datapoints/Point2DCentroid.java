@@ -100,7 +100,7 @@ public class Point2DCentroid extends Point2D implements Centroid {
                 double avgX = totalX[i] / numCoords[i];
                 double avgY = totalY[i] / numCoords[i];
                 newCentroids.add(new Point2DCentroid(avgX, avgY, i));
-                System.out.println("(Proc " + MPI.COMM_WORLD.getRank() + ") New centroid location " + new Point2DCentroid(avgX, avgY, i));
+//                System.out.println("(Proc " + MPI.COMM_WORLD.getRank() + ") New centroid location " + new Point2DCentroid(avgX, avgY, i));
             }
             return newCentroids;
         } catch (MPIException e) {

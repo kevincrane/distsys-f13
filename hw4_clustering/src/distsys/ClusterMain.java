@@ -1,9 +1,6 @@
 package distsys;
 
-import distsys.datagen.DataGenerator;
-import distsys.datagen.DnaStrandGenerator;
-import distsys.datagen.Point2DGenerator;
-import distsys.datagen.WallClock;
+import distsys.datagen.*;
 import distsys.kmeans.DataPoint;
 import distsys.kmeans.KMeansSequential;
 

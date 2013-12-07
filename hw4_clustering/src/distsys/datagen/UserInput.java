@@ -1,4 +1,4 @@
-package distsys;
+package distsys.datagen;
 
 import java.util.Scanner;
 
@@ -21,17 +21,14 @@ public class UserInput {
     public int getProgramNum() throws NumberFormatException {
         // Decide which test program you want to run
         System.out.println("\nWhich k-means clustering program do you want to run?");
-        System.out.println("1. 2D Points (sequential)");
-        System.out.println("2. 2D Points (parallel OpenMPI)");
-        System.out.println("3. DNA Strings (sequential)");
-        System.out.println("4. DNA Strings (parallel OpenMPI)");
-
+        System.out.println("1. 2D Points");
+        System.out.println("2. DNA Strings");
 
         String input = lineIn.nextLine();
         int program;
         try {
             program = Integer.parseInt(input);
-            if (program < 1 || program > 4) {
+            if (program != 1 && program != 2) {
                 throw new NumberFormatException();
             }
         } catch (NumberFormatException e) {

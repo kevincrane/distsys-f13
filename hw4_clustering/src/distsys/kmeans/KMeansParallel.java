@@ -1,8 +1,5 @@
 package distsys.kmeans;
 
-import distsys.datagen.DataGenerator;
-import distsys.datagen.Point2DGenerator;
-import distsys.kmeans.datapoints.Point2D;
 import mpi.MPI;
 import mpi.MPIException;
 
@@ -19,6 +16,8 @@ public class KMeansParallel extends KMeans {
     private final int TAG_SEND_DATA = 12;
     private final int TAG_SEND_CENT = 13;
     private final int ROOT = 0;
+    private final int myRank;
+    private final int totalHosts;
 
     List<DataPoint> fullDataPoints = new ArrayList<DataPoint>();
 
@@ -28,43 +27,27 @@ public class KMeansParallel extends KMeans {
      * @param numPoints   Number of DataPoints
      * @param numClusters Number of Clusters to find
      */
-    public KMeansParallel(int numPoints, int numClusters, String[] args) {
+    public KMeansParallel(int numPoints, int numClusters) throws MPIException {
         super(numPoints, numClusters);
 
         // Set up MPI
-        try {
-            MPI.Init(args);
-        } catch (MPIException e) {
-            System.err.println("Something broke initializing MPI (" + e.getMessage() + ").");
-        }
+        MPI.Init(new String[]{});
+        this.myRank = MPI.COMM_WORLD.getRank();
+        this.totalHosts = MPI.COMM_WORLD.getSize();
     }
 
-    private void generateData() {
-        fullDataPoints.add(new Point2D(2, 2));
-        fullDataPoints.add(new Point2D(-1, 3.5));
-        fullDataPoints.add(new Point2D(3, 1));
-        fullDataPoints.add(new Point2D(-1, -2));
-        fullDataPoints.add(new Point2D(-2, 2.5));
-        fullDataPoints.add(new Point2D(1, -1));
-        fullDataPoints.add(new Point2D(3, 3.5));
-        fullDataPoints.add(new Point2D(-3, 3));
-        fullDataPoints.add(new Point2D(4, 3));
-        fullDataPoints.add(new Point2D(2, -2));
-    }
 
     /**
      * Set up the initial Centroids and distribute partitions of the DataPoints to each processor
-     *
-     * @param myRank The rank of this processor
      */
-    private void initializeDataPoints(int myRank, int totalHosts) throws MPIException {
-        if (myRank == ROOT) {
+    private void initializeDataPoints() throws MPIException {
+        if (isRoot()) {
             // Split up the data between hosts
             centroids = chooseInitialCentroids(fullDataPoints);
-            sendInitDataPoints(fullDataPoints, totalHosts);
+            sendInitDataPoints(fullDataPoints);
         } else {
             // Receive yo datapoints from the root host
-            receiveInitDataPoints(myRank);
+            receiveInitDataPoints();
         }
     }
 
@@ -72,17 +55,16 @@ public class KMeansParallel extends KMeans {
     /**
      * Split the set of DataPoints into equal chunks and send them each to their own processor
      *
-     * @param allData  A list of every available DataPoint
-     * @param numHosts Number of processors to split into
+     * @param allData A list of every available DataPoint
      */
-    private void sendInitDataPoints(List<DataPoint> allData, int numHosts) {
+    private void sendInitDataPoints(List<DataPoint> allData) {
         // First set DataPoints for the root host
-        int partition = allData.size() / numHosts;
+        int partition = allData.size() / totalHosts;
         dataPoints.addAll(allData.subList(0, partition));
-        for (int i = 1; i < numHosts; i++) {
+        for (int i = 1; i < totalHosts; i++) {
             // Convert hosts datapoints to byte array and send them over
             List<DataPoint> hostPoints = new ArrayList<DataPoint>();
-            if (i < numHosts - 1) {
+            if (i < totalHosts - 1) {
                 // Add a chunk of datapoints for this processor
                 hostPoints.addAll(allData.subList(partition * i, partition * (i + 1)));
             } else {
@@ -107,10 +89,9 @@ public class KMeansParallel extends KMeans {
     /**
      * Receive a partition of DataPoints from the root host
      *
-     * @param myRank Rank of the processor to receive DataPoints
      * @throws MPIException
      */
-    private void receiveInitDataPoints(int myRank) throws MPIException {
+    private void receiveInitDataPoints() throws MPIException {
         // Receive initial DataPoints
         System.out.print("Host " + myRank + " is waiting to receive DataPoints..\n");
         int numBytesDataPoints = MPI.COMM_WORLD.probe(ROOT, TAG_SEND_DATA).getCount(MPI.BYTE);
@@ -130,13 +111,11 @@ public class KMeansParallel extends KMeans {
 
     /**
      * Collect all the clustered DataPoints on the root processor
-     *
-     * @param myRank Rank of the processor to receive DataPoints
      */
-    private void collectResults(int myRank, int totalHosts) throws MPIException {
-        if (myRank == ROOT) {
+    private void collectResults() throws MPIException {
+        if (isRoot()) {
             // Receive datapoints from everyone!
-            System.out.println("Root host is receiving clustered datapoints from everyone else..");
+            System.out.println("Root host is collecting clustered datapoints from everyone else..");
             for (int i = 1; i < totalHosts; i++) {
                 // Receive list bytes from a host
                 int numDataPointBytes = MPI.COMM_WORLD.probe(i, TAG_SEND_DATA).getCount(MPI.BYTE);
@@ -147,11 +126,10 @@ public class KMeansParallel extends KMeans {
                 // Add the new points to the ones already stored
                 dataPoints.addAll(newDataPoints);
             }
-            System.out.println("Root received datapoints from " + (totalHosts - 1) + " hosts!");
 
-            for (DataPoint d : dataPoints) {
-                System.out.print(d + "\n");
-            }
+//            for (DataPoint d : dataPoints) {
+//                System.out.print(d + "\n");
+//            }
         } else {
             // Send the subset of datapoints to its processor
             byte[] dataPointBytes = serialize(dataPoints);
@@ -170,12 +148,10 @@ public class KMeansParallel extends KMeans {
             int iterations = 0;
             int[] numPointsChanged = new int[]{Integer.MAX_VALUE};
 
-            int myRank = MPI.COMM_WORLD.getRank();
-            int totalHosts = MPI.COMM_WORLD.getSize();
             System.out.print("Running k-means with rank " + myRank + " of " + totalHosts + ".\n");
 
             // For the ROOT processor, set the initial centroids and send everyone their portion of the DataPoints
-            initializeDataPoints(myRank, totalHosts);
+            initializeDataPoints();
             MPI.COMM_WORLD.barrier();  // Wait here until everyone's ready
 
             // ACTUAL K-MEANS CLUSTERING
@@ -193,19 +169,22 @@ public class KMeansParallel extends KMeans {
                         point.setCluster(closestCluster);
                         numPointsChanged[0]++;
                     }
-                    System.out.print("(P" + myRank + ") DataPoint " + point + "\n");       //TODO remove
+//                    System.out.print("(P" + myRank + ") DataPoint " + point + "\n");       //TODO remove
                 }
 
-                // Calculate the new centroids for all clusters
+                // Calculate the new centroids for all clusters and find total number of changed datapoints
                 centroids = centroids.get(0).calculateAllCentroidsParallel(dataPoints, numClusters);
-
                 MPI.COMM_WORLD.allReduce(numPointsChanged, 1, MPI.INT, MPI.SUM);
-                if (myRank == ROOT)
-                    System.out.print("Iteration " + iterations + ": changed " + numPointsChanged[0] + " points.\n");
+                if (isRoot()) {
+                    for (Centroid c : centroids) {
+                        System.out.println("New centroid location " + c);
+                    }
+                    System.out.println("Iteration " + iterations + ": changed " + numPointsChanged[0] + " points.\n");
+                }
             }
 
             // Done clustering, collect the results from the other hosts
-            collectResults(myRank, totalHosts);
+            collectResults();
 
         } catch (MPIException e) {
             System.err.println("Error: something broke with MPI (" + e.getMessage() + ")");
@@ -251,26 +230,11 @@ public class KMeansParallel extends KMeans {
     }
 
 
-    /**
-     * Main Method
-     *
-     * @param args Command line arguments
-     */
-    public static void main(String[] args) throws MPIException {
-        KMeansParallel kmeans = new KMeansParallel(20, 3, args);
-
-        // Generate data points
-        if (MPI.COMM_WORLD.getRank() == 0) {
-            DataGenerator dataGen = new Point2DGenerator(20, 3);
-            List<DataPoint> dataPoints = dataGen.generatePoints();
-            kmeans.setFullDataPoints(dataPoints);
-        }
-
-        kmeans.findClusters();
-//        ClusterMain.writeResultsToFile(kmeans.getDataPoints(), kmeans.numClusters);
-    }
-
     public void setFullDataPoints(List<DataPoint> fullDataPoints) {
         this.fullDataPoints = fullDataPoints;
+    }
+
+    public boolean isRoot() {
+        return myRank == ROOT;
     }
 }
