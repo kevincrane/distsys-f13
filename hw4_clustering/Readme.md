@@ -33,7 +33,7 @@ java -cp out:mpi.jar distsys.ClusterMainSeq dna 500 4 30
 ```
 To run in parallel across multiple hosts (or locally with multiple processors), call:
 ```
-mpirun -np [num_hosts] -H [host_name] java -cp out:mpi.jar distsys.ClusterMainMPI {points|dna} [data_count] [cluster_count] (strand_length)
+mpirun -np [num_hosts] -H [host_names] java -cp out:mpi.jar distsys.ClusterMainMPI {points|dna} [data_count] [cluster_count] (strand_length)
 mpirun -np [num_hosts] -hostfile [host_file] java -cp out:mpi.jar distsys.ClusterMainMPI {points|dna} [data_count] [cluster_count] (strand_length)
 ```
 where the hostfile is just a text file with the names of each available host in the MPI cluster on its own line. For example:
