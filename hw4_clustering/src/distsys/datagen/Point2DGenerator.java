@@ -29,7 +29,8 @@ public class Point2DGenerator extends DataGenerator {
     /**
      * Generate initial random centroid starting spots
      */
-    void setRandomCentroids() {
+    @Override
+    protected void setRandomCentroids() {
         boolean tooNear;
         for (int i = 0; i < numClusters; i++) {
             tooNear = false;

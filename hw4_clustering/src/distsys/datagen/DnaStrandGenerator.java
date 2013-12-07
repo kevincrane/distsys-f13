@@ -23,15 +23,16 @@ public class DnaStrandGenerator extends DataGenerator {
         super(numPoints, numClusters);
         initPoints = new ArrayList<DnaStrand>(numClusters);
         this.strandLength = strandLength;
-        this.MAX_CHANGES = (int) (strandLength * 0.5);
-        this.MIN_DIST = strandLength * 0.5;     //TODO is this value good?
+        this.MAX_CHANGES = (int) (strandLength * 0.5);      // Can be tuned
+        this.MIN_DIST = strandLength * 0.5;
     }
 
 
     /**
      * Generate initial random centroid starting spots
      */
-    void setRandomCentroids() {
+    @Override
+    protected void setRandomCentroids() {
         boolean tooNear;
         for (int i = 0; i < numClusters; i++) {
             tooNear = false;

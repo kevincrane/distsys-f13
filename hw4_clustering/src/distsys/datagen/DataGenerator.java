@@ -31,7 +31,7 @@ public abstract class DataGenerator {
     /**
      * Generate initial random centroid starting spots and set to List<DataPoint>
      */
-    abstract void setRandomCentroids();
+    protected abstract void setRandomCentroids();
 
     /**
      * Generate a series of random points in clusters

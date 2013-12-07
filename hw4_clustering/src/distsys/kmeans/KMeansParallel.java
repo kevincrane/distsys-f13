@@ -91,6 +91,7 @@ public class KMeansParallel extends KMeans {
      *
      * @throws MPIException
      */
+    @SuppressWarnings("unchecked")
     private void receiveInitDataPoints() throws MPIException {
         // Receive initial DataPoints
         System.out.print("Host " + myRank + " is waiting to receive DataPoints..\n");
@@ -112,10 +113,11 @@ public class KMeansParallel extends KMeans {
     /**
      * Collect all the clustered DataPoints on the root processor
      */
+    @SuppressWarnings("unchecked")
     private void collectResults() throws MPIException {
         if (isRoot()) {
             // Receive datapoints from everyone!
-            System.out.println("Root host is collecting clustered datapoints from everyone else..");
+            System.out.println("Root host is collecting clustered datapoints from other hosts..");
             for (int i = 1; i < totalHosts; i++) {
                 // Receive list bytes from a host
                 int numDataPointBytes = MPI.COMM_WORLD.probe(i, TAG_SEND_DATA).getCount(MPI.BYTE);
@@ -143,6 +145,8 @@ public class KMeansParallel extends KMeans {
      */
     @Override
     public void findClusters() {
+        if (isRoot())
+            System.out.println("Forming " + numClusters + " clusters from " + numPoints + " datapoints using K-Means..");
         try {
             // Randomly select initial centroids
             int iterations = 0;

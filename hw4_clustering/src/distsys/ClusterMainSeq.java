@@ -5,8 +5,7 @@ import distsys.datagen.DnaStrandGenerator;
 import distsys.datagen.Point2DGenerator;
 import distsys.datagen.WallClock;
 import distsys.kmeans.DataPoint;
-import distsys.kmeans.KMeansParallel;
-import mpi.MPIException;
+import distsys.kmeans.KMeansSequential;
 
 import java.io.FileWriter;
 import java.io.IOException;
@@ -17,9 +16,10 @@ import java.util.List;
 /**
  * Created with IntelliJ IDEA.
  * User: kevin, prashanth
- * Date: 12/6/13
+ * Date: 12/2/13
  */
-public class ClusterMainMPI {
+public class ClusterMainSeq {
+
     private static final String outputFile = "clusteredData.txt";
 
     /**
@@ -61,12 +61,12 @@ public class ClusterMainMPI {
      * Command line usage info
      */
     public static void usage() {
-        System.err.println("Usage: ClusterMainMPI {points|dna} [data_count] [cluster_count] (strand_length)");
-        System.err.println("    See Makefile or Readme.md for more details on how to run.");
+        System.err.println("Usage: ClusterMainSeq {points|dna} [data_count] [cluster_count] (strand_length)");
     }
 
 
-    public static void main(String[] args) throws MPIException {
+    public static void main(String[] args) {
+        System.out.println("Project 4 - Sequential and Parallel Clustering!");
         int numPoints;
         int numClusters;
         int strandLength = 10;
@@ -103,7 +103,7 @@ public class ClusterMainMPI {
 
 
         // Objects needed to perform clustering
-        KMeansParallel kmeans = new KMeansParallel(numPoints, numClusters);
+        KMeansSequential kmeans = new KMeansSequential(numPoints, numClusters);
         DataGenerator dataGen;
         List<DataPoint> dataPoints;
         WallClock clock = new WallClock();
@@ -111,16 +111,10 @@ public class ClusterMainMPI {
         // Select which type of data to generate
         if (args[0].equalsIgnoreCase("points")) {
             dataGen = new Point2DGenerator(numPoints, numClusters);
-            if (kmeans.isRoot()) {
-                System.out.println("Project 4 - Sequential and Parallel Clustering!");
-                System.out.println("Running K-Means clustering (parallel via OpenMPI) on 2D points..\n");
-            }
+            System.out.println("Running K-Means clustering (sequential) on 2D points..\n");
         } else if (args.length == 4 && args[0].equalsIgnoreCase("dna")) {
             dataGen = new DnaStrandGenerator(numPoints, numClusters, strandLength);
-            if (kmeans.isRoot()) {
-                System.out.println("Project 4 - Sequential and Parallel Clustering!");
-                System.out.println("Running K-Means clustering (parallel via OpenMPI) on DNA strands..\n");
-            }
+            System.out.println("Running K-Means clustering (sequential) on DNA strands..\n");
         } else {
             System.err.println("Data name should only 'points' or 'dna'.");
             usage();
@@ -128,18 +122,16 @@ public class ClusterMainMPI {
         }
 
         // Time to run k-means clustering!!
-        if (kmeans.isRoot()) {
-            // Generate data points
-            dataPoints = dataGen.generatePoints();
-            kmeans.setFullDataPoints(dataPoints);
-        }
+        // Generate data points
+        dataPoints = dataGen.generatePoints();
+        kmeans.setDataPoints(dataPoints);
 
         // Fetch the clusters!
         clock.startTimer();
         kmeans.findClusters();
 
         // Stop the timer and print clustered results to a file
-        if (kmeans.isRoot() && kmeans.getDataPoints() != null) {
+        if (kmeans.getDataPoints() != null) {
             long stopTime = clock.getRunTime();
             System.out.printf("\nClustering completed in %.4f seconds!\n\n", stopTime / 1000.0);
             writeResultsToFile(kmeans.getDataPoints(), numClusters);

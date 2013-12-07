@@ -11,8 +11,8 @@ import java.util.Random;
  */
 public abstract class KMeans {
 
-    protected int numPoints;
-    protected int numClusters;
+    protected final int numPoints;
+    protected final int numClusters;
     protected List<DataPoint> dataPoints;
     protected List<Centroid> centroids;
     protected final double THRESHOLD = 0.001;
@@ -60,7 +60,7 @@ public abstract class KMeans {
             centroids.add(nextCentroid);
             nextCluster++;
 
-            System.out.println("Chose initial centroid as " + centroids.get(nextCluster - 1) + "!!"); //TODO remove
+//            System.out.println("Chose initial centroid as " + centroids.get(nextCluster - 1) + "!!"); //TODO remove
         }
 
         return centroids;

@@ -2,6 +2,8 @@ package distsys.kmeans.datapoints;
 
 import distsys.kmeans.Centroid;
 import distsys.kmeans.DataPoint;
+import mpi.MPI;
+import mpi.MPIException;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -104,6 +106,70 @@ public class DnaStrandCentroid extends DnaStrand implements Centroid {
 
     @Override
     public List<Centroid> calculateAllCentroidsParallel(List<DataPoint> points, int numClusters) {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
+        List<Centroid> newCentroids = new ArrayList<Centroid>(numClusters);
+        int[][] totalA = new int[numClusters][strand.length]; // cluster -> # of base at a pos
+        int[][] totalG = new int[numClusters][strand.length];
+        int[][] totalC = new int[numClusters][strand.length];
+        int[][] totalT = new int[numClusters][strand.length];
+
+        // Create sum of each nucleotide at each position for every cluster
+        for (DataPoint point : points) {
+            for (int i = 0; i < ((DnaStrand) point).getStrand().length; i++) {
+                // This part is dumb; OpenMPI documentation was sparse, I swear that's part of the reason
+                switch (((DnaStrand) point).getStrand()[i]) {
+                    case A:
+                        totalA[point.getCluster()][i]++;
+                        break;
+                    case G:
+                        totalG[point.getCluster()][i]++;
+                        break;
+                    case C:
+                        totalC[point.getCluster()][i]++;
+                        break;
+                    case T:
+                        totalT[point.getCluster()][i]++;
+                        break;
+                }
+            }
+        }
+
+        try {
+            // Reduce Sum the base count for each strand position in each cluster (could almost certainly be optimized)
+            for (int i = 0; i < numClusters; i++) {
+                MPI.COMM_WORLD.allReduce(totalA[i], strand.length, MPI.INT, MPI.SUM);
+                MPI.COMM_WORLD.allReduce(totalG[i], strand.length, MPI.INT, MPI.SUM);
+                MPI.COMM_WORLD.allReduce(totalC[i], strand.length, MPI.INT, MPI.SUM);
+                MPI.COMM_WORLD.allReduce(totalT[i], strand.length, MPI.INT, MPI.SUM);
+            }
+
+            // Find most common nucleotide in each position and define a new centroid for each cluster
+            for (int i = 0; i < numClusters; i++) {
+                Bases[] newStrand = new Bases[strand.length];
+                for (int j = 0; j < strand.length; j++) {
+                    Bases mostCommonBase = Bases.A;
+                    int mostCommonCount = totalA[i][j];
+
+                    // Dumbest possible way to find the max but OpenMPI docs suck and now I have awful data structures
+                    if (totalG[i][j] > mostCommonCount) {
+                        mostCommonBase = Bases.G;
+                        mostCommonCount = totalG[i][j];
+                    }
+                    if (totalC[i][j] > mostCommonCount) {
+                        mostCommonBase = Bases.C;
+                        mostCommonCount = totalC[i][j];
+                    }
+                    if (totalT[i][j] > mostCommonCount) {
+                        mostCommonBase = Bases.T;
+                    }
+                    newStrand[j] = mostCommonBase;
+                }
+
+                newCentroids.add(new DnaStrandCentroid(newStrand, i));
+            }
+            return newCentroids;
+        } catch (MPIException e) {
+            System.err.println("Error during reducing point to find new centroid");
+            return null;
+        }
     }
 }

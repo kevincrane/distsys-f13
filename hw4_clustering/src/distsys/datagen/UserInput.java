@@ -6,6 +6,8 @@ import java.util.Scanner;
  * Created with IntelliJ IDEA.
  * User: kevin, prashanth
  * Date: 12/5/13
+ * <p/>
+ * Note: No longer needed because we switched to using command-line arguments
  */
 public class UserInput {
 
